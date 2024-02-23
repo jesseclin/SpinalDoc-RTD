@@ -6,8 +6,9 @@ Instantiate VHDL and Verilog IP
 説明
 -----------
 
-A blackbox allows the user to integrate an existing VHDL/Verilog component into the design by just specifying its
-interfaces. It's up to the simulator or synthesizer to do the elaboration correctly.
+ブラックボックスは、既存のVHDL/Verilogコンポーネントを設計に統合するために、
+そのインターフェースを指定するだけでユーザーが利用できるようにします。
+エラボレーションは、シミュレータまたは合成ツールによって正しく行われます。
 
 Defining an blackbox
 --------------------
