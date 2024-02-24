@@ -1,32 +1,32 @@
 Preserving names
 ==================
 
-This page will describe how SpinalHDL propagate names from the scala code to the generated hardware. Knowing them should enable you to preserve those names as much as possible to generate understandable netlists.
+このページでは、SpinalHDL が scala コードから生成されたハードウェアへの名前の伝播を説明します。
+これらを知ることで、理解しやすいネットリストを生成するためにできるだけこれらの名前を保持できるようになります。
 
-Nameable base class
+名前付きベースクラス
 ------------------------------------------
 
-All the things which can be named in SpinalHDL extends the Nameable base class which.
+SpinalHDLで名前を付けられるすべてのものは、Nameableベースクラスを拡張しています。
 
-So in practice, the following classes extends Nameable :
+したがって、実際には、次のクラスが Nameable を拡張しています：
 
 - Component
 - Area
 - Data (UInt, SInt, Bundle, ...)
 
-
-There is a few example of that Nameable API
+Nameable API のいくつかの例があります。
 
 .. code-block:: scala
 
   class MyComponent extends Component {
     val a, b, c, d = Bool()
-    b.setName("rawrr") // Force name
-    c.setName("rawrr", weak = true) // Propose a name, will not be applied if a stronger name is already applied
-    d.setCompositeName(b, postfix = "wuff") // Force toto to be named as b.getName() + _wuff"
+    b.setName("rawrr") // 名前を強制する
+    c.setName("rawrr", weak = true) // 名前を提案しますが、すでに強力な名前が適用されている場合は適用されません
+    d.setCompositeName(b, postfix = "wuff") // b.getName() + _wuff" として名前を強制します
   }
 
-Will generation :
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -38,21 +38,21 @@ Will generation :
       wire                rawrr_wuff;
     endmodule
 
-In general, you don't realy need to access that API, unless you want to do tricky stuff for debug reasons or for elaboration purposes.
+一般的に、デバッグの目的やエラボレーションのためにトリッキーなことをしたい場合を除いて、そのAPIにアクセスする必要はありません。
 
-Name extraction from Scala
+Scalaからの名前抽出
 ------------------------------------------
 
-First, since version 1.4.0, SpinalHDL use a scala compiler plugin which can provide a call back each time a new val is defined during the construction of an class.
+まず、バージョン 1.4.0 以降、SpinalHDL は、クラスの構築中に新しい val が定義されるたびにコールバックを提供できる scala コンパイラプラグインを使用しています。
 
-There is a example showing more or less how SpinalHDL itself is implemented :
+SpinalHDL 自体がどのように実装されているかを、おおよその例を示すものがあります：
 
 .. code-block:: scala
 
-    //spinal.idslplugin.ValCallback is the Scala compiler plugin feature which will provide the callbacks
+    //spinal.idslplugin.ValCallback は、Scalaコンパイラプラグインの機能であり、コールバックを提供します。
     class Component extends spinal.idslplugin.ValCallback {
       override def valCallback[T](ref: T, name: String) : T = {
-        println(s"Got $ref named $name") // Here we just print what we got as a demo.
+        println(s"Got $ref named $name") // ここでは、デモとして受け取った内容を印刷します。.
         ref
       }
     }
@@ -68,35 +68,37 @@ There is a example showing more or less how SpinalHDL itself is implemented :
 
     object Debug3 extends App {
       new MyComponent()
-      // ^ This will print :
+      // ^ これはプリントされます：
       // Got 2 named two
       // Got miaou named wuff
       // Got spinal.tester.code.sandbox.UInt@691a7f8f named toto
       // Got spinal.tester.code.sandbox.Bits@161b062a named rawrr
     }
 
-Using that ValCallback "introspection" feature, SpinalHDL's Component classes are able to be aware of their content and the content's name.
+ValCallbackの "introspection" 機能を使用することで、SpinalHDLのComponentクラスは、その内容と内容の名前を認識することができます。
 
-But this also mean that if you want something to get a name, and you only rely on this automatic naming feature, the reference to your Data (UInt, SInt, ...) instances should be stored somewhere in a Component val.
+しかし、これはまた、何かに名前を付けたい場合、そして自動命名機能だけに依存したい場合、Data（UInt、SIntなど）インスタンスへの参照が、
+どこかのComponent valに保存されている必要があることを意味します。
 
-For instance :
+例えば：
+
 
 .. code-block:: scala
 
   class MyComponent extends Component {
-    val a,b = in UInt(8 bits) // Will be properly named
-    val toto = out UInt(8 bits)   // same
+    val a,b = in UInt(8 bits) // 適切に名前が付けられます
+    val toto = out UInt(8 bits)   // 同様
 
     def doStuff(): Unit = {
-      val tmp = UInt(8 bits) // This will not be named, as it isn't stored anywhere in a
-                             // component val (but there is a solution explained later)
+      val tmp = UInt(8 bits) // これは名前が付けられません。コンポーネントのvalに保存されていないためです
+                             // （しかし後述の解決策があります）
       tmp := 0x20
       toto := tmp
     }
     doStuff()
   }
 
-Will generate :
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -105,29 +107,28 @@ Will generate :
       input      [7:0]    b,
       output     [7:0]    toto
     );
-      // Note that the tmp signal defined in scala was "shortcuted" by SpinalHDL,
-      //  as it was unamed and technicaly "shortcutable"
+      // Scalaで定義されたtmpシグナルは、名前がなかったためSpinalHDLによって「ショートカット」されました。
+      // これは名前が付けられていないため、技術的に「ショートカット可能」である
       assign toto = 8'h20;
     endmodule
 
+コンポーネント内のArea
+-------------------------
 
-Area in a Component
---------------------
+名前付けシステムの重要な側面の1つは、コンポーネント内に新しい名前空間を定義し、操作できることです。
 
-One important aspect in the naming system is that you can define new namespaces inside components and manipulate
-
-For instance via Area :
+例えば、Areaを使用すると：
 
 .. code-block:: scala
 
     class MyComponent extends Component {
-      val logicA = new Area {    // This define a new namespace named "logicA
-        val toggle = Reg(Bool()) // This register will be named "logicA_toggle"
+      val logicA = new Area {    // これにより、"logicA"という名前の新しい名前空間が定義されます
+        val toggle = Reg(Bool()) // このレジスタは "logicA_toggle" という名前になります
         toggle := !toggle
       }
     }
 
-Will generate
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -141,10 +142,10 @@ Will generate
       end
     endmodule
 
-Area in a function
+関数内のArea
 --------------------
 
-You can also define function which will create new Area which will provide a namespace for all its content :
+また、新しい Area を作成し、その内容全体に名前空間を提供する関数を定義することもできます：
 
 .. code-block:: scala
 
@@ -160,7 +161,7 @@ You can also define function which will create new Area which will provide a nam
     result := someLogic.comparator
   }
 
-Which will generate :
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -175,26 +176,25 @@ Which will generate :
 
     endmodule
 
-Composite in a function
+関数内のコンポジット
 ----------------------------------------------
 
-Added in SpinalHDL 1.5.0, Composite which allow you to create a scope which will use as prefix another Nameable:
+SpinalHDL 1.5.0で追加されたコンポジットは、別のNameableをプレフィックスとして使用するスコープを作成することができます：
 
 .. code-block:: scala
 
   class MyComponent extends Component {
-    // Basicaly, a Composite is an Area that use its construction parameter as namespace prefix
+    // 基本的に、コンポジットは、その構築パラメータを名前空間のプレフィックスとして使用する領域です
     def isZero(value: UInt) = new Composite(value) {
       val comparator = value === 0
-    }.comparator  // Note we don't return the Composite,
-                  //  but the element of the composite that we are interested in
+    }.comparator  // コンポジットを返さず、興味のある要素のみを返します
 
     val value = in UInt (8 bits)
     val result = out Bool()
     result := isZero(value)
   }
 
-Will generate :
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -209,10 +209,10 @@ Will generate :
 
     endmodule
 
-Composite chains
+コンポジットチェーン
 ----------------------------
 
-You can also chain composites :
+また、コンポジットをチェーンすることもできます：
 
 .. code-block:: scala
 
@@ -231,7 +231,7 @@ You can also chain composites :
     result := inverted(isZero(value))
   }
 
-Will generate :
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -248,11 +248,11 @@ Will generate :
 
     endmodule
 
-Composite in a Bundle's function
+
+Bundleの関数内のコンポジット
 ------------------------------------
 
-
-This behaviour can be very useful when implementing Bundle utilities. For instance in the spinal.lib.Stream class is defined the following :
+この動作は、Bundleユーティリティを実装する際に非常に便利です。たとえば、spinal.lib.Streamクラスでは、次のように定義されています：
 
 .. code-block:: scala
 
@@ -263,8 +263,8 @@ This behaviour can be very useful when implementing Bundle utilities. For instan
 
       def queue(size: Int): Stream[T] = new Composite(this) {
         val fifo = new StreamFifo(payloadType, size)
-        fifo.io.push << self    // 'self' refers to the Composite construction argument ('this' in
-                                //  the example). It avoids having to do a boring 'Stream.this'
+        fifo.io.push << self    // self'は、コンポジットの構築引数を参照します（例では'this'）。
+                                // これにより、退屈な 'Stream.this' をする必要がなくなります。
       }.fifo.io.pop
 
       def m2sPipe(): Stream[T] = new Composite(this) {
@@ -285,7 +285,7 @@ This behaviour can be very useful when implementing Bundle utilities. For instan
       }.m2sPipe
     }
 
-Which allow nested calls while preserving the names :
+これにより、名前が保持されたまま、ネストされた呼び出しが可能になります：
 
 .. code-block:: scala
 
@@ -295,7 +295,7 @@ Which allow nested calls while preserving the names :
     sink << source.queue(size = 16).m2sPipe()
   }
 
-Will generate
+生成されるもの：
 
 .. code-block:: verilog
 
@@ -358,20 +358,20 @@ Will generate
       end
     endmodule
 
-
-Unamed signal handling
+非命名信号の処理
 ----------------------------------------
 
-Since 1.5.0, for signal which end up without name, SpinalHDL will find a signal which is driven by that unamed signal and propagate its name. This can produce useful results as long you don't have too large island of unamed stuff.
+1.5.0以降、名前のない信号に関しては、SpinalHDLはその名前のない信号で駆動される信号を見つけ、その名前を伝播させます。
+これは、名前のないものの島があまり大きくない限り、有用な結果を生み出すことができます。
 
-The name attributed to such unamed signal is : _zz_ + drivenSignal.getName()
+そのような名前のない信号に割り当てられる名前は、_zz_ + drivenSignal.getName()です。
 
-Note that this naming pattern is also used by the generation backend when they need to breakup some specific expressions or long chain of expression into multiple signals.
+この命名パターンは、特定の式や長い式チェーンを複数の信号に分割する必要があるときに、生成バックエンドによっても使用されます。
 
-Verilog expression splitting
+Verilog式の分割
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is an instance of expressions (ex : the + operator) that SpinalHDL need to express in dedicated signals to match the behaviour with the Scala API :
+SpinalHDLがScala APIの動作と一致させるために専用の信号で表現する必要がある式のインスタンスがあります（例：+演算子）。
 
 .. code-block:: scala
 
@@ -400,22 +400,22 @@ Will generate
 
     endmodule
 
-Verilog long expression splitting
+Verilogの長い式の分割
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is a instance of how a very long expression chain will be splited up by SpinalHDL :
+SpinalHDLによる非常に長い式チェーンの分割方法のインスタンスがあります：
 
 .. code-block:: scala
 
   class MyComponent extends Component {
     val conditions = in Vec(Bool(), 64)
-    // Perform a logical OR between all the condition elements
+    // 全ての条件要素間で論理ORを実行します
     val result = conditions.reduce(_ || _)
 
-    // For Bits/UInt/SInt signals the 'orR' methods implements this reduction operation
+    // Bits/UInt/SInt信号に対して、'orR'メソッドがこの縮約演算を実装しています
   }
 
-Will generate
+生成されたものは以下の通りです：
 
 .. code-block:: verilog
 
@@ -444,27 +444,27 @@ Will generate
 
     endmodule
 
-When statement condition
+条件文の条件
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The `when(cond) { }` statements condition are generated into separated signals named `when_` + fileName + line. A similar thing will also be done for switch statements.
+`when(cond) { }`文の条件は、`when_` + ファイル名 + 行番号という名前の分離された信号に生成されます。同様のことが、switch 文に対しても行われます。
 
 .. code-block:: scala
 
-  //In file Test.scala
+  // ファイル Test.scala にて
   class MyComponent extends Component {
     val value = in UInt(8 bits)
     val isZero = out(Bool())
     val counter = out(Reg(UInt(8 bits)))
 
     isZero := False
-    when(value === 0) { // At line 117
+    when(value === 0) { // 行番号 117
       isZero := True
       counter := counter + 1
     }
   }
 
-Will generate
+生成されるものは以下の通りです：
 
 .. code-block:: verilog
 
@@ -493,13 +493,10 @@ Will generate
     endmodule
 
 
-
-
-
-In last resort
+最終手段
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In last resort, if a signal has no name (anonymous signal), SpinalHDL will seek for a named signal which is driven by the anonymous signal, and use it as a name postfix :
+最終手段として、もし信号に名前がない場合（匿名信号）、SpinalHDL は匿名信号から駆動される名前の付いた信号を探し、それを名前の接尾辞として使用します：
 
 .. code-block:: scala
 
@@ -508,7 +505,7 @@ In last resort, if a signal has no name (anonymous signal), SpinalHDL will seek 
     val value = out UInt(8 bits)
 
     def count(cond : Bool): UInt = {
-      val ret = Reg(UInt(8 bits)) // This register is not named (on purpose for the example)
+      val ret = Reg(UInt(8 bits)) // このレジスタは（例のために）意図的に名前が付けられていません
       when(cond) {
         ret := ret + 1
       }
@@ -518,7 +515,7 @@ In last resort, if a signal has no name (anonymous signal), SpinalHDL will seek 
     value := count(enable)
   }
 
-Will generate
+生成されるものは以下の通りです：
 
 .. code-block:: verilog
 
@@ -528,7 +525,7 @@ Will generate
       input               clk,
       input               reset
     );
-      // Name given to the register in last resort by looking what was driven by it
+      // それによって最後の手段でレジスタに与えられる名前、それが駆動されているものを見て
       reg        [7:0]    _zz_value;
 
       assign value = _zz_value;
@@ -539,6 +536,6 @@ Will generate
       end
     endmodule
 
-This last resort naming skim isn't ideal in all cases, but can help out.
+この最終手段の命名方法はすべてのケースに最適ではありませんが、役立つことがあります。
 
-Note that signal starting with a underscore aren't stored in the Verilator waves (on purpose)
+アンダースコアで始まる信号は Verilator ウェーブに格納されません（意図的に）。

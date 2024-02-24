@@ -10,22 +10,22 @@ Instantiate VHDL and Verilog IP
 そのインターフェースを指定するだけでユーザーが利用できるようにします。
 エラボレーションは、シミュレータまたは合成ツールによって正しく行われます。
 
-Defining an blackbox
---------------------
 
-An example of how to define a blackbox is shown below:
+ブラックボックスの定義
+-------------------------
+
+以下に、ブラックボックスを定義する方法の例を示します：
 
 .. code-block:: scala
 
-   // Define a Ram as a BlackBox
+   // Ram をブラックボックスとして定義する
    class Ram_1w_1r(wordWidth: Int, wordCount: Int) extends BlackBox {
-     // Add VHDL Generics / Verilog parameters to the blackbox
-     // You can use String, Int, Double, Boolean, and all SpinalHDL base
-     // types as generic values
+     // VHDL ジェネリック/Verilog パラメータをブラックボックスに追加
+     // String、Int、Double、Boolean、およびすべての SpinalHDL 基本型をジェネリック値として使用できます。
      addGeneric("wordCount", wordCount)
      addGeneric("wordWidth", wordWidth)
 
-     // Define IO of the VHDL entity / Verilog module
+     // VHDLエンティティ/VerilogモジュールのIOを定義
      val io = new Bundle {
        val clk = in Bool()
        val wr = new Bundle {
@@ -40,12 +40,12 @@ An example of how to define a blackbox is shown below:
        }
      }
 
-     // Map the current clock domain to the io.clk pin
+     // 現在のクロックドメインを io.clk ピンにマップします。
      mapClockDomain(clock=io.clk)
    }
 
-| In VHDL, signals of type ``Bool`` will be translated into ``std_logic`` and ``Bits`` into ``std_logic_vector``. If you want to get ``std_ulogic``, you have to use a ``BlackBoxULogic`` instead of ``BlackBox``.
-| In Verilog, ``BlackBoxUlogic`` does not change the generated verilog.
+| VHDLでは、型が ``Bool`` のシグナルは ``std_logic`` に、そして ``Bits`` は ``std_logic_vector`` に変換されます。もし ``std_ulogic`` を得たいなら、 ``BlackBox`` の代わりに ``BlackBoxULogic`` を使用する必要があります。
+| Verilogでは、 ``BlackBoxUlogic`` を使用しても生成されるVerilogは変わりません。
 
 .. code-block:: scala
 
@@ -53,10 +53,10 @@ An example of how to define a blackbox is shown below:
      ...
    }
 
-Generics
---------
+ジェネリック
+---------------
 
-There are two different ways to declare generics:
+ジェネリックを宣言する方法は2つあります：
 
 .. code-block:: scala
 
@@ -64,7 +64,7 @@ There are two different ways to declare generics:
        addGeneric("wordCount", wordCount)
        addGeneric("wordWidth", wordWidth)
 
-       // OR 
+       // または
 
        val generic = new Generic {
          val wordCount = Ram.this.wordCount
@@ -72,14 +72,14 @@ There are two different ways to declare generics:
        }
    }
 
-Instantiating a blackbox
-------------------------
+ブラックボックスのインスタンス化
+-----------------------------------
 
-Instantiating a ``BlackBox`` is just like instantiating a ``Component``:
+``ブラックボックス`` のインスタンス化は、 ``コンポーネント`` のインスタンス化と同じです：
 
 .. code-block:: scala
 
-   // Create the top level and instantiate the Ram
+   // トップレベルを作成し、RAMをインスタンス化します。
    class TopLevel extends Component {
      val io = new Bundle {    
        val wr = new Bundle {
@@ -94,10 +94,10 @@ Instantiating a ``BlackBox`` is just like instantiating a ``Component``:
        }
      }
 
-     // Instantiate the blackbox
+     // ブラックボックスをインスタンス化します。
      val ram = new Ram_1w_1r(8,16)
 
-     // Connect all the signals
+     // すべてのシグナルを接続します。
      io.wr.en   <> ram.io.wr.en
      io.wr.addr <> ram.io.wr.addr
      io.wr.data <> ram.io.wr.data
@@ -112,40 +112,42 @@ Instantiating a ``BlackBox`` is just like instantiating a ``Component``:
      }
    }
 
-Clock and reset mapping
------------------------
+クロックとリセットのマッピング
+------------------------------
 
-In your blackbox definition you have to explicitly define clock and reset wires. To map signals of a ``ClockDomain`` to corresponding inputs of the blackbox you can use the ``mapClockDomain`` or ``mapCurrentClockDomain`` function. ``mapClockDomain`` has the following parameters:
+ブラックボックスの定義では、クロックとリセットのワイヤを明示的に定義する必要があります。 
+``ClockDomain`` のシグナルをブラックボックスの対応する入力にマッピングするには、 
+``mapClockDomain`` または ``mapCurrentClockDomain`` 関数を使用できます。 
+``mapClockDomain`` のパラメータは以下のとおりです：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 5
 
-   * - name
-     - type
-     - default
-     - description
+   * - 名前
+     - タイプ
+     - デフォルト
+     - 説明
    * - clockDomain
      - ClockDomain
      - ClockDomain.current
-     - Specify the clockDomain which provides the signals
+     - シグナルを提供するクロックドメインを指定する
    * - clock
      - Bool
-     - Nothing
-     - Blackbox input which should be connected to the clockDomain clock
+     - なし
+     - クロックドメインのクロックに接続されるべきブラックボックスの入力
    * - reset
      - Bool
-     - Nothing
-     - Blackbox input which should be connected to the clockDomain reset
+     - なし
+     - クロックドメインのリセットに接続されるべきブラックボックスの入力
    * - enable
      - Bool
-     - Nothing
-     - Blackbox input which should be connected to the clockDomain enable
+     - なし
+     - クロックドメインの有効信号に接続されるべきブラックボックスの入力
 
+``mapCurrentClockDomain`` は、 ``mapClockDomain`` とほぼ同じパラメータを持っていますが、クロックドメインは含まれません。
 
-``mapCurrentClockDomain`` has almost the same parameters as ``mapClockDomain`` but without the clockDomain.
-
-For example:
+例えば：
 
 .. code-block:: scala
 
@@ -158,20 +160,20 @@ For example:
        ...
      }
 
-     // Clock A is map on a specific clock Domain 
+     // クロック A は特定のクロックドメインにマップされます。 
      mapClockDomain(clkDomain, io.clkA)
-     // Clock B is map on the current clock domain 
+     // クロック B は現在のクロックドメインにマップされます。
      mapCurrentClockDomain(io.clkB)
    }
 
-io prefix
----------
+ioプレフィックス
+-----------------
 
-In order to avoid the prefix "io\_" on each of the IOs of the blackbox, you can use the function ``noIoPrefix()`` as shown below :
+ブラックボックスの各IOに"io\_" のプレフィックスを付けないようにするために、以下に示すように ``noIoPrefix()`` 関数を使用できます。
 
 .. code-block:: scala
 
-   // Define the Ram as a BlackBox
+   // Ramをブラックボックスとして定義します。
    class Ram_1w_1r(wordWidth: Int, wordCount: Int) extends BlackBox {
 
      val generic = new Generic {
@@ -199,11 +201,11 @@ In order to avoid the prefix "io\_" on each of the IOs of the blackbox, you can 
      mapCurrentClockDomain(clock=io.clk)
    }
 
-Rename all io of a blackbox
----------------------------
+ブラックボックスのすべての IO を名前変更する
+---------------------------------------------
 
-IOs of a ``BlackBox`` or ``Component`` can be renamed at compile-time using the ``addPrePopTask`` function.
-This function takes a no-argument function to be applied during compilation, and is useful for adding renaming passes, as shown in the following example:
+``BlackBox`` や ``Component`` の IO は、 ``addPrePopTask`` 関数を使用してコンパイル時に名前変更することができます。
+この関数は、コンパイル中に適用される引数なしの関数を取り、名前変更のパスを追加するのに便利です。以下の例に示すように:
 
 .. code-block:: scala
 
@@ -225,13 +227,13 @@ This function takes a no-argument function to be applied during compilation, and
        }
      }
 
-     // Map the clk 
+     // クロックをマッピングします。 
      mapCurrentClockDomain(io.clk)
 
-     // Remove io_ prefix 
+     // io_ プレフィックスを削除します。 
      noIoPrefix() 
 
-     // Function used to rename all signals of the blackbox 
+     // ブラックボックスのすべてのシグナルの名前を変更するために使用される関数 
      private def renameIO(): Unit = {
        io.flatten.foreach(bt => {
          if(bt.getName().contains("portA")) bt.setName(bt.getName().replace("portA_", "") + "_A") 
@@ -239,19 +241,21 @@ This function takes a no-argument function to be applied during compilation, and
        })
      }
 
-     // Execute the function renameIO after the creation of the component 
+     // コンポーネントの作成後に、renameIO 関数を実行します。 
      addPrePopTask(() => renameIO())
    }
 
-   // This code generate these names:
+   // このコードは、これらの名前を生成します：
    //    clk 
    //    cs_A, rwn_A, dIn_A, dOut_A
    //    cs_B, rwn_B, dIn_B, dOut_B
 
-Add RTL source
---------------
 
-With the function ``addRTLPath()`` you can associate your RTL sources with the blackbox. After the generation of your SpinalHDL code you can call the function ``mergeRTLSource`` to merge all of the sources together.
+RTL ソースを追加する
+----------------------
+
+``addRTLPath()`` 関数を使用すると、RTL ソースをブラックボックスに関連付けることができます。
+SpinalHDL コードを生成した後、 ``mergeRTLSource`` 関数を呼び出してすべてのソースを結合することができます。
 
 .. code-block:: scala
 
@@ -265,16 +269,16 @@ With the function ``addRTLPath()`` you can associate your RTL sources with the 
        val ready = out Bool()
      }
 
-     // Map the clk 
+     // クロックをマッピングします。
      mapCurrentClockDomain(io.clk)
 
-     // Remove io_ prefix 
+     // io_ プレフィックスを削除します。 
      noIoPrefix() 
 
-     // Add all rtl dependencies
-     addRTLPath("./rtl/RegisterBank.v")                         // Add a verilog file 
-     addRTLPath(s"./rtl/myDesign.vhd")                          // Add a vhdl file 
-     addRTLPath(s"${sys.env("MY_PROJECT")}/myTopLevel.vhd")     // Use an environement variable MY_PROJECT (System.getenv("MY_PROJECT"))
+     // すべての RTL 依存関係を追加します。
+     addRTLPath("./rtl/RegisterBank.v")                         // Verilog ファイルを追加します。 
+     addRTLPath(s"./rtl/myDesign.vhd")                          // VHDL ファイルを追加します。
+     addRTLPath(s"${sys.env("MY_PROJECT")}/myTopLevel.vhd")     // 環境変数 MY_PROJECT を使用します（System.getenv("MY_PROJECT")）。
    }
 
    ...
@@ -286,12 +290,12 @@ With the function ``addRTLPath()`` you can associate your RTL sources with the 
    }
 
    val report = SpinalVhdl(new TopLevel)
-   report.mergeRTLSource("mergeRTL") // Merge all rtl sources into mergeRTL.vhd and mergeRTL.v files
+   report.mergeRTLSource("mergeRTL") // すべての RTL ソースを mergeRTL.vhd と mergeRTL.v ファイルに結合します。
 
-VHDL - No numeric type
-----------------------
+VHDL - No numeric 型
+---------------------------
 
-If you want to use only ``std_logic_vector`` in your blackbox component, you can add the tag ``noNumericType`` to the blackbox.
+ブラックボックスコンポーネントで ``std_logic_vector`` のみを使用したい場合は、ブラックボックスにタグ ``noNumericType`` を追加できます。
 
 .. code-block:: scala
 
@@ -307,10 +311,10 @@ If you want to use only ``std_logic_vector`` in your blackbox component, you can
 
      noIoPrefix()
 
-     addTag(noNumericType)  // Only std_logic_vector
+     addTag(noNumericType)  // std_logic_vector のみ
    }
 
-The code above will generate the following VHDL:
+上記のコードは、次のVHDLを生成します：
 
 .. code-block:: vhdl
 

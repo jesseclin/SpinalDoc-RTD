@@ -1,73 +1,57 @@
 Parametrization
 ==================
 
-There are multiple aspects to parametrization :
+パラメータ化には複数の側面があります：
 
-- Providing and the management of, elaboration time parameters provided
-  to SpinalHDL during elaboration of the design
-- Using the parameter data to allow the designer to perform any kind
-  of hardware construction, configuration and interconnection task
-  needed in the design.  Such as optional component generation within
-  the hardware design.
+- スパイナル HDL の設計エラボレーション中に提供される、
+  および管理されるエラボレーション時間パラメータ
+- パラメータデータを使用して、設計者が設計に必要な任意の種類のハードウェア構築、
+  構成、および相互接続タスクを実行できるようにすること。ハードウェア設計内でのオプションのコンポーネント生成など。
 
-Parallels exist with the aims of HDL features such as Verilog module
-parameters and VHDL generics.  SpinalHDL brings a far richer and more
-powerful set of capabilities into this area with the additional
-protection of Scala type safety and SpinalHDL built in HDL design rule
-checking.
+Verilog モジュールパラメータや VHDL ジェネリックなどの HDL 機能の目標との類似点があります。
+SpinalHDL は、Scala の型安全性と SpinalHDLの 組み込み HDL 設計ルールチェックの追加保護を備えた、
+より豊富で強力な機能セットをこの領域にもたらします。
 
-The SpinalHDL mechanisms for parameterization of components is not built
-on top of any native HDL mechanism and so is not impeded by HDL language
-level/version support or restrictions about what can be achieved in hand
-written HDL.
+コンポーネントのパラメータ化のための SpinalHDL のメカニズムは、ネイティブ HDL メカニズムの上に構築されていないため、
+手書きの HDL で実現できることに関する HDL 言語レベル/バージョンのサポートや制限の影響を受けません。
 
-For readers looking to interoperate with parameterized Verilog or
-genericized VHDL using SpinalHDL, please see the section on :ref:`BlackBox <BlackBox>`
-IP for those scenarios your project requires.
+パラメータ化された Verilog やジェネリック化された VHDL との相互運用を望む読者は、
+プロジェクトが必要とするシナリオに関する :ref:`BlackBox <BlackBox>` IP のセクションを参照してください。
 
 
-
-Elaboration time parameters
+エラボレーション時間パラメータ
 ------------------------------------------
 
-You can use the whole Scala syntax to provide elaboration time parameters.
+エラボレーション時間パラメータを提供するために、Scala の完全な構文を使用できます。
 
-The whole syntax means you have the entire power and feature set of the
-Scala language at your disposal to solve parameterization requirements for
-your project at the level of complexity you choose.
+「完全な構文」とは、Scala 言語のすべての機能と機能セットを利用して、
+プロジェクトのパラメータ化要件を解決するための複雑さのレベルを選択できることを意味します。
 
-SpinalHDL does not place any opinionated restrictions on how to achieve
-your parameterization goals.  As such there are many Scala design patterns
-and a few SpinalHDL helpers that can be used to manage parameters that
-are suited to different parameter management scenarios.
+SpinalHDL は、パラメータ化の目標を達成する方法について、特定の意見を持つ制限を課しません。
+そのため、さまざまなパラメータ管理シナリオに適した多くの Scala デザインパターンと、
+いくつかの SpinalHDL ヘルパーが使用できます。
 
-Here are some examples and ideas of the possibilities:
+以下は、可能性のいくつかの例とアイデアです：
 
- * Hardwired code and constants (not strictly parameter management at all
-   but serves to hilight the most basic mechanism, a code change, not a
-   parameter data change)
- * Constant values provided from a companion object that are static
-   constants in Scala.
- * Values provided to Scala class constructor, often a ``case class`` that
-   causes Scala to capture those constructor argument values as constants.
- * Regular Scala flow-control syntax, not limited to but including
-   conditionals, looping, lambdas/monads, everything.
- * Config class pattern (examples exist in library items such as
-   UartCtrlConfig_, SpiMasterCtrlConfig)
- * Project defined 'Plugin' pattern (examples exist in the VexRiscV_ project
-   to configure the feature set the resulting CPU IP core is built with)
- * Values and information loaded from a file or network based source, using
-   standard Scala/JVM libraries and APIs.
- * `any mechanism you can create`
+- ハード配線されたコードと定数（厳密にはパラメータ管理ではなく、コードの変更であり、
+  パラメータデータの変更ではありません）
+- Scala の静的定数として提供されるコンパニオンオブジェクトからの定数値
+- Scala クラスのコンストラクタに提供される値、
+  通常は Scala にそれらのコンストラクタ引数値を定数としてキャプチャさせる ``case class``
+- 普通の Scala フロー制御構文。条件付き、ループ、ラムダ/モナド、その他
+- Config クラスパターン（UartCtrlConfig_、SpiMasterCtrlConfigなどのライブラリアイテムに例があります）
+- プロジェクトで定義された 'プラグイン' パターン（ VexRiscV_ プロジェクトには、
+  結果として得られるCPU IPコアの機能セットを構成するための例があります）
+- ファイルまたはネットワークベースのソースからロードされた値と情報。
+  標準の Scala/JVM ライブラリとAPIを使用します。
+- `作成できる任意のメカニズム`
 
-All of the mechanisms result in a change in resulting elaborated HDL output.
+これらのすべてのメカニズムにより、結果として生成される HDL 出力が変更されます。
 
-This could vary from a single constant value change all the way through to
-describing the entire bus and interconnection architecture of an entire SoC
-all without leaving the Scala programming paradigm.
+これは、単一の定数値の変更から始まり、Scala プログラミングパラダイムから離れることなく、
+SoC 全体のバスや相互接続アーキテクチャを記述するまでさまざまです。
 
-
-Here is an example of class parameters
+以下は、クラスパラメータの例です。
 
 .. code-block:: scala
 
@@ -80,72 +64,67 @@ Here is an example of class parameters
   case class MyComponent(width : Int) extends Component {
     val bus = MyBus(width)
   }
-  
-You can also use global variable defined in Scala objects (companion object
-pattern).
 
-A :ref:`ScopeProperty <scopeproperty>` can also be used for configuration.
+また、Scala オブジェクトで定義されたグローバル変数（companion object pattern）も使用できます。
 
-Optional hardware
+また、設定には :ref:`ScopeProperty <scopeproperty>` も使用できます。
+
+
+オプションのハードウェア
 ------------------------------------------
 
-So here there is more possibilities. 
+ここでは、より多くの可能性があります。
 
 .. _generate:
 
-For optional signal :
+オプションのシグナルの場合：
 
 .. code-block:: scala
 
   case class MyComponent(flag : Boolean) extends Component {
     val mySignal = flag generate (Bool())
-    // equivalent to "val mySignal = if (flag) Bool() else null"
+    // "val mySignal = if (flag) Bool() else null" と同等
   }
 
+``generate`` メソッドは、後に続く式をオプションの値として評価するメカニズムです。
+述語が true の場合、generate は指定された式を評価して結果を返し、それ以外の場合は null を返します。
 
-The ``generate`` method is a mechanism to evaluate the expression
-that follows for an optional value.  If the predicate is true,
-generate will evaluate the given expression and return the
-result, otherwise it returns null.
+これは、SpinalHDL のハードウェア記述をエラボレーション時の条件式を使用してパラメータ化する場合に使用されます。
+結果として生成される HDL に HDL 構造を出力するかどうかを決定します。 
+generate メソッドは、SpinalHDL のシンタックスシュガーと見なすことができ、言語の混乱を減らします。
 
-This may be used in cases to help parameterize the SpinalHDL hardware
-description using an elaboration-time conditional expression.  Causing HDL
-constructs to be emitted or not-emitted in the resulting HDL. The generate
-method can be seen as SpinalHDL syntatic sugar reducing language clutter.
-
-Project SpinalHDL code referencing ``mySignal`` would need to ensure it
-handles the possiblity of null gracefully.  This is usually not a problem
-as those parts of the design can also be omitted dependant on the ``flag``
-value.  Thus the feature of parameterizing this component is demonstrated.
+プロジェクト SpinalHDL コードで ``mySignal`` を参照する場合、null の可能性を適切に処理する必要があります。
+これは通常、設計のその部分も ``flag`` の値に応じて省略されるため、問題ありません。
+したがって、このコンポーネントのパラメータ化の機能が示されます。
 
 
-You can do the same in Bundle.
-    
-Note that you can also use scala Option.
+同じことが Bundle でもできます。
 
-If you want to disable the generation of a chunk of hardware : 
+また、scalaの Option も使用できます。
+
+ハードウェアの生成を無効にする場合：
 
 .. code-block:: scala
 
   case class MyComponent(flag : Boolean) extends Component {
     val myHardware = flag generate new Area {
-      //optional hardware here
+      //ここにオプションのハードウェア
     }
   }
 
-You can also use scala for loops :
+scala の for ループも使用できます：
 
 .. code-block:: scala
 
   case class MyComponent(amount : Int) extends Component {
     val myHardware = for(i <- 0 until amount) yield new Area {
-      // hardware here
+      // ハードウェア
     }
   }
-  
-So, you can extends those scala usages at elaboration time as much as you want, including using the whole scala collections (List, Set, Map, ...) 
-to build some data model and then converting them into hardware in a procedural way (ex iterating over those list elements).
 
+したがって、エラボレーション時にこれらの scala の使用法を拡張することができ、
+（List、Set、Mapなどの）scala コレクション全体を使用してデータモデルを構築し、
+それらを手続き的な方法でハードウェアに変換することができます。
 
 .. _UartCtrlConfig: https://spinalhdl.github.io/SpinalDoc-RTD/master/SpinalHDL/Examples/Intermediates%20ones/uart.html#controller-construction-parameters
 .. _VexRiscV: https://github.com/SpinalHDL/VexRiscv#plugins
