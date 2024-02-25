@@ -1,138 +1,137 @@
 .. _Reg:
 
-Registers
+レジスタ
 =========
 
-Creating registers in SpinalHDL is very different than in VHDL or Verilog.
+SpinalHDL でのレジスタの作成は、VHDL や Verilogとは非常に異なります。
 
-In Spinal, there are no process/always blocks. Registers are explicitly defined at declaration.
-This difference from traditional event-driven HDL has a big impact:
+Spinal では、プロセス/alwaysブロックはありません。レジスタは宣言時に明示的に定義されます。
+これは、従来のイベント駆動型HDLとの違いが大きな影響を与えます：
 
-* You can assign registers and wires in the same scope, meaning the code doesn't need to be split between process/always blocks
-* It make things much more flexible (see :ref:`Functions <function>`)
+* レジスタとワイヤを同じスコープで割り当てることができるため、コードをプロセス/alwaysブロックに分割する必要がありません
+* これにより、柔軟性が大幅に向上します（:ref:`関数 <function>` を参照）
 
-Clocks and resets are handled separately, see the :ref:`Clock domain <clock_domain>` chapter for details.
+クロックとリセットは別々に処理されます。詳細については、:ref:`クロックドメイン <clock_domain>` の章を参照してください。
 
-Instantiation
--------------
+インスタンス化
+----------------
 
-There are 4 ways to instantiate a register:
+レジスタをインスタンス化する方法は4つあります：
+
 
 .. list-table::
    :header-rows: 1
    :widths: 50 55
 
-   * - Syntax
-     - Description
+   * - 構文
+     - 説明
    * - ``Reg(type : Data)``
-     - Register of the given type
+     - 指定された型のレジスタ
    * - ``RegInit(resetValue : Data)``
-     - Register loaded with the given ``resetValue`` when a reset occurs
+     - リセットが発生したときに指定された ``resetValue`` で読み込まれるレジスタ
    * - ``RegNext(nextValue : Data)``
-     - Register that samples the given ``nextValue`` each cycle
+     - 指定された ``nextValue`` を各サイクルでサンプリングするレジスタ
    * - ``RegNextWhen(nextValue : Data, cond : Bool)``
-     - Register that samples the given ``nextValue`` when a condition occurs
+     - 条件が発生したときに指定された ``nextValue`` をサンプリングするレジスタ
 
-Here is an example declaring some registers:
+以下は、いくつかのレジスタを宣言する例です：
 
 .. code-block:: scala
 
-   // UInt register of 4 bits
+   // 4 ビットの UInt レジスタ
    val reg1 = Reg(UInt(4 bits))
 
-   // Register that updates itself every cycle with a sample of reg1 incremented by 1
+   // reg1 を 1 つ増やしたものをサンプリングして、毎サイクル更新されるレジスタ
    val reg2 = RegNext(reg1 + 1)
 
-   // UInt register of 4 bits initialized with 0 when the reset occurs
+   // リセットが発生したときに 0 で初期化される 4 ビットの UInt レジスタ
    val reg3 = RegInit(U"0000")
    reg3 := reg2
    when(reg2 === 5) {
      reg3 := 0xF
    }
 
-   // Register that samples reg3 when cond is True
+   // cond が True のときに reg3 をサンプリングするレジスタ
    val reg4 = RegNextWhen(reg3, cond)
 
-The code above will infer the following logic:
+上記のコードは、次のロジックを推論します：
 
 .. image:: /asset/picture/register.svg
    :align: center
 
 .. note::
-   The ``reg3`` example above shows how you can assign the value of a ``RegInit`` register.
-   It's possible to use the same syntax to assign to the other register types as well (``Reg``, ``RegNext``, ``RegNextWhen``).
-   Just like in combinational assignments, the rule is 'Last assignment wins', but if no assignment is done, the register keeps its value.
-   If the Reg is declared in a design and does not have suitable assignment and consumption it is likely to be pruned (removed from design) at some point by EDA flows after being deemed unnecessary.
+   上記の ``reg3`` の例は、 ``RegInit`` レジスタの値を割り当てる方法を示しています。
+   他のレジスタタイプ（ ``Reg``、 ``RegNext``、 ``RegNextWhen``）にも同じ構文を使用することができます。
+   組み合わせ的な割り当てと同様に、「最後の割り当てが優先されます」が、割り当てが行われない場合、レジスタはその値を保持します。
+   Reg が設計で宣言されており、適切な割り当てと消費が行われていない場合、EDA フローによって不要と見なされ、いつか設計から削除される可能性があります。
 
 
 .. _RegNext:
 
-Also, ``RegNext`` is an abstraction which is built over the ``Reg`` syntax. The two following sequences of code are strictly equivalent:
+また、 ``RegNext`` は、 ``Reg`` 構文の上に構築された抽象化です。次の2つのコードシーケンスは厳密に等価です:
 
 .. code-block:: scala
 
-   // Standard way
+   // 標準的な方法
    val something = Bool()
    val value = Reg(Bool())
    value := something
 
-   // Short way
+   // 短縮形
    val something = Bool()
    val value = RegNext(something)
 
 
-It is possible to have multiple options at the same time in other ways and so
-slightly more advanced compositions built on top of the basic understand of
-the above:
+次のような他の方法でも、同時に複数のオプションを持つことができます。
+したがって、上記の基本的な理解をベースにしたやや高度な構成が構築されます：
 
 .. code-block:: scala
 
-   // UInt register of 6 bits (initialized with 42 when the reset occurs)
+   // リセット時に 42 で初期化された 6 ビットの UInt レジスタ
    val reg1 = Reg(UInt(6 bits)) init(42)
 
-   // Register that samples reg1 each cycle (initialized with 0 when the reset occurs)
-   // using Scala named parameter argument format
+   // 各サイクルで reg1 をサンプリングするレジスタ（リセット時に 0 で初期化されます）
+   // Scala の名前付きパラメータ引数形式を使用
    val reg2 = RegNext(reg1, init=0)
 
-   // Register that has multiple features combined
+   // 複数の機能を組み合わせたレジスタ
 
-   // My register enable signal
+   // 自身のレジスタ有効信号
    val reg3Enable = Bool()
-   // UInt register of 6 bits (inferred from reg1 type)
-   //   assignment preconfigured to update from reg1
-   //   only updated when reg3Enable is set
-   //   initialized with 99 when the reset occurs
+   // 6 ビットの UInt レジスタ（reg1 の型から推論されます）
+   //   reg1 からの更新を事前に設定された割り当てで
+   //   reg3Enable が設定されている場合のみ更新されます
+   //   リセット時に 99 で初期化されます
    val reg3 = RegNextWhen(reg1, reg3Enable, U(99))
    // when(reg3Enable) {
-   //   reg3 := reg1; // this expression is implied in the constructor use case
+   //   reg3 := reg1; // この式はコンストラクタの使用ケースで暗黙的に意味されています
    // }
 
-   when(cond2) {      // this is a valid assignment, will take priority when executed
-      reg3 := U(0)    //  (due to last assignment wins rule), assignment does not require
-   }                  //  reg3Enable condition, you would use `when(cond2 & reg3Enable)` for that
+   when(cond2) {      // これは有効な割り当てで、実行時に優先されます
+      reg3 := U(0)    //  (最後の割り当てが勝つルールによる)、割り当てには
+   }                  //  reg3Enable 条件が必要ありません、それには `when(cond2 & reg3Enable)` を使用します
 
-   // UInt register of 8 bits, initialized with 99 when the reset occurs
+   // リセット時に 99 で初期化された 8 ビットの UInt レジスタ
    val reg4 = Reg(UInt(8 bits), U(99))
-   // My register enable signal
+   // 自身のレジスタ有効信号
    val reg4Enable = Bool()
-   // no implied assignments exist, you must use enable explicitly as necessary
+   // 暗黙の割り当ては存在せず、必要に応じて明示的に有効にする必要があります
    when(reg4Enable) {
       reg4 := newValue
    }
 
+リセット値
+----------------
 
-Reset value
------------
-
-In addition to the ``RegInit(value : Data)`` syntax which directly creates the register with a reset value,
-you can also set the reset value by calling the ``init(value : Data)`` function on the register.
+``RegInit(value: Data)`` 構文に加えて、リセット値を直接指定してレジスタを作成する方法として、
+レジスタに ``init(value: Data)`` 関数を呼び出してリセット値を設定することもできます。
 
 .. code-block:: scala
 
-   // UInt register of 4 bits initialized with 0 when the reset occurs
+   // リセット時に 0 で初期化された 4 ビットの UInt レジスタ
    val reg1 = Reg(UInt(4 bits)) init(0)
 
-If you have a register containing a Bundle, you can use the ``init`` function on each element of the Bundle.
+Bundle を含むレジスタがある場合、Bundle の各要素に ``init`` 関数を使用できます。
 
 .. code-block:: scala
 
@@ -142,29 +141,31 @@ If you have a register containing a Bundle, you can use the ``init`` function on
    }
 
    val reg = Reg(ValidRGB())
-   reg.valid init(False)  // Only the valid if that register bundle will have a reset value.
+   reg.valid init(False)  // そのレジスタのバンドルがリセット値を持つ場合は、valid のみがリセットされます。
 
-Initialization value for simulation purposes
---------------------------------------------
+シミュレーション目的の初期化値
+---------------------------------
 
-For registers that don't need a reset value in RTL, but need an initialization value for simulation (to avoid x-propagation), you can ask for a random initialization value by calling the ``randBoot()`` function.
+RTL でリセット値が必要ないが、シミュレーションでの初期化値が必要なレジスタ（X-伝播を避けるため）については、 
+``randBoot()`` 関数を呼び出してランダムな初期化値を要求できます。
 
 .. code-block:: scala
 
-   // UInt register of 4 bits initialized with a random value
+   // ランダムな値で初期化された 4 ビットの UInt レジスタ
    val reg1 = Reg(UInt(4 bits)) randBoot()
 
-Register vectors
-----------------
 
-As for wires, it is possible to define a vector of registers with ``Vec``.
+レジスタベクトル
+-----------------
+
+ワイヤーと同様に、 ``Vec`` を使用してレジスタのベクトルを定義することができます。
 
 .. code-block:: scala
    
    val vecReg1 = Vec(Reg(UInt(8 bits)), 4)
    val vecReg2 = Vec.fill(8)(Reg(Bool()))
 
-Initialization can be done with the ``init`` method as usual, which can be combined with the ``foreach`` iteration on the registers.
+通常通り、初期化は ``init`` メソッドで行うことができます。これは、レジスタの ``foreach`` イテレーションと組み合わせることができます。
 
 .. code-block:: scala
 
@@ -172,7 +173,7 @@ Initialization can be done with the ``init`` method as usual, which can be combi
    val vecReg2 = Vec.fill(8)(Reg(Bool()))
    vecReg2.foreach(_ init(False))
 
-In case where the initialization must be deferred since the init value is not known, use a function as in the example below.
+初期化の値がわからない場合に初期化を遅延させる必要がある場合は、以下の例のように関数を使用します。
 
 .. code-block:: scala
 
@@ -204,15 +205,15 @@ In case where the initialization must be deferred since the init value is not kn
       val sr = ShiftRegister(Flow(UInt(8 bits)), 4, SRConsumer.initIdleFlow[UInt])
    }
 
-Transforming a wire into a register
+ワイヤをレジスタに変換する
 -----------------------------------
 
-Sometimes it is useful to transform an existing wire into a register. For
-instance, when you are using a Bundle, if you want some outputs of the bundle to
-be registers, you might prefer to write ``io.myBundle.PORT := newValue`` without
-declaring registers with ``val PORT = Reg(...)`` and connecting their output to
-the port with ``io.myBundle.PORT := PORT``. To do this, you just need to use
-``.setAsReg()`` on the ports you want to control as registers:
+既存のワイヤをレジスタに変換することが便利な場合があります。
+例えば、Bundleを使用していて、Bundleの出力の一部をレジスタにしたければ、
+``val PORT = Reg(...)`` でレジスタを宣言し、
+その出力をポートに ``io.myBundle.PORT := PORT``で接続するのではなく、
+``io.myBundle.PORT := newValue`` と書くほうが簡潔です。
+そのためには、レジスタとして制御したいポートに ``.setAsReg()`` を使用するだけです:
 
 .. code-block:: scala
 
@@ -227,15 +228,13 @@ the port with ``io.myBundle.PORT := PORT``. To do this, you just need to use
       io.apb.PWRITE := True
    }
 
-Notice in the code above that you can also specify an initialization value.
+上記のコードで初期化値を指定することもできることに注意してください。
 
 .. note::
 
-   The register is created in the clock domain of the wire, and does not depend
-   on the place where ``.setAsReg()`` is used.
+   レジスタはワイヤのクロックドメインで作成され、 ``.setAsReg()`` が使用される場所に依存しません。
 
-   In the example above, the wire is defined in the ``io`` Bundle, in the same
-   clock domain as the component. Even if ``io.apb.PADDR.setAsReg()`` was
-   written in a ``ClockingArea`` with a different clock domain, the register
-   would use the clock domain of the component and not the one of the
-   ``ClockingArea``.
+   上記の例では、ワイヤがコンポーネントと同じクロックドメインの ``io`` バンドルで定義されています。
+   たとえ ``io.apb.PADDR.setAsReg()`` が異なるクロックドメインを持つ ``ClockingArea`` 内に書かれていても、
+   レジスタはコンポーネントのクロックドメインを使用し、 ``ClockingArea`` のものではありません。
+

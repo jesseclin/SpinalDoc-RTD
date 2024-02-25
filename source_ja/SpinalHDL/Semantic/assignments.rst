@@ -1,50 +1,49 @@
 Assignments
 ===========
 
-There are multiple assignment operators:
+複数の代入演算子があります：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - Symbol
-     - Description
+   * - シンボル
+     - 説明
    * - ``:=``
-     - Standard assignment, equivalent to ``<=`` in VHDL/Verilog.
+     - 標準の代入演算子で、VHDL/Verilogの ``<=`` と同等です。
    * - ``\=``
-     - Equivalent to ``:=`` in VHDL and ``=`` in Verilog. The value is updated instantly in-place. Only works with combinational signals, does not work with registers.
+     - VHDLの ``:=`` やVerilogの ``=`` と同等です。値は即座にその場で更新されます。組み合わせ信号にのみ機能し、レジスタでは機能しません。 
    * - ``<>``
-     - Automatic connection between 2 signals or two bundles of the same type. Direction is inferred by using signal direction (in/out). (Similar behavior to ``:=``\ )
+     - 同じ型の2つの信号または2つのバンドルの間の自動接続。信号の方向（入力/出力）を使用して方向が推論されます。（ ``:=``\ と同様の動作）
 
-When muxing (for instance using ``when``, see :doc:`when_switch`.), the last
-valid standard assignment ``:=`` wins. Else, assigning twice to the same assignee
-from the same scope results in an assignment overlap.  SpinalHDL will assume
-this is a unintentional design error by default and halt elaboration with error.
-For special use-cases assignment overlap can be programatically permitted on a case by case basis.
-(see :doc:`../Design errors/assignment_overlap`).
+マルチプレクサ（たとえば、 ``when`` を使用する場合は、:doc:`when_switch` を参照してください）の際に、
+最後に有効な標準の代入 ``:=`` が勝利します。それ以外の場合、同じスコープから同じ代入先に2回代入すると、
+代入の重複が発生します。SpinalHDL は、これが意図しない設計エラーであるとデフォルトで仮定し、
+エラーでエラボレーションを停止します。特別なユースケースでは、代入の重複をプログラムでケースバイケースで許可することができます
+（:doc:`../Design errors/assignment_overlap` を参照）。
 
 .. code-block:: scala
 
    val a, b, c = UInt(4 bits)
    a := 0
    b := a
-   //a := 1 // this would cause an `assignment overlap` error,
-            // if manually overridden the assignment would take assignment priority
+   //a := 1 // これにより、手動で代入がオーバーライドされる場合、代入が優先されます。
+            // これは `assignment overlap` エラーを引き起こします。
    c := a
 
    var x = UInt(4 bits)
    val y, z = UInt(4 bits)
    x := 0
-   y := x      // y read x with the value 0
+   y := x      // y は値 0 で x を読み取りました
    x \= x + 1
-   z := x      // z read x with the value 1
+   z := x      // z は値 1 で x を読み取りました
 
-   // Automatic connection between two UART interfaces.
+   // UARTインターフェース間の自動接続。
    uartCtrl.io.uart <> io.uart
 
-It also supports Bundle assignment (convert all bit signals into a single bit-bus of suitable width of type Bits, to then use that
-wider form in an assignment expression).  Bundle multiple signals together using ``()`` (Scala Tuple syntax) on both the left hand
-side and right hand side of an assignment expression.
+それは Bundle 割り当てもサポートしています（すべてのビット信号を適切な幅の Bits 型の単一のビットバスに変換し、
+その広い形式を割り当て式で使用します）。 割り当て式の左側と右側の両方で、Scala のタプル構文の ``()`` を使用して複数の信号をまとめます。
+
 
 .. code-block:: scala
 
@@ -56,8 +55,11 @@ side and right hand side of an assignment expression.
 
    (a, b, c) := B(0, 12 bits)
    (a, b, c) := d.asBits
-   (a, b, c) := (e, f).asBits           // both sides
-   g         := (a, b, c, e, f).asBits  // and on the right hand side
+   (a, b, c) := (e, f).asBits           // 両側
+   g         := (a, b, c, e, f).asBits  // 右側
+
+SpinalHDL では、信号の性質（組み合わせ/順次）は割り当て方ではなく、宣言で定義されることが重要です。
+すべてのデータ型インスタンスは組み合わせ信号を定義し、 ``Reg(...)`` でラップされたデータ型インスタンスは順次（登録）信号を定義します。
 
 It is important to understand that in SpinalHDL, the nature of a signal (combinational/sequential) is defined in its declaration, not by the way it is assigned.
 All datatype instances will define a combinational signal, while a datatype instance wrapped with ``Reg(...)`` will define a sequential (registered) signal.
@@ -69,55 +71,59 @@ All datatype instances will define a combinational signal, while a datatype inst
    val c = Reg(UInt(4 bits)) init(0) // Define a registered signal which is
                                      //  set to 0 when a reset occurs
 
-Width checking
+
+幅チェック
 --------------
 
-SpinalHDL checks that the bit count of the left side and the right side of an assignment matches. There are multiple ways to adapt the width of a given BitVector (``Bits``, ``UInt``, ``SInt``):
+SpinalHDL は、代入文の左辺と右辺のビット数が一致するかどうかをチェックします。
+指定されたBitVector（ ``Bits`` 、 ``UInt`` 、 ``SInt`` ）の幅を調整するための複数の方法があります：
 
 .. list-table::
    :header-rows: 1
    :widths: 3 5
 
-   * - Resizing techniques
-     - Description
+   * - リサイズ技術
+     - 説明
    * - x := y.resized
-     - Assign x with a resized copy of y, size inferred from x.
+     - x に、y のサイズから推定されたリサイズされたコピーを割り当てます。
    * - x := y.resize(newWidth)
-     - Assign x with a resized copy of y :code:`newWidth` bits wide.
+     - x に、y のリサイズされたコピーを、 :code:`newWidth` ビットの幅で割り当てます。
    * - x := y.resizeLeft(newWidth)
-     - Assign x with a resized copy of y :code:`newWidth` bits wide. Pads at the LSB if needed.
+     - x に、y のリサイズされたコピーを、:code:`newWidth` ビットの幅で割り当てます。必要に応じて、LSBでパディングします。
 
+すべてのリサイズメソッドは、結果の幅が、元の幅の `y` に比べて広くなるか狭くなる可能性があります。
+幅が広がる場合、余分なビットはゼロでパディングされます。
 
-All resize methods may cause the resulting width to be wider or narrower than the
-original width of :code:`y`. When widening occurs the extra bits are padded
-with zeros.
+``x.resized`` による推論変換は、代入式の左側のターゲット幅に基づき、 ``y.resize(someWidth)`` と同じ意味論に従います。
+式 ``x := y.resized`` は、 ``x := y.resize(x.getBitsWidth bits)`` と同等です。
 
-The inferred conversion with ``x.resized`` is based on the target width on the left hand side of
-the assignment expression being resolved and obeys the same semantics as ``y.resize(someWidth)``.
-The expression ``x := y.resized`` is equivalent to ``x := y.resize(x.getBitsWidth bits)``.
+例のコードスニペットでは代入文の使用が示されていますが、リサイズメソッドのファミリーは、通常の Scala メソッドと同様にチェーンすることができます。
 
-While the example code snippets show the use of an assignment statement, the
-resize family of methods can be chained like any ordinary Scala method.
-
-There is one case where Spinal automatically resizes a value:
+Spinal が値を自動的にリサイズするケースが1つあります：
 
 .. code-block:: scala
 
-   // U(3) creates an UInt of 2 bits, which doesn't match the left side (8 bits)
+   // U(3) は 2 ビットの UInt を生成しますが、左側（8 ビット）と一致しません
    myUIntOf_8bits := U(3)
 
-Because ``U(3)`` is a "weak" bit count inferred signal, SpinalHDL widens it automatically.
-This can be considered to be functionally equivalent to ``U(3, 2 bits).resized``
-However rest reassured SpinalHDL will do the correct thing and continue to flag an error
-if the scenario would require narrowing. An error is reported if the literal required 9
-bits (e.g. ``U(0x100)``) when trying to assign into ``myUIntOf_8bits``.
+``U(3)`` は「弱い」ビット数推論信号であるため、SpinalHDL は自動的に幅を広げます。
+これは、 ``U(3, 2 bits).resized`` と機能的に等価と見なすことができます。
+ただし、SpinalHDL は必要な場合には適切な動作を行い、シナリオが縮小を必要とする場合にはエラーを引き続き報告します。
+例えば、リテラルが 9 ビットを必要とする場合（例: ``U(0x100)`` ）には、 ``myUIntOf_8bits`` に代入しようとするとエラーが報告されます。
 
 
-Combinatorial loops
+組み合わせループ
 -------------------
 
-SpinalHDL checks that there are no combinatorial loops (latches) in your design.
-If one is detected, it raises an error and SpinalHDL will print the path of the loop.
+SpinalHDL は、設計に組み合わせループ（ラッチ）がないことをチェックします。
+もし組み合わせループが検出された場合、エラーが発生し、SpinalHDL はループのパスを出力します。
+
+
+CombInit
+--------
+
+``CombInit`` は、信号とその現在の組み合わせ割り当てをコピーするために使用できます。
+主なユースケースは、後でコピーを上書きできるようにすることで、元の信号に影響を与えないようにすることです。
 
 CombInit
 --------
@@ -132,21 +138,20 @@ CombInit
     val b = a
     when(sel) {
         b := 2
-        // At this point, a and b are evaluated to 2: they reference the same signal
+        // この時点で、a と b はそれぞれ2に評価されます。つまり、同じ信号を参照しています。
     }
 
     val c = UInt(8 bits)
     c := 1
 
     val d = CombInit(c)
-    // Here c and d are evaluated to 1
+    // ここでは、c と d はそれぞれ1に評価されます。
     when(sel) {
         d := 2
-        // At this point c === 1 and d === 2.
+        // この時点で、c === 1 and d === 2.
     }
 
-
-If we look at the resulting Verilog, ``b`` is not present. Since it is a copy of ``a`` by reference, these variables designate the same Verilog wire.
+結果の Verilog を見ると、 ``b`` は存在しません。 ``b`` は参照によって ``a`` のコピーなので、これらの変数は同じ Verilog の wire を指定します。
 
 .. code-block:: verilog
 
@@ -165,11 +170,11 @@ If we look at the resulting Verilog, ``b`` is not present. Since it is a copy of
       end
     end
 
-``CombInit`` is particularly helpful in helper functions to ensure that the returned value is not referencing an input.
+``CombInit`` は、返される値が入力を参照していないことを確認するために、特にヘルパー関数で役立ちます。
 
 .. code-block:: scala
 
-    // note that condition is an elaboration time constant
+    // 注意: condition は、論理合成時(elaboration time)の定数です
     def invertedIf(b: Bits, condition: Boolean): Bits = if(condition) { ~b } else { CombInit(b) }
 
     val a2 = invertedIf(a1, c)
@@ -178,6 +183,5 @@ If we look at the resulting Verilog, ``b`` is not present. Since it is a copy of
        a2 := 0
     }
 
-Without ``CombInit``, if ``c`` == false (but not if ``c`` == true), ``a1`` and ``a2`` reference the same signal and the zero assignment is also applied to ``a1``.
-With ``CombInit`` we have a coherent behaviour whatever the ``c`` value.
-
+``CombInit`` なしでは、もし ``c``が false の場合（ただし、 ``c``が true の場合は除く）、 ``a1``と ``a2`` は同じ信号を参照し、ゼロの代入も ``a1`` に適用されます。
+``CombInit`` を使用すると、 ``c`` の値に関係なく、一貫した動作が得られます。

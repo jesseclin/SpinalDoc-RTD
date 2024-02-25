@@ -1,50 +1,52 @@
 RAM/ROM Memory
 ==============
 
-To create a memory in SpinalHDL, the ``Mem`` class should be used.
-It allows you to define a memory and add read and write ports to it.
+SpinalHDL でメモリを作成するには、 ``Mem`` クラスを使用します。
+これにより、メモリを定義し、読み取りポートと書き込みポートを追加できます。
 
-The following table shows how to instantiate a memory:
+次の表は、メモリをインスタンス化する方法を示しています：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1
 
-   * - Syntax
-     - Description
+   * - 構文
+     - 説明
    * - ``Mem(type : Data, size : Int)``
-     - Create a RAM
+     - RAM を作成します
    * - ``Mem(type : Data, initialContent : Array[Data])``
-     - Create a ROM. If your target is an FPGA, because the memory can be inferred as a block ram, you can still create write ports on it.
+     - ROM を作成します。FPGA を対象とする場合、メモリはブロック RAM として推論されるため、それに書き込みポートを作成することができます。
 
 
 .. note::
-   If you want to define a ROM, elements of the ``initialContent`` array should only be literal values (no operator, no resize functions). There is an example :ref:`here <sinus_rom>`.
-
-.. note::
-   To give a RAM initial values, you can also use the ``init`` function.
+   ROM を定義する場合、 ``initialContent`` 配列の要素はリテラル値のみである必要があります（演算子やリサイズ関数は含まれません）。例はこちらを参照してください。
    
 .. note::
-   Write mask width is flexible, and subdivide the memory word in as many slices of equal width as the width of the mask. 
-   For instance if you have a 32 bits memory word and provide a 4 bits mask then it will be a byte mask. If you provide a as many mask bits than you have word bits, then it is a bit mask.
-
+   RAM に初期値を与えるには、 ``init`` 関数を使用することもできます。
+   
 .. note::
-   Manipulation of ``Mem`` is possible in simulation, see section :ref:`Load and Store of Memory in Simulation <simulation_of_memory>`.
+   ライトマスクの幅は柔軟で、メモリワードをマスクの幅と同じ幅のスライスに分割します。
+   たとえば、32ビットのメモリワードがある場合、4ビットのマスクが提供されると、バイトマスクになります。
+   ワードビット数と同じだけのマスクビットが提供されると、ビットマスクになります。
+   
+.. note::
+   ``Mem`` の操作はシミュレーション中に可能です。詳細については、セクション :ref:`シミュレーションにおけるメモリの読み込みと書き込み<simulation_of_memory>`
+   を参照してください。
 
-The following table show how to add access ports on a memory :
+以下の表は、メモリにアクセスポートを追加する方法を示しています：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 30 1
 
-   * - Syntax
-     - Description
-     - Return
+   * - 構文
+     - 説明
+     - 戻り値
    * - mem(address) := data
-     - Synchronous write
+     - 同期書き込み
      - 
    * - mem(x)
-     - Asynchronous read
+     - 非同期読み取り
      - T
    * - | mem.write(
        |  address
@@ -52,14 +54,14 @@ The following table show how to add access ports on a memory :
        |  [enable]
        |  [mask]
        | )
-     - | Synchronous write with an optional mask.
-       | If no enable is specified, it's automatically inferred from the conditional scope where this function is called
+     - | オプションのマスク付き同期書き込み。
+       | ``enable`` が指定されていない場合、この関数が呼び出される条件スコープから自動的に推論されます。
      - 
    * - | mem.readAsync(
        |  address
        |  [readUnderWrite]
        | )
-     - Asynchronous read with an optional read-under-write policy
+     - オプションの read-under-write ポリシーを持つ非同期読み込み
      - T
    * - | mem.readSync(
        |  address
@@ -67,7 +69,7 @@ The following table show how to add access ports on a memory :
        |  [readUnderWrite]
        |  [clockCrossing]
        | )
-     - Synchronous read with an optional enable, read-under-write policy, and ``clockCrossing`` mode
+     - オプションの有効、 read-under-write ポリシー、および clockCrossing モードを持つ同期読み込み
      - T
    * - | mem.readWriteSync(
        |  address
@@ -78,19 +80,20 @@ The following table show how to add access ports on a memory :
        |  [readUnderWrite]
        |  [clockCrossing]
        | )
-     - | Infer a read/write port.
-       | ``data`` is written when ``enable && write``.
-       | Return the read data, the read occurs when ``enable`` is true
+     - | 読み書きポートを推論します。
+       | ``data`` は、 ``enable && write`` のときに書き込まれます。
+       | ``enable`` が true のときに読み取りが行われ、読み取りデータを返します。 
      - T
 
 
 .. note::
-   If for some reason you need a specific memory port which is not implemented in Spinal, you can always abstract over your memory by specifying a BlackBox for it.
-
+   もし Spinal に実装されていない特定のメモリポートが必要な場合は、そのメモリを BlackBox として指定することで抽象化することができます。
+   
 .. important::
-   Memory ports in SpinalHDL are not inferred, but are explicitly defined. You should not use coding templates like in VHDL/Verilog to help the synthesis tool to infer memory.
+   SpinalHDLにおけるメモリポートは暗黙的には推論されず、明示的に定義されます。
+   VHDL や Verilog のようなコーディングテンプレートを使用して、合成ツールがメモリを推論するのを支援すべきではありません。
 
-Here is a example which infers a simple dual port ram (32 bits * 256):
+以下は、単純なデュアルポートRAM（ 32 ビット × 256 ）を推論する例です：   
 
 .. code-block:: scala
 
@@ -106,11 +109,11 @@ Here is a example which infers a simple dual port ram (32 bits * 256):
      address = io.readAddress
    )
 
+同期イネーブルの奇妙な動作
+-----------------------------
 
-Synchronous enable quirk
-------------------------
-
-When enable signals are used in a block guarded by a conditional block like `when`, only the enable signal will be generated as the access condition: the `when` condition is ignored.
+イネーブル信号が `when` のような条件付きブロックで使用される場合、
+アクセス条件として生成されるのはイネーブル信号のみであり、 `when` の条件は無視されます。
 
 .. code-block:: scala
 
@@ -119,59 +122,60 @@ When enable signals are used in a block guarded by a conditional block like `whe
       io.rdata := rom.readSync(io.addr, io.rdEna)
     }
 
-
-In the example above the condition `cond` will not be elaborated.
-Prefer to include the condition `cond` in the enable signal directly as below.
+上記の例では、条件 `cond` は詳細化されません。
+以下のように、条件 `cond` を直接イネーブル信号に含めることを推奨します。
 
 .. code-block:: scala
 
     io.rdata := rom.readSync(io.addr, io.rdEna & cond)
 
-Read-under-write policy
------------------------
+Read-under-write ポリシー
+--------------------------------
 
-This policy specifies how a read is affected when a write occurs in the same cycle to the same address.
+このポリシーは、同じアドレスに同じサイクルで書き込みが行われた場合に、読み取りがどのように影響を受けるかを指定します。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 3
 
-   * - Kinds
-     - Description
+   * - 種類
+     - 説明
    * - ``dontCare``
-     - Don't care about the read value when the case occurs
+     - その場合に読み取り値を気にしない
    * - ``readFirst``
-     - The read will get the old value (before the write)
+     - 読み取りは古い値（書き込み前の値）を取得します。
    * - ``writeFirst``
-     - The read will get the new value (provided by the write)
+     - 読み取りは新しい値（書き込みによって提供された値）を取得します。
 
 
 .. important::
-   The generated VHDL/Verilog is always in the ``readFirst`` mode, which is compatible with ``dontCare`` but not with ``writeFirst``. To generate a design that contains this kind of feature, you need to enable :ref:`automatic memory blackboxing <automatic_memory_blackboxing>`.
+   生成される VHDL/Verilog は常に ``readFirst`` モードであり、これは ``dontCare`` と互換性がありますが、
+   ``writeFirst`` とは互換性がありません。 ``writeFirst`` を含むデザインを生成するには、
+   :ref:`automatic memory blackboxing <automatic_memory_blackboxing>` を有効にする必要があります。
 
-Mixed-width ram
+混合幅 RAM
 ---------------
 
-You can specify ports that access the memory with a width that is a power of two fraction of the memory width using these functions:
+これらの関数を使用して、メモリにアクセスするポートを、メモリ幅の2の累乗分数の幅で指定できます：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - Syntax
-     - Description
+   * - 構文
+     - 説明
    * - | mem.writeMixedWidth(
        |  address
        |  data
        |  [readUnderWrite]
        | )
-     - Similar to ``mem.write``
+     - ``mem.write`` と同様
    * - | mem.readAsyncMixedWidth(
        |  address
        |  data
        |  [readUnderWrite]
        | )
-     - Similar to ``mem.readAsync``, but in place of returning the read value, it drives the signal/object given as the ``data`` argument
+     - ``mem.readAsync`` と同様ですが、読み取った値を返す代わりに、 ``data`` 引数として与えられたシグナル/オブジェクトを駆動します。
    * - | mem.readSyncMixedWidth(
        |  address
        |  data
@@ -179,7 +183,7 @@ You can specify ports that access the memory with a width that is a power of two
        |  [readUnderWrite]
        |  [clockCrossing]
        | )
-     - Similar to ``mem.readSync``, but in place of returning the read value, it drives the signal/object given as the ``data`` argument
+     - ``mem.readSync`` と同様ですが、読み取った値を返す代わりに、 ``data`` 引数として与えられたシグナル/オブジェクトを駆動します。
    * - | mem.readWriteSyncMixedWidth(
        |  address
        |  data
@@ -189,20 +193,25 @@ You can specify ports that access the memory with a width that is a power of two
        |  [readUnderWrite]
        |  [clockCrossing]
        | )
-     - Equivalent to ``mem.readWriteSync``
+     - ``mem.readWriteSync`` と同等です。
 
 
 .. important::
-   As for read-under-write policy, to use this feature you need to enable :ref:`automatic memory blackboxing <automatic_memory_blackboxing>`, because there is no universal VHDL/Verilog language template to infer mixed-width ram.
-
+   読み取り-書き込みポリシーの場合、この機能を使用するには、:ref:`自動メモリーブラックボックス化 <automatic_memory_blackboxing>` を有効にする必要があります。
+   なぜなら、混合幅 RAM を推論するための普遍的な VHDL/Verilog 言語テンプレートがないからです。
+   
 .. _automatic_memory_blackboxing:
 
-Automatic blackboxing
----------------------
+自動ブラックボックス化
+-------------------------
 
-Because it's impossible to infer all ram kinds by using regular VHDL/Verilog, SpinalHDL integrates an optional automatic blackboxing system. This system looks at all memories present in your RTL netlist and replaces them with blackboxes. Then the generated code will rely on third party IP to provide the memory features, such as the read-during-write policy and mixed-width ports.
+通常の VHDL/Verilog を使用してすべての RAM 種類を推論することは不可能です。
+そのため、SpinalHDL にはオプションの自動ブラックボックス化システムが統合されています。
+このシステムは、RTL ネットリストに存在するすべてのメモリを調べ、それらをブラックボックスで置き換えます。
+その後、生成されたコードは、メモリの機能（読み書き中の読み取りポリシーや混合幅ポートなど）を提供するために、
+サードパーティの IP に依存します。
 
-Here is an example of how to enable blackboxing of memories by default:
+以下は、メモリのブラックボックス化をデフォルトで有効にする方法の例です：
 
 .. code-block:: scala
 
@@ -212,45 +221,46 @@ Here is an example of how to enable blackboxing of memories by default:
        .generateVhdl(new TopLevel)
    }
 
-If the standard blackboxing tools don't do enough for your design, do not hesitate to create a `Github issue <https://github.com/SpinalHDL/SpinalHDL/issues>`_. There is also a way to create your own blackboxing tool.
+標準のブラックボックス化ツールが設計に十分でない場合は、 `Github issue <https://github.com/SpinalHDL/SpinalHDL/issues>`_ を作成することを躊躇しないでください。
+また、独自のブラックボックス化ツールを作成する方法もあります。
 
-Blackboxing policy
-^^^^^^^^^^^^^^^^^^
+ブラックボックス化ポリシー
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are multiple policies that you can use to select which memory you want to blackbox and also what to do when the blackboxing is not feasible:
+ブラックボックス化するメモリを選択し、ブラックボックス化が適切でない場合の対処方法を選択するために、複数のポリシーがあります：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 5
 
-   * - Kinds
-     - Description
+   * - 種類
+     - 説明
    * - ``blackboxAll``
-     - | Blackbox all memory.
-       | Throw an error on unblackboxable memory
+     - | すべてのメモリをブラックボックス化します。
+       | ブラックボックス化できないメモリにエラーを投げる
    * - ``blackboxAllWhatsYouCan``
-     - Blackbox all memory that is blackboxable
+     - ブラックボックス化可能なすべてのメモリをブラックボックス化します。
    * - ``blackboxRequestedAndUninferable``
-     - | Blackbox memory specified by the user and memory that is known to be uninferable (mixed-width, ...).
-       | Throw an error on unblackboxable memory
+     - | ユーザーによって指定されたメモリと推論不可能なメモリ（ミックス幅など）をブラックボックス化します。
+       | ブラックボックス化できないメモリに対してはエラーを投げます。
    * - ``blackboxOnlyIfRequested``
-     - | Blackbox memory specified by the user
-       | Throw an error on unblackboxable memory
+     - | ユーザーが指定したメモリをブラックボックス化します。
+       | ブラックボックス化できないメモリに関してエラーを発生させます。
 
 
-To explicitly set a memory to be blackboxed, you can use its ``generateAsBlackBox`` function.
+メモリを明示的にブラックボックス化するには、その ``generateAsBlackBox`` 関数を使用します。
 
 .. code-block:: scala
 
    val mem = Mem(Rgb(rgbConfig), 1 << 16)
    mem.generateAsBlackBox()
 
-You can also define your own blackboxing policy by extending the ``MemBlackboxingPolicy`` class.
+``MemBlackboxingPolicy`` クラスを拡張して独自のブラックボックス化ポリシーを定義することもできます。
 
-Standard memory blackboxes
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+標準のメモリ ブラックボックス
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Shown below are the VHDL definitions of the standard blackboxes used in SpinalHDL:
+以下に、SpinalHDL で使用される標準ブラックボックスの VHDL 定義を示します：
 
 .. code-block:: ada
 
@@ -279,7 +289,7 @@ Shown below are the VHDL definitions of the standard blackboxes used in SpinalHD
      );
    end component;
 
-   -- Simple synchronous dual port (1 write port, 1 read port)
+   -- 単純な同期デュアルポート（1つの書き込みポート、1つの読み取りポート）
    component Ram_1w_1rs is
      generic(
        wordCount : integer;
@@ -308,7 +318,7 @@ Shown below are the VHDL definitions of the standard blackboxes used in SpinalHD
      );
    end component;
 
-   -- Single port (1 readWrite port)
+   -- シングルポート（1つの読み書きポート）
    component Ram_1wrs is
      generic(
        wordCount : integer;
@@ -326,7 +336,7 @@ Shown below are the VHDL definitions of the standard blackboxes used in SpinalHD
      );
    end component;
 
-   --True dual port (2 readWrite port)
+   -- 真のデュアルポート（2つの読み書きポート）
    component Ram_2wrs is
      generic(
        wordCount : integer;
@@ -362,32 +372,29 @@ Shown below are the VHDL definitions of the standard blackboxes used in SpinalHD
      );
    end component;
 
-As you can see, blackboxes have a technology parameter. To set it, you can use the ``setTechnology`` function on the corresponding memory.
-There are currently 4 kinds of technologies possible:
+ブラックボックスには技術パラメータがあります。それを設定するには、対応するメモリ上で ``setTechnology`` 関数を使用できます。
+現在、4種類の技術が可能です：
 
 * ``auto``
 * ``ramBlock``
 * ``distributedLut``
 * ``registerFile``
 
-Blackboxing can insert HDL attributes if ``SpinalConfig#setDevice(Device)``
-has been configured for your device-vendor.
+ブラックボックス化により、 ``SpinalConfig#setDevice(Device)`` がデバイスベンダーに設定されている場合、 HDL 属性を挿入できます。
 
-The resulting HDL attributes might look like:
+生成される HDL 属性は次のようになります：
 
 .. code-block:: verilog
 
    (* ram_style = "distributed" *)
    (* ramsyle = "no_rw_check" *)
 
-SpinalHDL tries to support many common memory types provided by well known
-vendors and devices, however this is an ever moving landscape and project
-requirements can be very specific in this area.
 
-If this is important to your design flow then check the output HDL for the
-expected attributes/generic insertion, while consulting your vendor's
-platform documentation.
+SpinalHDL は、よく知られたベンダーやデバイスによって提供される多くの一般的なメモリタイプをサポートしようとしますが、
+これは常に変化する状況であり、プロジェクトの要件はこの領域で非常に具体的な場合があります。
 
-HDL attributes can also be added manually using the `addAttribute()` :ref:`addAttribute <vhdl-and-verilog-attributes>`
-mechanism.
+これが設計フローに重要である場合は、ベンダーのプラットフォームドキュメントを参照しながら、
+期待される属性/ジェネリックの挿入を確認するために、出力 HDL を確認してください。
+
+HDL 属性は、 ``addAttribute()`` の ``addAttribute`` メカニズムを使用して手動で追加することもできます。
 

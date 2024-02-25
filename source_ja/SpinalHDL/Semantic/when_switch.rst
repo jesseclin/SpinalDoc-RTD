@@ -4,63 +4,63 @@ When/Switch/Mux
 When
 ----
 
-As in VHDL and Verilog, signals can be conditionally assigned when a specified condition is met:
+VHDL や Verilog と同様に、指定された条件が満たされた場合に信号に条件付きで代入できます：
 
 .. code-block:: scala
 
    when(cond1) {
-     // Execute when cond1 is true
+     // cond1 が true の場合に実行
    } elsewhen(cond2) {
-     // Execute when (not cond1) and cond2
+     // (cond1 が false)かつ cond2 の場合に実行
    } otherwise {
-     // Execute when (not cond1) and (not cond2)
+     // (cond1 が false)かつ(cond2 が false)の場合に実行
    }
 
 .. warning::
 
-     If the keyword ``otherwise`` is on the same line as the closing bracket ``}`` of the ``when`` condition, no dot is needed.
-
+     キーワード ``otherwise`` が ``when`` 条件の閉じ括弧 ``}`` と同じ行にある場合、ドットは不要です。
+     
      .. code-block:: scala
 
             when(cond1) {
-                // Execute when cond1 is true
+                // cond1 が true の場合に実行
             } otherwise {
-                // Execute when (not cond1) and (not cond2)
+                // (cond1 が false)かつ(cond2 が false)の場合に実行
             }
 
-     But if ``.otherwise`` is on another line, a dot is **required**:
+     しかし、 ``.otherwise`` が別の行にある場合、ドットは **必須** です：
 
      .. code-block:: scala
 
             when(cond1) {
-                // Execute when cond1 is true
+                // cond1 が true の場合に実行
             }
             .otherwise {
-                // Execute when (not cond1) and (not cond2)
+                // (cond1 が false )かつ(cond2 が false )の場合に実行
             }
 
 Switch
 ------
 
-As in VHDL and Verilog, signals can be conditionally assigned when a signal has a defined value:
+VHDL や Verilog と同様に、信号に定義された値に応じて条件付きで割り当てることができます：
 
 .. code-block:: scala
 
    switch(x) {
      is(value1) {
-       // Execute when x === value1
+       // x === value1 のときに実行
      }
      is(value2) {
-       // Execute when x === value2
+       // x === value2 のときに実行
      }
      default {
-       // Execute if none of precedent conditions met
+       // 前述の条件に一致しない場合に実行
      }
    }
 
-``is`` clauses can be factorized (logical OR) by separating them with a comma ``is(value1, value2)``.
+``is`` 節は、コンマで区切って ``is(value1, value2)`` のようにファクター化（論理OR）できます。
 
-Example
+例
 ^^^^^^^
 
 .. code-block:: scala
@@ -83,7 +83,7 @@ Example
     }
   }
 
-is equivalent to
+以下と同等です:
 
 .. code-block:: scala
 
@@ -96,11 +96,11 @@ is equivalent to
     }
   }
 
-
-Additional options
+追加のオプション
 ^^^^^^^^^^^^^^^^^^
 
-By default, SpinalHDL will generate an "UNREACHABLE DEFAULT STATEMENT" error if a ``switch`` contains a ``default`` statement while all the possible logical values of the ``switch`` are already covered by the ``is`` statements. You can drop this error reporting by specifying `` switch(myValue, coverUnreachable = true) { ... }``.
+デフォルトでは、SpinalHDL は、 ``switch`` に ``default`` ステートメントが含まれており、すべての可能な論理値が ``is`` ステートメントによって既にカバーされている場合、
+"UNREACHABLE DEFAULT STATEMENT"エラーを生成します。これをエラー報告から除外するには、 ``switch(myValue, coverUnreachable = true) { ... }`` と指定します。
 
 .. code-block:: scala
   
@@ -109,30 +109,30 @@ By default, SpinalHDL will generate an "UNREACHABLE DEFAULT STATEMENT" error if 
       is(1) { ... } 
       is(2) { ... }
       is(3) { ... }
-      default { ... } // This will parse and validate without error now
+      default { ... } // これでエラーなしで解析および検証されます
   }
   
 .. note::
 
-   This check is done on the logical values, not on the physical values. For instance, if you have a SpinalEnum(A,B,C) encoded in a one-hot manner, SpinalHDL will only care about the A,B,C values ("001" "010" "100"). Physical values as "000" "011" "101" "110" "111" will not be taken in account.
+   このチェックは、物理的な値ではなく論理値で行われます。たとえば、1ホット方式でエンコードされた SpinalEnum(A、B、C) がある場合、
+   SpinalHDL はA、B、Cの値（"001" "010" "100"）のみを考慮します。物理的な値は"000" "011" "101" "110" "111"のようになるため、考慮されません。
 
-
-By default, SpinalHDL will generate a "DUPLICATED ELEMENTS IN SWITCH IS(...) STATEMENT" error if a given ``is`` statement provides multiple times the same value. For instance ``is(42,42) { ... }`` 
-You can drop this error reporting by specifying ``switch(myValue, strict = true){ ... }``. SpinalHDL will then take care of removing duplicated values.
+デフォルトでは、SpinalHDL は、指定された ``is`` ステートメントが同じ値を複数回提供する場合に、
+"DUPLICATED ELEMENTS IN SWITCH IS(...) STATEMENT" エラーを生成します。例えば ``is(42,42) { ... }`` です。
+このエラー報告を削除するには、 ``switch(myValue, strict = true){ ... }`` を指定します。SpinalHDL は、重複した値を削除するようにします。
 
 .. code-block:: scala
   
   switch(value, strict = false) {
       is(0) { ... }
-      is(1,1,1,1,1) { ... } // This will be okay
+      is(1,1,1,1,1) { ... } // これは問題ありません
       is(2) { ... }
   }
 
-
-Local declaration
+ローカル宣言
 -----------------
 
-It is possible to define new signals inside a when/switch statement:
+when/switch 文の内部で新しいシグナルを定義することができます：
 
 .. code-block:: scala
 
@@ -149,26 +149,26 @@ It is possible to define new signals inside a when/switch statement:
    }
 
 .. note::
-   SpinalHDL checks that signals defined inside a scope are only assigned inside that scope.
+   SpinalHDL は、スコープ内で定義されたシグナルがそのスコープ内でのみ割り当てられていることをチェックします。
 
 Mux
 ---
 
-If you just need a ``Mux`` with a ``Bool`` selection signal, there are two equivalent syntaxes:
+``Bool`` 選択信号を持つ単純な ``Mux`` が必要な場合、2つの同等の構文があります：
 
 .. list-table::
    :header-rows: 1
    :widths: 4 1 4
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値
+     - 説明
    * - Mux(cond, whenTrue, whenFalse)
      - T
-     - Return ``whenTrue`` when ``cond`` is True, ``whenFalse`` otherwise
+     - ``cond`` が True の場合は ``whenTrue`` を返し、それ以外の場合は ``whenFalse`` を返します。 
    * - cond ? whenTrue | whenFalse
      - T
-     - Return ``whenTrue`` when ``cond`` is True, ``whenFalse`` otherwise
+     - ``cond`` が True の場合は ``whenTrue`` を返し、それ以外の場合は ``whenFalse`` を返します。 
 
 .. code-block:: scala
 
@@ -177,12 +177,13 @@ If you just need a ``Mux`` with a ``Bool`` selection signal, there are two equiv
    val muxOutput  = Mux(cond, whenTrue, whenFalse)
    val muxOutput2 = cond ? whenTrue | whenFalse
 
+
 Bitwise selection
 -----------------
 
-A bitwise selection looks like the VHDL ``when`` syntax.
+ビット単位の選択は、VHDL の ``when``構文のように見えます。
 
-Example
+例
 ^^^^^^^
 
 .. code-block:: scala
@@ -195,9 +196,8 @@ Example
      default -> (io.src0)
    )
 
-``mux`` checks that all possible values are covered to prevent generation of latches.
-If all possible values are covered, the default statement must not be added:
-
+``mux`` は、ラッチの生成を防ぐためにすべての可能な値がカバーされているかをチェックします。
+すべての可能な値がカバーされている場合、デフォルトのステートメントを追加してはいけません:
 .. code-block:: scala
 
    val bitwiseSelect = UInt(2 bits)
@@ -208,16 +208,16 @@ If all possible values are covered, the default statement must not be added:
      3 -> (io.src0)
    )
 
-``muxList(...)`` and ``muxListDc(...)`` are alternatives bitwise selectors that take a sequence of tuples or mappings as input.
+``muxList(...)`` と ``muxListDc(...)`` は、入力としてタプルやマッピングのシーケンスを取る代替ビット単位のセレクタです。
 
-``muxList`` can be used as a direct replacement for ``mux``, providing a easier to use interface in code that generates the cases.
-It has the same checking behavior as ``mux`` does, requiring full coverage and prohibiting listing a default if it is not needed.
+``muxList`` は、ケースを生成するコードでより簡単に使用できるインターフェースを提供するため、 ``mux`` の直接的な代替として使用できます。
+``mux`` と同じチェック動作を持ち、完全なカバレッジが必要であり、必要ない場合はデフォルトをリストに追加することを禁止します。
 
-``muxtListDc`` can be used if the uncovered values are not important, they can be left unassigned by using ``muxListDc``.
-This will add a default case if needed. This default case will generate X's during the simulation if ever encountered.
-``muxListDc(...)`` is often a good alternative in generic code.
+``muxtListDc`` は、カバーされていない値が重要でない場合に使用でき、これらは ``muxListDc`` を使用して未割り当てのままにすることができます。
+必要に応じてデフォルトのケースが追加されます。このデフォルトのケースは、シミュレーション中に X を生成します。
+一般的なコードで ``muxListDc(...)`` は良い代替手段です。
 
-Below is an example of dividing a ``Bits`` of 128 bits into 32 bits:
+以下は、128 ビットの ``Bits`` を 32 ビットに分割する例です：
 
 .. image:: /asset/picture/MuxList.png
    :align: center
@@ -228,21 +228,21 @@ Below is an example of dividing a ``Bits`` of 128 bits into 32 bits:
    val sel  = UInt(2 bits)
    val data = Bits(128 bits)
 
-   // Dividing a wide Bits type into smaller chunks, using a mux:
+   // 広いビットタイプを小さなチャンクに分割する方法、mux を使用します:
    val dataWord = sel.muxList(for (index <- 0 until 4)
                               yield (index, data(index*32+32-1 downto index*32)))
 
-   // A shorter way to do the same thing:
+   // 同じことをする短い方法：
    val dataWord = data.subdivideIn(32 bits)(sel)
 
-Example for ``muxListDc`` selecting bits from a configurable width vector:
+``muxListDc`` が設定可能な幅のベクトルからビットを選択する例：
 
 .. code-block:: scala
 
   case class Example(width: Int = 3) extends Component {
-    // 2 bit wide for default width
+    // デフォルトの幅のために 2 ビット幅
     val sel = UInt(log2Up(count) bit)
     val data = Bits(width*8 bit)
-    // no need to cover missing case 3 for default width
+    // デフォルトの幅では 3 の不足したケースをカバーする必要がない
     val dataByte = sel.muxListDc(for(i <- 0 until count) yield (i, data(index*8, 8 bit)))
   }
