@@ -4,7 +4,7 @@
 NullPointerException
 ====================
 
-導入
+概要
 ------------
 
 ``NullPointerException`` は、変数が初期化される前にアクセスされたときに発生する Scala ランタイムのエラーです。
