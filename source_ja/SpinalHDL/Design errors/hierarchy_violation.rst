@@ -2,42 +2,42 @@
 Hierarchy violation
 ===================
 
-Introduction
+はじめに
 ------------
 
-SpinalHDL will check that signals are never accessed outside of the current component's scope.
+SpinalHDL は、信号が現在のコンポーネントの範囲外でアクセスされないようにチェックします。
 
-The following signals can be read inside a component:
+次の信号は、コンポーネント内で読み取ることができます：
 
-* All directionless signals defined in the current component
-* All in/out/inout signals of the current component
-* All in/out/inout signals of child components
+* 現在のコンポーネントで定義されたすべての方向のない信号
+* 現在のコンポーネントのすべての入力/出力/双方向信号
+* 子コンポーネントのすべての入力/出力/双方向信号
 
-In addition, the following signals can be assigned to inside of a component:
+さらに、以下の信号はコンポーネント内で代入することができます：
 
-* All directionless signals defined in the current component
-* All out/inout signals of the current component
-* All in/inout signals of child components
+* 現在のコンポーネントで定義されたすべての方向のない信号
+* 現在のコンポーネントのすべての出力/双方向信号
+* 子コンポーネントのすべての入力/双方向信号
 
-If a ``HIERARCHY VIOLATION`` error appears, it means that one of the above rules was violated.
+もし ``HIERARCHY VIOLATION`` エラーが表示された場合、上記のルールのいずれかが違反されたことを意味します。
 
-Example
+例
 -------
 
-The following code:
+以下のコード：
 
 .. code-block:: scala
 
    class TopLevel extends Component {
      val io = new Bundle {
-       // This is an 'in' signal of the current component 'Toplevel'
+       // これは、現在のコンポーネント 'Toplevel' の 'in' シグナルです。
        val a = in UInt(8 bits)
      }
      val tmp = U"x42"
-     io.a := tmp  // ERROR: attempting to assign to an input of current component
+     io.a := tmp  // ERROR: 現在のコンポーネントの入力に割り当てを試みています。
    }
 
-will throw:
+は、次のようにエラーを発生させます：
 
 .. code-block:: text
 
@@ -46,14 +46,14 @@ will throw:
      Source file location of the `io.a := tmp` via the stack trace
      ***
 
-A fix could be :
+修正方法は次の通りです：
 
 .. code-block:: scala
 
    class TopLevel extends Component {
      val io = new Bundle {
-       val a = out UInt(8 bits) // changed from in to out
+       val a = out UInt(8 bits) // "in" から "out" に変更されました。
      }
      val tmp = U"x42"
-     io.a := tmp  // now we are assigning to an output
+     io.a := tmp  // 今、出力に割り当てています。
    }

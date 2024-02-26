@@ -2,15 +2,15 @@
 Unassigned register
 ===================
 
-Introduction
+概要
 ------------
 
-SpinalHDL will check that all registers which impact the design have been assigned somewhere.
+SpinalHDL は、設計に影響を与えるすべてのレジスタがどこかで割り当てられていることをチェックします。
 
-Example
+例
 -------
+以下のコード:
 
-The following code:
 
 .. code-block:: scala
 
@@ -20,7 +20,7 @@ The following code:
      result := a
    }
 
-will throw:
+は、以下のようなエラーを出力します:
 
 .. code-block:: text
 
@@ -29,7 +29,7 @@ will throw:
      Source file location of the toplevel/a definition via the stack trace
      ***
 
-A fix could be:
+修正方法:
 
 .. code-block:: scala
 
@@ -40,10 +40,12 @@ A fix could be:
      result := a
    }
 
-Register with only init
------------------------
+初期値のみを持つレジスタ
+--------------------------
 
-In some cases, because of the design parameterization, it could make sense to generate a register which has no assignment but only an ``init`` statement.
+設計のパラメータ化によっては、代入ではなく初期値 ``init`` ステートメントのみを持つレジスタを生成することが理にかなう場合もあります。
+
+以下のコード:
 
 .. code-block:: scala
 
@@ -56,7 +58,7 @@ In some cases, because of the design parameterization, it could make sense to ge
      result := a
    }
 
-will throw:
+は、以下のようなエラーを出力します:
 
 .. code-block:: text
 
@@ -65,7 +67,9 @@ will throw:
      Source file location of the toplevel/a definition via the stack trace
      ***
 
-To fix it, you can ask SpinalHDL to transform the register into a combinational one if no assignment is present but it has an ``init`` statement:
+修正方法:
+
+SpinalHDL に対して、代入がなく ``init`` ステートメントのみのレジスタを組み合わせ回路に変換するように指示できます。
 
 .. code-block:: scala
 

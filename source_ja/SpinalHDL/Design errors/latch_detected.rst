@@ -2,16 +2,16 @@
 Latch detected
 ==============
 
-Introduction
+導入
 ------------
 
-SpinalHDL will check that no combinational signals will infer a latch during synthesis.
-In other words, this is a check that no combinational signals are partially assigned.
+SpinalHDL は、合成中に組み合わせ信号がラッチを推測しないようにチェックします。
+つまり、これは組み合わせ信号が部分的に割り当てられないことを確認するチェックです。
 
-Example
+例
 -------
 
-The following code:
+次のコード：
 
 .. code-block:: scala
 
@@ -24,7 +24,7 @@ The following code:
      }
    }
 
-will throw:
+次のエラーが発生します：
 
 .. code-block:: text
 
@@ -33,7 +33,7 @@ will throw:
      Source file location of the toplevel/io_a definition via the stack trace
      ***
 
-A fix could be:
+修正方法：
 
 .. code-block:: scala
 
@@ -47,21 +47,20 @@ A fix could be:
      }
    }
 
-Due to mux
-----------
+mux による原因
+-------------------
 
-Another reason for a latch being detected is often a non-exhaustive ``mux``/``muxList`` statement
-with a missing default:
+ラッチが検出される別の理由は、しばしばデフォルトが欠落している非完全な ``mux``/``muxList`` ステートメントです：
 
 .. code-block:: scala
 
   val u1 = UInt(1 bit)
   u1.mux(
     0 -> False,
-    // case for 1 is missing
+    // 1のケースが不足しています
   )
 
-which can be fixed by adding the missing case (or a default case):
+これは、不足しているケース（またはデフォルトケース）を追加することで修正できます：
 
 .. code-block:: scala
 
@@ -71,11 +70,10 @@ which can be fixed by adding the missing case (or a default case):
     default -> True
   )
 
-In e.g. width generic code it is often a better solution to use ``muxListDc`` as this will not
-generate an error for those cases were a default is not needed:
+たとえば、幅のジェネリックコードでは、デフォルトが必要ない場合でも、 ``muxListDc`` を使用する方が良い解決策です：
 
 .. code-block:: scala
 
   val u1 = UInt(1 bit)
-  // automatically adds default if needed
+  // 必要に応じてデフォルトを自動的に追加します
   u1.muxListDc(Seq(0 -> True))

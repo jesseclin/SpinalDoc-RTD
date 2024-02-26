@@ -2,22 +2,22 @@
 Out of Range Constant
 =====================
 
-Introduction
+導入
 ------------
 
-SpinalHDL checks that in comparisons with literals the literal is not wider than the value compared to.
+SpinalHDL は、リテラルとの比較において、比較される値よりもリテラルが広くないことを確認します。
 
-Example
+例
 -------
 
-For example the following code:
+たとえば、次のコード：
 
 .. code-block:: scala
 
     val value = in UInt(2 bits)
     val result = out(value < 42)
 
-Will result in the following error:
+次のエラーが発生します：
 
 .. code-block:: text
 
@@ -26,12 +26,12 @@ Will result in the following error:
    - Right operand : (U"101010" 6 bits)
     is checking a value against a out of range constant
 
-Specifying exceptions
+例外の指定
 ---------------------
 
-In some cases, because of the design parametrization, it can make sense to compare a value to a larger constant and get a statically known ``True/False`` result.
+設計のパラメータ化により、値をより大きな定数と比較し、静的に既知の ``True/False`` 結果を得ることが合理的な場合があります。
 
-You have the option to specifically whitelist one instance of a comparison with an out of range constant.
+範囲外の定数との比較の特定のインスタンスをホワイトリストに指定するオプションがあります。
 
 .. code-block:: scala
 
@@ -39,7 +39,7 @@ You have the option to specifically whitelist one instance of a comparison with 
     val result = out((value < 42).allowOutOfRangeLiterals)
 
 
-Alternatively, you can allow comparisons to out of range constants for the whole design.
+また、設計全体で範囲外の定数との比較を許可することもできます。
 
 .. code-block:: scala
 

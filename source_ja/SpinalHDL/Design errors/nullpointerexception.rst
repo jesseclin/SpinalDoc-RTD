@@ -4,15 +4,15 @@
 NullPointerException
 ====================
 
-Introduction
+導入
 ------------
 
-``NullPointerException`` is a Scala runtime reported error which can happen when a variable is accessed before it has been initialized.
+``NullPointerException`` は、変数が初期化される前にアクセスされたときに発生する Scala ランタイムのエラーです。
 
-Example
+例
 -------
 
-The following code:
+次のコード：
 
 .. code-block:: scala
 
@@ -21,7 +21,7 @@ The following code:
      val a = UInt(8 bits)
    }
 
-will throw:
+次のエラーが発生します：
 
 .. code-block:: text
 
@@ -30,7 +30,7 @@ will throw:
      Source file location of the a := 42 assignment via the stack trace
      ***
 
-A fix could be:
+修正方法は次のようになります：
 
 .. code-block:: scala
 
@@ -39,9 +39,11 @@ A fix could be:
      a := 42
    }
 
-Issue explanation
+問題の説明
 ^^^^^^^^^^^^^^^^^
 
-SpinalHDL is not a language, it is a Scala library, which means that it obeys the same rules as the Scala general purpose programming language.
+SpinalHDL は言語ではなく、Scala ライブラリです。これは、一般的な目的の Scala プログラミング言語と同じルールに従います。
 
-When running the above SpinalHDL hardware description to generate the corresponding VHDL/Verilog RTL, the SpinalHDL hardware description will be executed as a Scala program, and ``a`` will be a null reference until the program executes ``val a = UInt(8 bits)``, so trying to assign to it before then will result in a ``NullPointerException``.
+上記の SpinalHDL ハードウェア記述を実行して対応する VHDL/Verilog RTLを生成する際に、
+SpinalHDL ハードウェア記述が Scala プログラムとして実行され、 ``a`` は ``val a = UInt(8 bits)`` が実行されるまで null 参照になります。
+そのため、それ以前に代入しようとすると、 ``NullPointerException`` が発生します。

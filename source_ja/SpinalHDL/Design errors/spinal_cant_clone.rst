@@ -2,29 +2,31 @@
 Spinal can't clone class
 ========================
 
-Introduction
+導入
 ------------
 
-This error happens when SpinalHDL wants to create a new datatype instance via the ``cloneOf`` function but isn't able to do it.
-The reason for this is nearly always because it can't retrieve the construction parameters of a ``Bundle``.
+このエラーは、SpinalHDL が ``cloneOf`` 関数を使用して新しいデータ型インスタンスを作成しようとした際に発生しますが、
+それができない場合に発生します。
+これはほぼ常に、 ``Bundle`` の構築パラメーターを取得できないためです。
 
-Example 1
+例 1
 ---------
 
-The following code:
+次のコード：
+
 
 .. code-block:: scala
 
-    // cloneOf(this) isn't able to retrieve the width value that was used to construct itself
+    // ``cloneOf(this)`` は自身の構築に使用された幅の値を取得できません
     class RGB(width : Int) extends Bundle {
       val r, g, b = UInt(width bits)
     }
 
     class TopLevel extends Component {
-      val tmp = Stream(new RGB(8)) // Stream requires the capability to cloneOf(new RGB(8))
+      val tmp = Stream(new RGB(8)) // Streamは、cloneOf(new RGB(8))の機能を必要とします
     }
 
-will throw:
+以下のエラーが発生します：
 
 .. code-block:: text
 
@@ -36,7 +38,7 @@ will throw:
      Source file location of the RGB class definition via the stack trace
      ***
 
-A fix could be:
+修正方法は以下の通りです：
 
 .. code-block:: scala
 
@@ -50,8 +52,7 @@ A fix could be:
 
 Example 2
 ---------
-
-The following code:
+以下のコード：
 
 .. code-block:: scala
 
@@ -69,13 +70,13 @@ The following code:
       val someAddress = RegNext(io.inputAddress) // -> ERROR *****************************
   }
 
-raises an exeption:
+例外が発生します：
 
 .. code-block:: text
 
   [error] *** Spinal can't clone class debug.MemoryAddress datatype
 
-In this case, a solution is to override the clone function to propagate the implicit parameter.
+この場合、暗黙のパラメータを伝播させるためにクローン関数をオーバーライドする解決策があります。
 
 .. code-block:: scala
 
@@ -87,8 +88,8 @@ In this case, a solution is to override the clone function to propagate the impl
 
 .. note::
 
-  We need to clone the hardware element, not the eventually assigned value in it.
+  我々はハードウェア要素をクローンする必要があります。それが含まれる値ではありません。
 
 .. note::
 
-  An alternative is to used :ref:`ScopeProperty <scopeproperty>`.
+  別の方法として、:ref:`ScopeProperty <scopeproperty>` を使用することもできます。

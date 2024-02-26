@@ -2,15 +2,16 @@
 Width mismatch
 ===============
 
-Introduction
+概要
 ------------
 
-SpinalHDL will check that operators and signals on the left and right side of assignments have the same widths.
+SpinalHDL は、代入式において、左右のオペランド (演算対象) とシグナルが同じビット幅であることを確認します。
+ビット幅とは、信号が表現できる値の大きさを示す単位です。
 
-Assignment example
+代入式の例
 ------------------
 
-The following code:
+以下のコード:
 
 .. code-block:: scala
 
@@ -20,7 +21,7 @@ The following code:
      b := a
    }
 
-will throw:
+は、以下のようなエラーを出力します:
 
 .. code-block:: text
 
@@ -29,7 +30,7 @@ will throw:
      Source file location of the OR operator via the stack trace
      ***
 
-A fix could be:
+修正方法:
 
 .. code-block:: scala
 
@@ -39,10 +40,10 @@ A fix could be:
      b := a.resized
    }
 
-Operator example
+演算子の例
 ----------------
 
-The following code:
+以下のコード:
 
 .. code-block:: scala
 
@@ -52,7 +53,7 @@ The following code:
      val result = a | b
    }
 
-will throw:
+は、以下のようなエラーを出力します:
 
 .. code-block:: text
 
@@ -64,7 +65,7 @@ will throw:
      Source file location of the OR operator via the stack trace
      ***
 
-A fix could be:
+修正方法:
 
 .. code-block:: scala
 

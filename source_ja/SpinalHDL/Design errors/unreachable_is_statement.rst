@@ -2,15 +2,17 @@
 Unreachable is statement
 ========================
 
-Introduction
+概要
 ------------
 
-SpinalHDL will check to ensure that all ``is`` statements in a ``switch`` are reachable.
+SpinalHDL は、 ``switch`` 文の中のすべての ``is`` ステートメントが到達可能であることを確認します。
+到達可能とは、実行フロー上、そのステートメントに到達する可能性があることを意味します。
 
-Example
+例
 -------
 
-The following code:
+以下のコード:
+
 
 .. code-block:: scala
 
@@ -22,11 +24,11 @@ The following code:
        is(1){ result := 6 }
        is(2){ result := 8 }
        is(3){ result := 9 }
-       is(0){ result := 2 } // Duplicated is statement!
+       is(0){ result := 2 } // 重複した is ステートメント!
      }
    }
 
-will throw:
+は、以下のようなエラーを出力します:
 
 .. code-block:: text
 
@@ -35,7 +37,7 @@ will throw:
      Source file location of the is statement definition via the stack trace
      ***
 
-A fix could be:
+修正方法:
 
 .. code-block:: scala
 

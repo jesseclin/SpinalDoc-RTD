@@ -2,16 +2,17 @@
 IO bundle
 =========
 
-Introduction
+導入
 ------------
 
-SpinalHDL will check that each ``io`` bundle contains only in/out/inout signals.
-Other kinds of signals are called directionless signals.
+SpinalHDL は、各 ``io`` バンドルが入出力/入力/出力信号のみを含んでいることを確認します。
 
-Example
+その他の種類の信号は、無方向信号と呼ばれます。
+
+例
 -------
 
-The following code:
+次のコード：
 
 .. code-block:: scala
 
@@ -21,7 +22,7 @@ The following code:
      }
    }
 
-will throw:
+は次のエラーを表示します：
 
 .. code-block:: text
 
@@ -30,17 +31,17 @@ will throw:
      Source file location of the toplevel/io_a definition via the stack trace
      ***
 
-A fix could be:
+修正方法は次のとおりです：
 
 .. code-block:: scala
 
    class TopLevel extends Component {
      val io = new Bundle {
-       val a = in UInt(8 bits)  // provide 'in' direction declaration
+       val a = in UInt(8 bits)  // 'in' 方向の宣言を提供します
      }
    }
 
-But if for meta hardware description reasons you really want ``io.a`` to be directionless, you can do:
+しかし、メタハードウェア記述の理由で ``io.a`` が方向を持たない場合は、次のようにします：
 
 .. code-block:: scala
 

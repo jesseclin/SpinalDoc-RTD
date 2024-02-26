@@ -2,15 +2,17 @@
 Clock crossing violation
 ========================
 
-Introduction
+はじめに
 ------------
 
-SpinalHDL will check that every register of your design only depends (through combinational logic paths) on registers which use the same or a synchronous clock domain.
+SpinalHDL は、設計のすべてのレジスタが、同じまたは同期クロックドメインを使用するレジスタによってのみ
+（組合せ論理パスを介して）依存していることを確認します。
 
-Example
+例
 -------
 
-The following code:
+次のコード:
+
 
 .. code-block:: scala
 
@@ -25,7 +27,7 @@ The following code:
      regB := tmp
    }
 
-will throw:
+は、次のエラーを発生させます:
 
 .. code-block:: text
 
@@ -39,7 +41,7 @@ will throw:
          >>> (toplevel/tmp :  UInt[8 bits]) at ***(PlayDev.scala:838) >>>
          >>> (toplevel/regB :  UInt[8 bits]) at ***(PlayDev.scala:835) >>>
 
-There are multiple possible fixes, listed below:
+複数の修正方法があります。以下にリストされています:
 
  - :ref:`crossClockDomain tags <crossclockdomain-tag>`
  - :ref:`setSynchronousWith method <setsynchronouswith>`
@@ -50,7 +52,7 @@ There are multiple possible fixes, listed below:
 crossClockDomain tag
 ^^^^^^^^^^^^^^^^^^^^
 
-The ``crossClockDomain`` tag can be used to communicate "It's alright, don't panic about this specific clock crossing" to the SpinalHDL compiler.
+``crossClockDomain`` タグを使用すると、SpinalHDL コンパイラに「これに関しては心配しないでください」と伝えることができます。
 
 .. code-block:: scala
 
@@ -71,7 +73,8 @@ The ``crossClockDomain`` tag can be used to communicate "It's alright, don't pan
 setSynchronousWith
 ^^^^^^^^^^^^^^^^^^
 
-You can also specify that two clock domains are synchronous together by using the ``setSynchronousWith`` method of one of the ``ClockDomain`` objects.
+ある ``ClockDomain`` オブジェクトの ``setSynchronousWith`` メソッドを使用して、
+2つのクロックドメインが同期していることを指定することもできます。
 
 .. code-block:: scala
 
@@ -93,11 +96,12 @@ You can also specify that two clock domains are synchronous together by using th
 BufferCC
 ^^^^^^^^
 
-When exchanging single-bit signals (such as ``Bool`` types), or Gray-coded values, you can use ``BufferCC`` to safely cross different ``ClockDomain`` regions.
+単一ビット信号（たとえば、 ``Bool`` 型）やグレーコード値をやり取りする場合は、
+異なる ``ClockDomain`` 領域を安全にクロスするために ``BufferCC`` を使用できます。
 
 .. warning::
-   Do not use ``BufferCC`` with multi-bit signals, as there is a risk of corrupted reads on the receiving side if the clocks are asynchronous.
-   See the :ref:`Clock Domains <clock_domain>` page for more details.
+   クロックが非同期の場合、受信側で読み取りが破損する可能性があるため、マルチビット信号に ``BufferCC`` を使用しないでください。
+   詳細については、:ref:`Clock Domains <clock_domain>`  ページを参照してください。
 
 .. code-block:: scala
 

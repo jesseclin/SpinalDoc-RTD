@@ -2,15 +2,15 @@
 No driver on
 ============
 
-Introduction
+導入
 ------------
 
-SpinalHDL will check that all combinational signals which have an impact on the design are assigned by something.
+SpinalHDL は、デザインに影響を与えるすべての組み合わせ信号が何かによって割り当てられていることを確認します。
 
-Example
+例
 -------
 
-The following code:
+次のコード：
 
 .. code-block:: scala
 
@@ -20,7 +20,7 @@ The following code:
      result := a
    }
 
-will throw:
+次のエラーを発生させます：
 
 .. code-block:: text
 
@@ -29,7 +29,7 @@ will throw:
      Source file location of the toplevel/a definition via the stack trace
      ***
 
-A fix could be:
+修正方法は次のようになります：
 
 .. code-block:: scala
 

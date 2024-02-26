@@ -2,16 +2,16 @@
 Scope violation
 ===============
 
-Introduction
+導入
 ------------
 
-SpinalHDL will check that there are no signals assigned outside the scope they are defined in.
-This error isn't easy to trigger as it requires some specific meta hardware description tricks.
+SpinalHDL は、定義されたスコープの外に信号が割り当てられていないことを確認します。
+このエラーは、特定のメタハードウェア記述トリックが必要なため、簡単にトリガーされるものではありません。
 
-Example
+例
 -------
 
-The following code:
+次のコード：
 
 .. code-block:: scala
 
@@ -25,7 +25,7 @@ The following code:
      tmp := U"x42"
    }
 
-will throw:
+次のエラーが発生します：
 
 .. code-block:: text
 
@@ -34,7 +34,7 @@ will throw:
      Source file location of the tmp := U"x42" via the stack trace
      ***
 
-A fix could be:
+修正方法は以下の通りです：
 
 .. code-block:: scala
 

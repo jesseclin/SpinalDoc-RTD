@@ -2,21 +2,23 @@
 Design errors
 =============
 
-The SpinalHDL compiler will perform many checks on your design to be sure that the generated VHDL/Verilog will be safe for simulation and synthesis.
-Basically, it should not be possible to generate a broken VHDL/Verilog design.
-Below is a non-exhaustive list of SpinalHDL checks:
+SpinalHDL コンパイラは、生成される VHDL/Verilog がシミュレーションと合成に安全であることを確認するために、
+デザインに多くのチェックを実行します。
+基本的に、壊れた VHDL/Verilog 設計を生成することはできません。
+以下は、SpinalHDLのチェックの非網羅的なリストです：
 
-* Assignment overlapping
-* Clock crossing
-* Hierarchy violation
-* Combinatorial loops
-* Latches
-* Undriven signals
-* Width mismatch
-* Unreachable switch statements
+* 代入の重複
+* クロックのクロッシング
+* 階層違反
+* 組合せループ
+* ラッチ
+* 駆動されていない信号
+* 幅の不一致
+* アンリーチャブルなスイッチ文
 
-On each SpinalHDL error report, you will find a stack trace, which can be useful to accurately find out where the design error is.
-These design checks may look like overkill at first glance, but they becomes invaluable as soon as you start to move away from the traditional way of doing hardware description.
+SpinalHDL のエラーレポートには、デザインエラーの正確な場所を特定するのに役立つスタックトレースが含まれています。
+これらのデザインチェックは初めて見たときには過剰なように思えるかもしれませんが、
+従来のハードウェア記述方法から離れ始めるとますます貴重になります。
 
 .. toctree::
    :glob:

@@ -2,25 +2,25 @@
 Assignment overlap
 ==================
 
-Introduction
+はじめに
 ------------
 
-SpinalHDL will check that no signal assignment completely erases a previous one.
+SpinalHDL は、前の割り当てを完全に消去する信号割り当てがないことを確認します。
 
-Example
+例
 -------
 
-The following code
+以下のコード
 
 .. code-block:: scala
 
    class TopLevel extends Component {
      val a = UInt(8 bits)
      a := 42
-     a := 66 // Erase the a := 42 assignment
+     a := 66 // a := 42の割り当てを完全に上書き
    }
 
-will throw the following error:
+は、次のエラーを発生させます:
 
 .. code-block:: text
 
@@ -29,7 +29,7 @@ will throw the following error:
      Source file location of the a := 66 assignment via the stack trace
      ***
 
-A fix could be:
+修正方法は次の通りです:
 
 .. code-block:: scala
 
@@ -41,7 +41,7 @@ A fix could be:
      }
    }
 
-But in the case when you really want to override the previous assignment (as there are times when overriding makes sense), you can do the following:
+ただし、前の割り当てを実際に上書きしたい場合（上書きが意味をなす場合があるため）、次のようにすることができます:
 
 .. code-block:: scala
 

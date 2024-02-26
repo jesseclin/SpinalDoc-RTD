@@ -2,15 +2,15 @@
 Combinatorial loop
 ==================
 
-Introduction
+はじめに
 ------------
 
-SpinalHDL will check that there are no combinatorial loops in the design.
+SpinalHDL は、設計内に組み合わせループがないかどうかを確認します。
 
-Example
+例
 -------
 
-The following code:
+次のコード：
 
 .. code-block:: scala
 
@@ -26,7 +26,7 @@ The following code:
      c := 0
    }
 
-will throw :
+は次のエラーを発生します：
 
 .. code-block:: text
 
@@ -44,7 +44,7 @@ will throw :
        (toplevel/b :  UInt[8 bits])
        (toplevel/a :  UInt[8 bits])
 
-A possible fix could be:
+修正方法の一例は次のとおりです：
 
 .. code-block:: scala
 
@@ -60,21 +60,21 @@ A possible fix could be:
      c := 0
    }
 
-False-positives
+誤検知
 ---------------
 
-It should be said that SpinalHDL's algorithm to detect combinatorial loops can be pessimistic, and it may give false positives.
-If it is giving a false positive, you can manually disable loop checking on one signal of the loop like so:
+SpinalHDL の組み合わせループを検出するアルゴリズムは悲観的であり、誤検知を与える場合があります。
+誤検知が発生している場合は、ループの1つの信号でループのチェックを手動で無効にできます。次のように：
 
 .. code-block:: scala
 
    class TopLevel extends Component {
      val a = UInt(8 bits)
      a := 0
-     a(1) := a(0) // False positive because of this line
+     a(1) := a(0) // この行が原因で誤検知が発生している
    }
 
-could be fixed by :
+次のように修正できます：
 
 .. code-block:: scala
 
@@ -84,5 +84,6 @@ could be fixed by :
      a(1) := a(0)
    }
 
-It should also be said that assignments such as ``(a(1) := a(0))`` can make some tools like `Verilator <https://www.veripool.org/wiki/verilator>`_ unhappy.
-It may be better to use a ``Vec(Bool(), 8)`` in this case.
+また、 ``(a(1) := a(0))`` のような代入は、 `Verilator <https://www.veripool.org/wiki/verilator>`_ などの一部のツールを不快にする可能性があります。
+この場合は ``Vec(Bool(), 8)`` を使用した方が良いかもしれません。
+

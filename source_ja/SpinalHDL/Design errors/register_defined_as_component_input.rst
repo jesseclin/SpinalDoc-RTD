@@ -2,17 +2,17 @@
 Register defined as component input
 ===================================
 
-Introduction
+導入
 ------------
 
-In SpinalHDL, you are not allowed to define a component that has a register as an input.
-The reasoning behind this is to prevent surprises when the user tries to drive the inputs of child components with the registered signal.
-If a registered input is desired, you will need to declare the unregistered input in the ``io`` bundle, and register the signal in the body of the component.
+SpinalHDL では、レジスタを入力として持つコンポーネントを定義することは許されていません。
+これは、ユーザーが登録されたシグナルで子コンポーネントの入力をドライブしようとしたときに予期せぬ動作を防ぐためのものです。
+登録された入力が必要な場合は、 ``io`` バンドルで非登録の入力を宣言し、コンポーネントの本体でシグナルを登録する必要があります。
 
-Example
+例
 -------
 
-The following code :
+次のコード：
 
 .. code-block:: scala
 
@@ -22,7 +22,7 @@ The following code :
      }
    }
 
-will throw:
+次のエラーが発生します：
 
 .. code-block:: text
 
@@ -31,7 +31,7 @@ will throw:
      Source file location of the toplevel/io_a definition via the stack trace
      ***
 
-A fix could be :
+修正方法は以下の通りです：
 
 .. code-block:: scala
 
@@ -41,7 +41,7 @@ A fix could be :
      }
    }
 
-If a registered ``a`` is required, it can be done like so:
+登録された ``a`` が必要な場合は、次のように行います：
 
 .. code-block:: scala
 
