@@ -3,11 +3,14 @@ Setup and installation of GHDL
 ==============================
 
 .. note::
-   If you installed the recommended oss-cad-suite during SpinalHDL :ref:`setup <Install>` you
-   can skip the instructions below - but you need to activate the oss-cad-suite environment.
+   SpinalHDL の :ref:`セットアップ <Install>` 中に推奨される oss-cad-suite をインストールした場合、
+   以下の手順をスキップできますが、oss-cad-suite 環境をアクティブにする必要があります。
 
-Even though GHDL is generally available in linux distributions package system, SpinalHDL depends on bugfixes of GHDL codebase that were added after the release of GHDL v0.37. Therefore it is reccomended to install GHDL from source.
-The C++ library boost-interprocess, which is contained in the libboost-dev package in debian-like distributions, has to be installed too. boost-interprocess is required to generate the shared memory communication interface. 
+一般的に、GHDL は Linux ディストリビューションのパッケージシステムで利用可能ですが、
+SpinalHDL は GHDL v0.37 のリリース後に追加された GHDL コードベースのバグ修正に依存しています。
+そのため、ソースから GHDL をインストールすることを推奨します。
+Debian ベースのディストリビューションでは、libboost-dev パッケージに含まれる C++ ライブラリ boost-interprocess もインストールする必要があります。
+boost-interprocess は、共有メモリ通信インターフェースの生成に必要です。
 
 Linux
 ^^^^^
@@ -15,7 +18,7 @@ Linux
 .. code-block:: sh
 
    sudo apt-get install build-essential libboost-dev git
-   sudo apt-get install gnat # Ada compiler used to buid GHDL
+   sudo apt-get install gnat # GHDL をビルドするために使用される Ada コンパイラ
    git clone https://github.com/ghdl/ghdl.git
    cd ghdl
    mkdir build
@@ -25,7 +28,6 @@ Linux
    sudo make install
 
 
+また、Java バージョンに対応する openjdk パッケージもインストールする必要があります。
 
-Also the openjdk package that corresponds to your Java version has to be installed.
-
-For more configuration options and Windows installation see `<https://ghdl.github.io/ghdl/getting.html>`_
+さらなる構成オプションや Windows のインストールについては、 `<https://ghdl.github.io/ghdl/getting.html>`_ を参照してください。

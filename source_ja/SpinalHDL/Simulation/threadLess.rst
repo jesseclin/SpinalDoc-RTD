@@ -1,25 +1,24 @@
 Thread-less API
 ==========================================
 
-There are some functions that you can use to avoid the need for threading, but which still allow you to control the flow of simulation time.
+スレッドを使用せずに、シミュレーション時間の流れを制御できるいくつかの関数があります。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - Threadless functions
-     - Description
+   * - スレッドレス関数
+     - 説明
    * - ``delayed(delay){ callback }``
-     - Register the callback code to be called at a simulation time ``delay`` steps after the current timestep.
+     - コールバックコードを現在のタイムステップからシミュレーション時間 ``delay`` ステップ後に呼び出すように登録します。
 
-The advantages of the ``delayed`` function over using a regular simulation thread + sleep are:
+``delayed`` 関数の利点は、通常のシミュレーションスレッド + sleep を使用するよりも：
 
- - Performance (no context switching)
- - Memory usage (no native JVM thread memory allocation)
+ - パフォーマンス（コンテキストの切り替えが不要）
+ - メモリ使用量（ネイティブ JVM スレッドのメモリ割り当てが不要）
 
-Some other thread-less functions related to ``ClockDomain`` objects are documented as part of the :ref:`Callback API <sim_clock_threadless>`, and some others related with the delta-cycle execution process are documented as part of the :ref:`Sensitive API <sim_sensitive_api>`
-
- 
-
+``ClockDomain`` オブジェクトに関連する他のスレッドレス関数については、 
+:ref:`Callback API <sim_clock_threadless>` の一部として文書化されており、
+デルタサイクルの実行プロセスに関連する他の関数は、:ref:`Sensitive API <sim_sensitive_api>` の一部として文書化されています。
 
 

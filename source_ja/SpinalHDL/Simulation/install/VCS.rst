@@ -4,16 +4,15 @@ VCS Simulation Configuration
 
 .. _vcs_env:
 
-Environment variable
+環境変数
 ----------------------
+以下の環境変数が定義されている必要があります：
 
-You should have several environment variables defined before:
-
-* ``VCS_HOME``: The home path to your VCS installation.
-* ``VERDI_HOME``: The home path to your Verdi installation.
-* Add ``$VCS_HOME/bin`` and ``$VERDI_HOME/bin`` to your ``PATH``.
-
-Prepend the following paths to your ``LD_LIBRARY_PATH`` to enable PLI features.
+* ``VCS_HOME``: VCS のインストール先のホームパス
+* ``VERDI_HOME``: Verdi のインストール先のホームパス
+* ``$VCS_HOME/bin`` と ``$VERDI_HOME/bin`` をあなたの PATH に追加します。
+  
+PLI 機能を有効にするために、以下のパスをあなたの ``LD_LIBRARY_PATH`` に追加してください。
 
 .. code-block:: bash
 
@@ -23,14 +22,17 @@ Prepend the following paths to your ``LD_LIBRARY_PATH`` to enable PLI features.
   export LD_LIBRARY_PATH=$VERDI_HOME/share/PLI/Ius/LINUX64:$LD_LIBRARY_PATH 
   export LD_LIBRARY_PATH=$VERDI_HOME/share/PLI/MODELSIM/LINUX64:$LD_LIBRARY_PATH 
 
-If you encounter the ``Compilation of SharedMemIface.cpp failed`` error, make sure that you have installed C++ boost library correctly.
-The header and library files path should be added to ``CPLUS_INCLUDE_PATH``, ``LIBRARY_PATH`` and ``LD_LIBRARY_PATH`` respectively.
+``Compilation of SharedMemIface.cpp failed`` エラーが発生した場合、
+C++ boost ライブラリが正しくインストールされていることを確認してください。
+ヘッダーファイルとライブラリファイルのパスは、それぞれ ``CPLUS_INCLUDE_PATH`` 、 
+``LIBRARY_PATH``、 ``LD_LIBRARY_PATH`` に追加する必要があります。
 
-User defined environment setup
+ユーザー定義の環境設定
 ------------------------------
 
-Sometimes a VCS environment setup file `synopsys_sim.setup` is required to run VCS simulation. Also you may want to run some scripts or code 
-to setup the environment just before VCS starting compilation. You can do this by `withVCSSimSetup`.
+時には、VCS シミュレーションを実行するために ``synopsys_sim.setup`` という VCS 環境設定ファイルが必要になることがあります。
+また、VCS のコンパイル開始前に環境を設定するためにスクリプトやコードを実行したい場合があります。
+これは ``withVCSSimSetup`` を使用して行うことができます。
 
 .. code-block:: scala
   
@@ -38,29 +40,30 @@ to setup the environment just before VCS starting compilation. You can do this b
     .withVCS
     .withVCSSimSetup(
       setupFile = "~/work/myproj/sim/synopsys_sim.setup",
-      beforeAnalysis = () => { // this code block will be run before VCS analysis step.
+      beforeAnalysis = () => { // VCS の解析ステップの前にこのコードブロックが実行されます
         "pwd".!
         println("Hello, VCS")
       }
     )
 
-This method will copy your own `synopsys_sim.setup` file to the VCS work directory under the `workspacePath` (default as `simWorkspace`) directory,
-and run your scripts.
+この方法により、あなた自身の `synopsys_sim.setup`` ファイルが VCS の作業ディレクトリの `workspacePath`（デフォルトは `simWorkspace`）ディレクトリにコピーされ、
+スクリプトが実行されます。
 
-VCS Flags
----------
+VCS フラグ
+--------------
 
-The VCS backend follows the three step compilation flow:
+VCS バックエンドは、次の三つの段階のコンパイルフローに従います：
 
-1. Analysis step: analysis the HDL model using ``vlogan`` and ``vhdlan``.
+1. 解析ステップ： ``vlogan`` および ``vhdlan`` を使用して HDL モデルを解析します。
 
-2. Elaborate step: elaborate the model using ``vcs`` and generate the executable hardware model.
+2. エラボレートステップ： ``vcs`` を使用してモデルをエラボレートし、実行可能なハードウェアモデルを生成します。
 
-3. Simulation step: run the simulation.
+3. シミュレーションステップ：シミュレーションを実行します。
 
-In each step, user can pass some specific flags through ``VCSFlags`` to enable some features like SDF back-annotation or multi-threads.
+各ステップで、ユーザーは SDF バックアノテーションやマルチスレッドなどの特定のフラグを ``VCSFlags`` を介して渡すことができます。
 
-``VCSFlags`` takes three parameters,
+``VCSFlags`` は三つのパラメーターを取ります。
+
 
 .. list-table::
    :header-rows: 1
@@ -71,15 +74,15 @@ In each step, user can pass some specific flags through ``VCSFlags`` to enable s
      - Description
    * - ``compileFlags``
      - ``List[String]``
-     - Flags pass to ``vlogan`` or ``vhdlan``.
+     - ``vlogan`` または ``vhdlan`` に渡されるフラグ。
    * - ``elaborateFlags``
      - ``List[String]``
-     - Flags pass to ``vcs``.
+     - ``vcs`` に渡されるフラグ。
    * - ``runFlags``
      - ``List[String]``
-     - Flags pass to executable hardware model.
+     - 実行可能なハードウェアモデルに渡されるフラグ。 
 
-For example, you pass the ``-kdb`` flags to both compilation step and elaboration step, for Verdi debugging,
+たとえば、Verdi デバッグのために ``-kdb`` フラグを両方のコンパイルステップとエラボレーションステップに渡す場合は、次のようにします。
 
 .. code-block:: scala
 
@@ -97,12 +100,12 @@ For example, you pass the ``-kdb`` flags to both compilation step and elaboratio
 
    ...
 
-Waveform generation
+ウェーブ形式の生成
 --------------------
 
-VCS backend can generate three waveform format: ``VCD``, ``VPD`` and ``FSDB`` (Verdi required).
+VCS バックエンドは、 ``VCD``、 ``VPD``、 ``FSDB`` （Verdi が必要）の三つのウェーブ形式を生成することができます。
 
-You can enable them by the following methods of ``SpinalSimConfig``,
+``SpinalSimConfig`` の以下のメソッドを使用してこれらを有効にできます。
 
 .. list-table::
    :header-rows: 1
@@ -111,19 +114,21 @@ You can enable them by the following methods of ``SpinalSimConfig``,
    * - Method
      - Description
    * - ``withWave``
-     - Enable ``VCD`` waveform.
+     - ``VCD`` ウェーブ形式を有効にします。
    * - ``withVPDWave``
-     - Enable ``VPD`` waveform.
+     - ``VPD`` ウェーブ形式を有効にします。
    * - ``withFSDBWave``
-     - Enable ``FSDB`` waveform.
+     - ``FSDB`` ウェーブ形式を有効にします。
 
-Also, you can control the wave trace depth by using ``withWaveDepth(depth: Int)``.
+また、 ``withWaveDepth(depth: Int)`` を使用してウェーブトレースの深度を制御することもできます。
 
-Simulation with ``Blackbox``
-----------------------------
 
-Sometimes, IP vendors will provide you with some design entites in Verilog/VHDL format and you want to integrate them into your SpinalHDL design. 
-The integration can done by following two ways:
+``Blackbox`` を使用したシミュレーション
+---------------------------------------------
 
-1. In a ``Blackbox`` definition, use ``addRTLPath(path: String)`` to assign a external Verilog/VHDL file to this blackbox.
-2. Use the method ``mergeRTLSource(fileName: String=null)`` of ``SpinalReport``.
+時には、IP ベンダーが Verilog/VHDL フォーマットのデザインエンティティを提供し、それらを SpinalHDL デザインに統合したい場合があります。
+統合は、以下の二つの方法で行うことができます：
+
+1. ``Blackbox`` 定義内で、 ``addRTLPath(path: String)`` を使用して外部の Verilog/VHDL ファイルをこのブラックボックスに割り当てます。
+2. ``SpinalReport`` の ``mergeRTLSource(fileName: String=null)`` メソッドを使用します。
+

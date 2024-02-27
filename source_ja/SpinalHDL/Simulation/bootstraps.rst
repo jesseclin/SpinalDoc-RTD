@@ -5,13 +5,13 @@ Boot a simulation
 Introduction
 ------------
 
-Below is an example hardware definition + testbench:
+以下は、ハードウェア定義とテストベンチの例です：
 
 .. code-block:: scala
 
    import spinal.core._
 
-   // Identity takes n bits in a and gives them back in z
+   // アイデンティティは、a から n ビットを取り、それらを z に返します
    class Identity(n: Int) extends Component {
      val io = new Bundle {
        val a = in Bits(n bits)
@@ -26,71 +26,71 @@ Below is an example hardware definition + testbench:
    import spinal.core.sim._
 
    object TestIdentity extends App {
-     // Use the component with n = 3 bits as "dut" (device under test)
+     // n = 3 ビットのコンポーネントを "dut" (device under test) として使用します
      SimConfig.withWave.compile(new Identity(3)).doSim{ dut =>
-       // For each number from 3'b000 to 3'b111 included
+       // 3'b000 から 3'b111 までの各数字に対して
        for (a <- 0 to 7) {
-         // Apply input
+         // 入力を適用します
          dut.io.a #= a
-         // Wait for a simulation time unit
+         // シミュレーション時間単位を待ちます
          sleep(1)
-         // Read output
+         // 出力を読み取ります
          val z = dut.io.z.toInt
-         // Check result
+         // 結果を確認します
          assert(z == a, s"Got $z, expected $a")
        }
      }
    }
 
-Configuration
+設定
 -------------
 
-``SimConfig`` will return a default simulation configuration instance on which you can call multiple functions to configure your simulation:
+``SimConfig`` は、シミュレーションを設定するために複数の関数を呼び出せる、デフォルトのシミュレーション設定インスタンスを返します：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 5
 
-   * - Syntax
-     - Description
+   * - 構文
+     - 説明
    * - ``withWave``
-     - Enable simulation wave capture (default format)
+     - シミュレーション波形キャプチャを有効にします（デフォルトの形式）
    * - ``withVcdWave``
-     - Enable simulation wave capture (VCD text format)
+     - シミュレーション波形キャプチャを有効にします（VCD テキスト形式）
    * - ``withFstWave``
-     - Enable simulation wave capture (FST binary format)
+     - シミュレーション波形キャプチャを有効にします（FST バイナリ形式）
    * - ``withConfig(SpinalConfig)``
-     - Specify the ``SpinalConfig`` that should be use to generate the hardware
+     - ハードウェア生成に使用される ``SpinalConfig`` を指定します
    * - ``allOptimisation``
-     - Enable all the RTL compilation optimizations to reduce simulation time (will increase compilation time)
+     - シミュレーション時間を短縮するためにすべての RTL コンパイル最適化を有効にします（コンパイル時間が増加します）
    * - ``workspacePath(path)``
-     - Change the folder where the sim files are generated
+     - シミュレーションファイルが生成されるフォルダを変更します
    * - ``withVerilator``
-     - Use Verilator as simulation backend (default)
+     - シミュレーションバックエンドとして Verilator を使用します（デフォルト）
    * - ``withGhdl``
-     - Use GHDL as simulation backend
+     - シミュレーションバックエンドとして GHDL を使用します
    * - ``withIVerilog``
-     - Use Icarus Verilog as simulation backend
+     - シミュレーションバックエンドとして Icarus Verilog を使用します
    * - ``withVCS``
-     - Use Synopsys VCS as simulation backend
+     - シミュレーションバックエンドとして Synopsys VCS を使用します
 
-Then you can call the ``compile(rtl)`` function to compile the hardware and warm up the simulator.
-This function will return a ``SimCompiled`` instance.
+その後、 ``compile(rtl)`` 関数を呼び出してハードウェアをコンパイルし、シミュレータを起動できます。
+この関数は ``SimCompiled`` インスタンスを返します。
 
-On this ``SimCompiled`` instance you can run your simulation with the following functions:
+この ``SimCompiled`` インスタンスで、次の関数を使用してシミュレーションを実行できます：
 
 ``doSim[(simName[, seed])]{dut => /* main stimulus code */}``
-  Run the simulation until the main thread runs to completion and exits/returns.
-  It will detect and report an error if the simulation gets fully stuck. As long as
-  e.g. a clock is running the simulation can continue forever, it is therefore recommended
-  to use ``SimTimeout(cycles)`` to limit the possible runtime.
+  シミュレーションを実行し、メインスレッドが完了して終了／リターンするまで実行します。
+  シミュレーションが完全に停止した場合、エラーを検出して報告します。
+  たとえば、クロックが実行されている場合、シミュレーションは永遠に続行する可能性があるため、
+  可能な実行時間を制限するために ``SimTimeout(cycles)`` を使用することが推奨されます。
 
 ``doSimUntilVoid[(simName[, seed])]{dut => ...}``
-  Run the simulation until it is ended by calling either ``simSuccess()`` or ``simFailure()``.
-  The main stimulus thread can continue or exit early. As long as there are events to process,
-  the simulation will continue. The simulation will report an error if it gets fully stuck.
+  シミュレーションを実行し、 ``simSuccess()`` または ``simFailure()`` の呼び出しによって終了するまで実行します。
+  メインスティミュラススレッドは続行するか早期に終了できます。
+  イベントを処理する必要がある限り、シミュレーションは続行されます。シミュレーションが完全に停止した場合、エラーを報告します。
 
-The following testbench template will use the following toplevel : 
+以下のテストベンチのテンプレートは、次のトップレベルを使用します：
 
 .. code-block:: scala
     
@@ -99,7 +99,7 @@ The following testbench template will use the following toplevel :
       counter := counter + 1
    }
 
-Here is a template with many simulation configurations:
+以下は、多くのシミュレーション設定を持つテンプレートです：
 
 .. code-block:: scala
     
@@ -113,10 +113,10 @@ Here is a template with many simulation configurations:
      .compile(new TopLevel)
      .doSim { dut =>
        SimTimeout(1000)
-       // Simulation code here
+       // シミュレーションコード
    }
 
-Here is a template where the simulation ends by completing the simulation main thread execution:
+以下は、シミュレーションがシミュレーションメインスレッドの実行を完了して終了するテンプレートです：
 
 .. code-block:: scala
 
@@ -126,8 +126,8 @@ Here is a template where the simulation ends by completing the simulation main t
       dut.clockDomain.waitSamplingWhere(dut.counter.toInt == 20)
       println("done")
     }
-    
-Here is a template where the simulation ends by explicitly calling `simSuccess()`:
+
+以下は、シミュレーションが `simSuccess()` を明示的に呼び出して終了するテンプレートです：
 
 .. code-block:: scala
 
@@ -141,7 +141,7 @@ Here is a template where the simulation ends by explicitly calling `simSuccess()
       }
     }
 
-Note is it equivalent to:
+これは次のコードと等価です：
 
 .. code-block:: scala
 
@@ -153,14 +153,15 @@ Note is it equivalent to:
         println("done")
         simSuccess()
       }
-      simThread.suspend() // Avoid the "doSim" completion
+      simThread.suspend() // "doSim" 完了を避ける
     }
 
 .. _env_SPINALSIM_WORKSPACE:
 
-Note that by default, the simulation files will be placed into the ``simWorkspace/xxx`` folders. You can override the simWorkspace location by setting the ``SPINALSIM_WORKSPACE`` environment variable.
+デフォルトでは、シミュレーションファイルは ``simWorkspace/xxx`` フォルダに配置されます。
+``SPINALSIM_WORKSPACE`` 環境変数を設定することで、simWorkspace の場所を上書きできます。
 
-Running multiple tests on the same hardware
+同じハードウェアに複数のテストを実行する
 -------------------------------------------
 
 .. code-block:: scala
@@ -168,21 +169,23 @@ Running multiple tests on the same hardware
     val compiled = SimConfig.withWave.compile(new Dut)
 
     compiled.doSim("testA") { dut =>
-       // Simulation code here
+       // シミュレーションコード
     }
 
     compiled.doSim("testB") { dut =>
-       // Simulation code here
+       // シミュレーションコード
     }
 
-Throw Success or Failure of the simulation from a thread
+シミュレーションの成功または失敗をスレッドから投げる
 --------------------------------------------------------
 
-At any moment during a simulation you can call ``simSuccess`` or ``simFailure`` to end it.
+シミュレーション中にいつでも、 ``simSuccess`` または ``simFailure`` を呼び出して終了できます。
 
-It is possible to make a simulation fail when it is too long, for instance because the test-bench is waiting for a condition which never occurs. To do so, call ``SimTimeout(maxDuration)`` where ``maxDuration`` is the time (in simulation units of time) after the which the simulation should be considered to have failed.
+シミュレーションが長すぎて失敗することがあります。たとえば、テストベンチが発生しない条件を待っている間などです。
+そのような場合、 ``SimTimeout(maxDuration)`` を呼び出します。
+ここで、 ``maxDuration`` はシミュレーションが失敗と見なされる時間（シミュレーション単位で表される時間）です。
 
-For instance, to make the simulation fail after 1000 times the duration of a clock cycle:
+たとえば、クロックサイクルの持続時間の 1000 倍後にシミュレーションを失敗させるには：
 
 .. code-block:: scala
 
@@ -190,32 +193,35 @@ For instance, to make the simulation fail after 1000 times the duration of a clo
     dut.clockDomain.forkStimulus(period)
     SimTimeout(1000 * period)
 
-Capturing wave for a given window before failure
+失敗前の特定ウィンドウでの波形キャプチャ
 ------------------------------------------------
 
-In the case you have a very long simulation, and you don't want to capture the wave on all of it (too bug, too slow), you have mostly 2 ways to do it.
+非常に長いシミュレーションを行っており、すべての波形をキャプチャしたくない場合（大きすぎる、遅すぎるなど）、主に2つの方法があります。
 
-Either you know already at which ``simTime`` the simulation failed, in which case you can do the following in your testbench : 
+まず、シミュレーションが失敗した ``simTime`` をすでに知っている場合は、テストベンチで次のようにします：
 
 .. code-block:: scala
     
     disableSimWave()
     delayed(timeFromWhichIWantToCapture)(enableSimWave())
 
-Or you can run a dual lock-step simulation, with one running a bit delayed from the the other one, and which will start recording the wave once the leading simulation had a failure.
+または、1つのシミュレーションがわずかに遅れて実行され、
+先行シミュレーションが失敗した後に波形の記録を開始するデュアルロックステップシミュレーションを実行することもできます。
 
-To do this, you can use the DualSimTracer utility, with parameters for the compiled hardware, the window of time you want to capture before failure, and a seed.
+これを行うには、DualSimTracer ユーティリティを使用します。コンパイルされたハードウェア、
+失敗前にキャプチャしたい時間ウィンドウ、およびシードのパラメータが必要です。
 
-Here is an example :
+以下は例です：
 
 .. literalinclude:: /../examples/src/main/scala/spinaldoc/libraries/sim/DualSimExample.scala
    :language: scala
 
-This will generate the following file structure : 
+これにより、次のファイル構造が生成されます：
 
-- simWorkspace/Toplevel/explorer/stdout.log : stdout of the simulation which is ahead
-- simWorkspace/Toplevel/tracer/stdout.log : stdout of the simulation doing the wave tracing
-- simWorkspace/Toplevel/tracer.fst : Waveform of the failure
+- simWorkspace/Toplevel/explorer/stdout.log：先行するシミュレーションの標準出力
+- simWorkspace/Toplevel/tracer/stdout.log：波形トレースを実行するシミュレーションの標準出力
+- simWorkspace/Toplevel/tracer.fst：失敗時の波形
 
-The scala terminal will show the explorer simulation stdout.
+Scala ターミナルには、explorer シミュレーションの標準出力が表示されます。
+
 

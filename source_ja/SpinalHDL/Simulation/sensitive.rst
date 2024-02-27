@@ -3,16 +3,16 @@
 Sensitive API
 ==========================================
 
-You can register callback functions to be called on each delta-cycle of the simulation:
+シミュレーションの各デルタサイクルで呼び出されるコールバック関数を登録できます：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - Sensitive functions
-     - Description
+   * - センシティブ関数
+     - 説明
    * - ``forkSensitive { callback }``
-     - Register the callback code to be called at each delta-cycle of the simulation
+     - シミュレーションの各デルタサイクルで呼び出すように、コールバックコードを登録します
    * - ``forkSensitiveWhile { callback }``
-     - Register the callback code to be called at each delta-cycle of the simulation, while the callback return value is true (meaning it should be rescheduled for the next delta-cycle)
+     - コールバックの戻り値が true の間（つまり、次のデルタサイクルのために再スケジュールされるべきことを意味する）に、シミュレーションの各デルタサイクルで呼び出すように、コールバックコードを登録します
 

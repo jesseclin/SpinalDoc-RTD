@@ -1,31 +1,32 @@
 Thread-full API
 ==========================================
 
-In SpinalSim, you can write your testbench by using multiple threads in a similar way to SystemVerilog, and a bit like VHDL/Verilog process/always blocks. 
-This allows you to write concurrent tasks and control the simulation time using a fluent API.
+SpinalSim では、SystemVerilog のように複数のスレッドを使用してテストベンチを記述したり、
+VHDL/Verilog のプロセス/alwaysブロックのように記述したりすることができます。
+これにより、並行タスクを記述し、流暢な API を使用してシミュレーション時間を制御できます。
 
 
-Fork and join simulation threads
+スレッドのフォークと結合
 --------------------------------
 
 .. code-block:: scala
 
-   // Create a new thread
+   // 新しいスレッドを作成します
    val myNewThread = fork {
-     // New simulation thread body
+     // 新しいシミュレーションスレッドの本体
    }
 
-   // Wait until `myNewThread` is execution is done.
+   // `myNewThread`` の実行が完了するまで待ちます
    myNewThread.join()
 
-Sleep and waitUntil
--------------------
+Sleep と waitUntil
+-----------------------
 
 .. code-block:: scala
 
-   // Sleep 1000 units of time
+   //  1000 ユニットの時間をスリープします
    sleep(1000)
 
-   // waitUntil the dut.io.a value is bigger than 42 before continuing
+   // dut.io.a の値が 42 より大きくなるまで待機します
    waitUntil(dut.io.a > 42)
 

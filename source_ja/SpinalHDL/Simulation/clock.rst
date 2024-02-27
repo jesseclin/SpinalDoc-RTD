@@ -4,110 +4,109 @@ Clock domains
 Stimulus API
 ----------------------------------
 
-Below is a list of ``ClockDomain`` stimulation functions:
+以下は、 ``ClockDomain`` の刺激関数のリストです：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 5
 
-   * - ClockDomain stimulus functions
-     - Description
+   * - ClockDomain 刺激関数
+     - 説明
    * - ``forkStimulus(period)``
-     - Fork a simulation process to generate the ClockDomain stimulus (clock, reset, softReset, clockEnable signals)
+     - クロックドメインの刺激（クロック、リセット、softReset、clockEnable 信号）を生成するシミュレーションプロセスをフォークします
    * - ``forkSimSpeedPrinter(printPeriod)``
-     - Fork a simulation process which will periodically print the simulation speed in kilo-cycles per real time second. ``printPeriod`` is in realtime seconds
+     - シミュレーション速度をキロサイクル毎のリアルタイム秒で定期的に出力するシミュレーションプロセスをフォークします。 ``printPeriod`` はリアルタイム秒単位です
    * - ``clockToggle()``
-     - Toggle the clock signal
+     - クロック信号をトグルします
    * - ``fallingEdge()``
-     - Clear the clock signal
+     - クロック信号をクリアします
    * - ``risingEdge()``
-     - Set the clock signal
+     - クロック信号を設定します
    * - ``assertReset()``
-     - Set the reset signal to its active level
+     - リセット信号をアクティブレベルに設定します
    * - ``deassertReset()``
-     - Set the reset signal to its inactive level
+     - リセット信号を非アクティブレベルに設定します
    * - ``assertClockEnable()``
-     - Set the clockEnable signal to its active level
+     - clockEnable 信号をアクティブレベルに設定します
    * - ``deassertClockEnable()``
-     - Set the clockEnable signal to its active level
+     - clockEnable 信号を非アクティブレベルに設定します
    * - ``assertSoftReset()``
-     - Set the softReset signal to its active level
+     - softReset 信号をアクティブレベルに設定します
    * - ``deassertSoftReset()``
-     - Set the softReset signal to its active level
+     - softReset 信号を非アクティブレベルに設定します
 
 Wait API
 ----------------------------------
 
-Below is a list of ``ClockDomain`` utilities that you can use to wait for a given event from the domain:
+以下は、ドメインからの特定のイベントを待機するために使用できる ``ClockDomain`` ユーティリティのリストです：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - ClockDomain wait functions
-     - Description
+   * - ClockDomain wait 関数
+     - 説明
    * - ``waitSampling([cyclesCount])``
-     - Wait until the ``ClockDomain`` makes a sampling, (active clock edge && deassertReset && assertClockEnable)
+     - ``ClockDomain`` がサンプリングを行うまで待機します（アクティブクロックエッジ && リセットの非アサート && クロック有効のアサート）
    * - ``waitRisingEdge([cyclesCount])``
-     - Wait cyclesCount rising edges on the clock; cycleCount defaults to 1 cycle if not otherwise specified. Note, cyclesCount = 0 is legal, and the function is not sensitive to reset/softReset/clockEnable
+     - クロック上で cyclesCount の立ち上がりエッジを待機します；cycleCount は指定されていない場合、1 サイクルにデフォルトします。注意：cyclesCount = 0 は合法であり、この関数はリセット/ソフトリセット/クロック有効に対して感度がありません
    * - ``waitFallingEdge([cyclesCount])``
-     - Same as ``waitRisingEdge`` but for the falling edge
+     - ``waitRisingEdge`` と同様ですが、下降エッジの場合
    * - ``waitActiveEdge([cyclesCount])``
-     - Same as ``waitRisingEdge`` but for the edge level specified by the ``ClockDomainConfig``
+     - ``ClockDomainConfig`` で指定されたエッジレベルに対して ``waitRisingEdge`` と同様に待機します
    * - ``waitRisingEdgeWhere(condition)``
-     - Same as ``waitRisingEdge``, but to exit, the boolean ``condition`` must be true when the rising edge occurs
+     - ``waitRisingEdge`` と同様ですが、終了するには、立ち上がりエッジが発生したときにブール値の ``condition`` が true でなければなりません
    * - ``waitFallingEdgeWhere(condition)``
-     - Same as ``waitRisingEdgeWhere``, but for the falling edge
+     - ``waitRisingEdgeWhere`` と同様ですが、下降エッジの場合
    * - ``waitActiveEdgeWhere(condition)``
-     - Same as ``waitRisingEdgeWhere``, but for the edge level specified by the ``ClockDomainConfig``
+     - ``waitRisingEdgeWhere`` と同様ですが、 ``ClockDomainConfig`` で指定されたエッジレベルに対して
    * - ``waitSamplingWhere(condition) : Boolean``
-     - Wait until a clockdomain sampled and the given condition is true        
+     - クロックドメインがサンプリングされ、指定された条件が true になるまで待機します
    * - ``waitSamplingWhere(timeout)(condition) : Boolean``
-     - Same as waitSamplingWhere defined above, but will never block more than timeout cycles. Return true if the exit condition came from the timeout
-     
+     - 上記で定義された waitSamplingWhere と同様ですが、タイムアウトサイクルを超えてブロックされることはありません。タイムアウトからの終了条件が true の場合、true を返します     
 
 .. warning::
-   All the functionality of the wait API can only be called directly from inside a thread, and not from a callback executed via the Callback API.
+   待機 API のすべての機能は、スレッド内から直接呼び出す必要があり、Callback API 経由で実行されるコールバックからは呼び出せません。
 
 .. _sim_clock_threadless:
 
 Callback API
 ----------------------------------
 
-Below is a list of ``ClockDomain`` utilities that you can use to wait for a given event from the domain:
+以下は、ドメインから特定のイベントを待機するために使用できる ``ClockDomain`` ユーティリティのリストです：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - ClockDomain callback functions
-     - Description
+   * - ClockDomain コールバック関数
+     - 説明
    * - ``onNextSampling { callback }``
-     - Execute the callback code only once on the next ``ClockDomain`` sample (active edge + reset off + clock enable on)
+     - 次の ``ClockDomain`` サンプル（アクティブエッジ + リセットオフ + クロック有効オン）でコールバックコードを一度だけ実行します
    * - ``onSamplings { callback }``
      - Execute the callback code each time the ``ClockDomain`` sample (active edge + reset off + clock enable on)
    * - ``onActiveEdges { callback }``
-     - Execute the callback code each time the ``ClockDomain`` clock generates its configured edge
+     - 各 ``ClockDomain`` サンプル（アクティブエッジ + リセットオフ + クロック有効オン）でコールバックコードを実行します
    * - ``onEdges { callback }``
-     - Execute the callback code each time the ``ClockDomain`` clock generates a rising or falling edge
+     - 各 ``ClockDomain`` クロックがその構成されたエッジを生成するたびに、コールバックコードを実行します
    * - ``onRisingEdges { callback }``
-     - Execute the callback code each time the ``ClockDomain`` clock generates a rising edge
+     - 各 ``ClockDomain`` クロックが立ち上がりエッジまたは立ち下がりエッジを生成するたびに、コールバックコードを実行します
    * - ``onFallingEdges { callback }``
-     - Execute the callback code each time the ``ClockDomain`` clock generates a falling edge
+     - 各 ``ClockDomain`` クロックが立ち上がりエッジを生成するたびに、コールバックコードを実行します
    * - ``onSamplingWhile { callback : Boolean }``
-     - Same as onSampling, but you can stop it (forever) by letting the callback returning false
+     - onSampling と同様ですが、コールバックが false を返すと（永久に）停止します
      
 
 
 Default ClockDomain
 ----------------------------------
 
-You can access the default ``ClockDomain`` of your toplevel as shown below:
+以下のように、トップレベルのデフォルトの ``ClockDomain`` にアクセスできます：
 
 .. code-block:: scala
 
-   // Example of thread forking to generate a reset, and then toggling the clock each 5 time units.
-   // dut.clockDomain refers to the implicit clock domain created during component instantiation.
+   // リセットを生成するためのスレッドのフォークと、その後、クロックを 5 タイムユニットごとにトグルする例
+   // dut.clockDomain は、コンポーネントのインスタンス化中に作成された暗黙のクロックドメインを参照します。
    fork {
      dut.clockDomain.assertReset()
      dut.clockDomain.fallingEdge()
@@ -118,13 +117,13 @@ You can access the default ``ClockDomain`` of your toplevel as shown below:
      }
    }
 
-Note that you can also directly fork a standard reset/clock process:
+また、標準のリセット/クロックプロセスを直接フォークすることもできます：
 
 .. code-block:: scala
 
    dut.clockDomain.forkStimulus(period = 10)
 
-An example of how to wait for a rising edge on the clock:
+クロックの立ち上がりエッジを待機する方法の例：
 
 .. code-block:: scala
 
@@ -134,9 +133,10 @@ An example of how to wait for a rising edge on the clock:
 New ClockDomain
 --------------------------------
 
-If your toplevel defines some clock and reset inputs which aren't directly integrated into their ``ClockDomain``, you can define their corresponding ``ClockDomain`` directly in the testbench:
+もし、あなたのトップレベルが、直接的に ``ClockDomain`` に統合されていないいくつかのクロックとリセットの入力を定義している場合、
+それらの対応する ClockDomain をテストベンチで直接定義することができます：
 
 .. code-block:: scala
 
-   // In the testbench
+   // テストベンチ内で
    ClockDomain(dut.io.coreClk, dut.io.coreReset).forkStimulus(10)

@@ -1,13 +1,13 @@
 SBT setup for simulation
 ========================
 
-To enable SpinalSim, the following lines have to be added in your build.sbt file :
+SpinalSim を有効にするには、build.sbt ファイルに次の行を追加する必要があります：
 
 .. code-block:: scala
 
    fork := true
 
-Also the following imports have to be added in testbenches sources :
+また、テストベンチのソースコードに次のインポートも追加する必要があります：
 
 .. code-block:: scala
 
@@ -16,7 +16,7 @@ Also the following imports have to be added in testbenches sources :
 
 .. _sim backend install:
 
-Also, if you need to use gmake instead of make (ex OpenBSD) you can set the SPINAL_MAKE_CMD environnement variable to "gmake"
+また、make の代わりに gmake（例：OpenBSD）を使用する必要がある場合は、SPINAL_MAKE_CMD 環境変数を "gmake" に設定できます。
 
 Backend-dependent installation instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
