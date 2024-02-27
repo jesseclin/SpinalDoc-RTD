@@ -2,7 +2,8 @@
 Report
 ======
 
-You can add debugging in RTL for simulation, using the following syntax:
+シミュレーションのために RTL にデバッグを追加することができます。以下の構文を使用してください：
+
 
 .. code-block:: scala
 
@@ -18,25 +19,25 @@ You can add debugging in RTL for simulation, using the following syntax:
         report(Seq("miaou ", a, b, c, d))
     }
 
-It will generate the following Verilog code for example:
+これにより、次の Verilog コードが生成されます：
 
 .. code-block:: verilog
 
     $display("NOTE miaou %s%x%s%x", a_string, b, c_string, d);
 
-Since SpinalHDL 1.4.4, the following syntax is also supported:
+SpinalHDL 1.4.4 からは、以下の構文もサポートされています：
 
 .. code-block:: scala
 
     report(L"miaou $a $b $c $d")
 
-You can display the current simulation time using the REPORT_TIME object
+REPORT_TIME オブジェクトを使用して現在のシミュレーション時間を表示できます。
 
 .. code-block:: scala
 
     report(L"miaou $REPORT_TIME")
 
-will result in:
+これにより、次の Verilog コードが生成されます：
 
 .. code-block:: verilog
 

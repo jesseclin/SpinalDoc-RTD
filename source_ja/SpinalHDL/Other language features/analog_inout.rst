@@ -4,31 +4,36 @@
 Analog and inout
 ================
 
-Introduction
+概要
 ------------
 
-You can define native tristate signals by using the ``Analog``/``inout`` features.
-These features were added for the following reasons:
+SpinalHDL では、 ``Analog`` キーワードと ``inout`` キーワードを使用して、
+トライステート信号をネイティブに定義することができます。
 
-* Being able to add native tristate signals to the toplevel (it avoids having to manually wrap them with some hand-written VHDL/Verilog).
-* Allowing the definition of blackboxes which contain ``inout`` pins.
-* Being able to connect a blackbox's ``inout`` pin through the hierarchy to a toplevel ``inout`` pin.
+この機能が追加された理由は次のとおりです。
 
-As those features were only added for convenience, please do not try other fancy stuff with tristate logic just yet.
+* トライステート信号をトップレベルに追加できるようにするため (手動で VHDL/Verilog でラッピングする必要がなくなります)。
+* ``inout`` ピンを含むブラックボックスの定義を許可するため。
+* ブラックボックスの ``inout`` ピンを階層構造を通してトップレベルの ``inout`` ピンに接続できるようにするため。
+* 
+これらの機能は利便性向上のためだけに追加されたものであるため、トライステートロジックを使った複雑な機能の実装はまだ試さないでください。
 
-If you want to model a component like a memory-mapped GPIO peripheral, please use the :ref:`TriState/TriStateArray <section-tristate>` bundles from the Spinal standard library, which abstract over the true nature of tristate drivers.
+メモリマップド GPIO ペリフェラルのようなコンポーネントをモデリングしたい場合は、
+Spinal 標準ライブラリの  :ref:`TriState/TriStateArray <section-tristate>` バンドルを使用してください。
+このバンドルは、トライステートドライバの真の性質を抽象化しています。
 
 Analog
 ------
 
-``Analog`` is the keyword which allows a signal to be defined as something analog, which in the digital world could mean ``0``, ``1``, or ``Z`` (the disconnected, high-impedance state).
+``Analog`` キーワードは、信号をアナログ信号として定義することを許可します。
+デジタル世界では、アナログ信号は ``0``、``1``、または ``Z`` (非接続、ハイインピーダンス状態) を表すことができます。
 
-For instance:
+例えば:
 
 .. code-block:: scala
 
    case class SdramInterface(g : SdramLayout) extends Bundle {
-     val DQ    = Analog(Bits(g.dataWidth bits)) // Bidirectional data bus
+     val DQ    = Analog(Bits(g.dataWidth bits)) // 双方向データバス
      val DQM   = Bits(g.bytePerWord bits)
      val ADDR  = Bits(g.chipAddressWidth bits)
      val BA    = Bits(g.bankWidth bits)
@@ -38,14 +43,14 @@ For instance:
 inout
 -----
 
-``inout`` is the keyword which allows you to set an ``Analog`` signal as a bidirectional (both "in" and "out") signal.
+``inout`` キーワードは、 ``Analog`` 信号を双方向信号 (入力と出力の両方) として設定することを許可します。
 
-For instance:
+例えば:
 
 .. code-block:: scala
 
    case class SdramInterface(g : SdramLayout) extends Bundle with IMasterSlave {
-     val DQ    = Analog(Bits(g.dataWidth bits)) // Bidirectional data bus
+     val DQ    = Analog(Bits(g.dataWidth bits)) // 双方向データバス
      val DQM   = Bits(g.bytePerWord bits)
      val ADDR  = Bits(g.chipAddressWidth bits)
      val BA    = Bits(g.bankWidth bits)
@@ -53,17 +58,18 @@ For instance:
 
      override def asMaster() : Unit = {
        out(ADDR, BA, CASn, CKE, CSn, DQM, RASn, WEn)
-       inout(DQ) // Set the Analog DQ as an inout signal of the component
+       inout(DQ) // Analog DQ をコンポーネントの inout 信号として設定
      }
    }
 
 InOutWrapper
 ------------
 
-``InOutWrapper`` is a tool which allows you to transform all ``master`` ``TriState``/``TriStateArray``/``ReadableOpenDrain`` bundles of a component into native ``inout(Analog(...))`` signals.
-It allows you to keep your hardware description free of any ``Analog``/``inout`` things, and then transform the toplevel to make it synthesis ready.
+``InOutWrapper`` は、コンポーネントのすべての ``master`` ``TriState`` / ``TriStateArray`` / ``ReadableOpenDrain`` 
+バンドルをネイティブな ``inout(Analog(...))`` 信号に変換するツールです。
+これにより、ハードウェア記述を ``Analog`` / ``inout`` 関係なく記述し、その後トップレベルを変換して合成可能なようにすることができます。
 
-For instance:
+例えば:
 
 .. code-block:: scala
 
@@ -77,13 +83,13 @@ For instance:
 
    SpinalVhdl(InOutWrapper(Apb3Gpio(32)))
 
-Will generate:
+は、以下の VHDL コードを生成します。
 
 .. code-block:: vhdl
 
    entity Apb3Gpio is
      port(
-       io_gpio : inout std_logic_vector(31 downto 0); -- This io_gpio was originally a TriStateArray Bundle
+       io_gpio : inout std_logic_vector(31 downto 0); -- この io_gpio は元々 TriStateArray バンドルでした
        io_apb_PADDR : in unsigned(3 downto 0);
        io_apb_PSEL : in std_logic_vector(0 downto 0);
        io_apb_PENABLE : in std_logic;
@@ -97,7 +103,7 @@ Will generate:
      );
    end Apb3Gpio;
 
-Instead of:
+以下のようになる代わりに:
 
 .. code-block:: vhdl
 
@@ -119,13 +125,14 @@ Instead of:
      );
    end Apb3Gpio;
 
-Manually driving Analog bundles
+Analog バンドルの手動駆動
 -------------------------------
 
-If an ``Analog`` bundle is not driven, it will default to being high-Z.
-Therefore to manually implement a tristate driver (in case the ``InOutWrapper`` type can't be used for some reason) you have to conditionally drive the signal.
+``Analog``バンドルが駆動されない場合、デフォルトで高インピーダンスになります。
+したがって、トライステート・ドライバーを手動で実装するには（ ``InOutWrapper`` タイプが使用できない場合）、
+信号を条件付きで駆動する必要があります。
 
-To manually connect a ``TriState`` signal to an ``Analog`` bundle:
+``TriState``信号を ``Analog`` バンドルに手動で接続するには：
 
 .. code-block:: scala
 

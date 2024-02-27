@@ -2,7 +2,7 @@
 Stub
 ======
 
-You can empty an Component Hierarchy as stub:
+以下のように、コンポーネント階層をスタブ化することができます：
 
 .. code-block:: scala 
 
@@ -14,10 +14,10 @@ You can empty an Component Hierarchy as stub:
        io.dy <-< io.dx
     }
     class TopLevel extends Component {
-       val dut = new SubSysModule().stub   //instance an SubSysModule as empty stub
+       val dut = new SubSysModule().stub   //サブシステムモジュールを空のスタブとしてインスタンス化
     }
    
-It will generate the following Verilog code for example:
+これは、例えば次のような Verilog コードを生成します：
 
 .. code-block:: verilog
 
@@ -40,17 +40,17 @@ It will generate the following Verilog code for example:
     endmodule
 
 
-You can also empty the top Component
+また、トップコンポーネントも空にすることができます：
 
 .. code-block:: scala
 
     SpinalVerilog(new Pinsec(500 MHz).stub)
 
-What does `stub` do ?
+`stub` は何をするのでしょうか？
 
-* first walk all the components and find out clock, then keep clock 
-* then remove all children component
-* then remove all assignment and logic we dont want 
-* tile 0 to output port
+* 最初にすべてのコンポーネントをウォークし、クロックを見つけて保持します
+* 次に、すべての子コンポーネントを削除します
+* その後、削除したいすべての代入およびロジックを削除します
+* タイル 0 から出力ポートまで
 
 

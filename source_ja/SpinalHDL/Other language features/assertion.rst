@@ -2,29 +2,29 @@
 Assertions
 ==========
 
-In addition to Scala run-time assertions, you can add hardware assertions using the following syntax:
+Scala の実行時アサーションに加えて、以下の構文を使用してハードウェアアサーションを追加できます：
 
 ``assert(assertion : Bool, message : String = null, severity: AssertNodeSeverity = Error)``
 
-Severity levels are:
+重要度のレベルは次のとおりです:
 
 .. list-table::
    :header-rows: 1
    :widths: 1 3
 
-   * - Name
-     - Description
+   * - 名前
+     - 説明
    * - NOTE
-     - Used to report an informative message
+     - 情報メッセージを報告するために使用されます
    * - WARNING
-     - Used to report an unusual case
+     - 異常なケースを報告するために使用されます
    * - ERROR
-     - Used to report an situation that should not happen
+     - 発生すべきでない状況を報告するために使用されます
    * - FAILURE
-     - Used to report a fatal situation and close the simulation
+     - 致命的な状況を報告し、シミュレーションを終了します
 
 
-One practical example could be to check that the ``valid`` signal of a handshake protocol never drops when ``ready`` is low:
+実用的な例として、ハンドシェイクプロトコルの ``ready`` が低いときに ``valid`` シグナルが落ちないことをチェックすることが挙げられます：
 
 .. code-block:: scala
 
@@ -35,7 +35,7 @@ One practical example could be to check that the ``valid`` signal of a handshake
      when(ready) {
        valid := False
      }
-     // some logic
+     // いくつかのロジック
 
      assert(
        assertion = !(valid.fall && !ready),

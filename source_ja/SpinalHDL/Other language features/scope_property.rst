@@ -3,14 +3,14 @@
 ScopeProperty
 ==================
 
-A scope property is a thing which can store values locally to the current thread. Its API can be used to set/get that value, but also to apply modification to the value for a portion of the execution in a stack manner.
+スコーププロパティは、現在のスレッドに値をローカルに保存できるものです。
+その API は、その値を設定/取得するだけでなく、実行の一部に対して値を変更するためのもので、スタックのような方法で適用することもできます。
 
-In other words it is a alternative to global variable, scala implicit, ThreadLocal.
+言い換えると、それはグローバル変数、Scala の暗黙的な変数、ThreadLocal の代替手段です。
 
-* To compare with global variable, It allow to run multiple thread running the same code indepedently
-* To compare with scala implicit, it is less intrusive in the code base
-* To compare with ThreadLocal, it has some API to collect all ScopeProperty and restore them in the same state later on
-
+* グローバル変数と比較すると、同じコードを独立して複数のスレッドで実行できます
+* Scala の暗黙的な変数と比較すると、コードベースへの影響が少なくなります
+* ThreadLocal と比較すると、すべてのスコーププロパティを収集し、後で同じ状態に復元するためのAPIがいくつかあります
 
 .. code-block:: scala
 

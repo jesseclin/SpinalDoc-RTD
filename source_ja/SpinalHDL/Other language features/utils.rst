@@ -6,49 +6,49 @@ Utils
 General
 -------
 
-Many tools and utilities are present in :ref:`spinal.lib <lib_introduction>` but some are already present in the SpinalHDL Core.
+:ref:`spinal.lib <lib_introduction>` に多くのツールやユーティリティが含まれていますが、いくつかはすでに SpinalHDL コアに含まれています。
 
 .. list-table::
    :header-rows: 1
    :widths: 3 1 4
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値
+     - 説明
    * - ``widthOf(x : BitVector)``
      - Int
-     - Return the width of a Bits/UInt/SInt signal
+     - Bits/UInt/SInt 信号の幅を返します
    * - ``log2Up(x : BigInt)``
      - Int
-     - Return the number of bits needed to represent ``x`` states
+     - ``x`` の状態を表現するのに必要なビット数を返します
    * - ``isPow2(x : BigInt)``
      - Boolean
-     - Return true if ``x`` is a power of two
+     - ``x`` が 2 の累乗であれば true を返します
    * - ``roundUp(that : BigInt, by : BigInt)``
      - BigInt
-     - Return the first ``by`` multiply from ``that`` (included)
+     - 最初の ``by`` 個の ``that``の倍数を返します（含む）
    * - ``Cat(x: Data*)``
      - Bits
-     - Concatenate all arguments, from MSB to LSB, see `Cat`_
+     - 全ての引数を MSB から LSB に連結します。 `Cat`_ を参照してください
    * - ``Cat(x: Iterable[Data])``
      - Bits
-     - Conactenate arguments, from LSB to MSB, see `Cat`_
+     - 引数を LSB から MSB に連結します。 `Cat`_ を参照してください
 
 .. _Cat:
 
 Cat
 ^^^
 
-As listed above, there are two version of ``Cat``. Both versions concatenate the signals they contain, with a subtle difference:
+上記にリストされているように、 ``Cat`` には 2つのバージョンがあります。どちらも含まれる信号を連結しますが、微妙な違いがあります：
 
-- ``Cat(x: Data*)`` takes an arbitrary number of hardware signals as parameters.
-  It mimics other HDLs and the leftmost parameter becomes the MSB of the resulting ``Bits``, the rightmost the LSB side. Said differently:
-  the input is concatenated in the order as written.
-- ``Cat(x: Iterable[Data])`` which takes a single Scala iterable collection (Seq / Set / List / ...) containing hardware signals.
-  This version places the first element of the list into the LSB, and the last into the MSB.
-
-This seeming difference comes mostly from the convention that ``Bits`` are written from the hightest index to the lowest index, while
-Lists are written down starting from index 0 to the highest index. ``Cat`` places index 0 of both conventions at the LSB.
+- ``Cat(x: Data*)`` は任意の数のハードウェア信号をパラメータとして受け取ります。
+  これは他の HDL と同様で、最も左のパラメータが生成される Bits の MSB になり、最も右のパラメータが LSB 側になります。
+  言い換えると、入力は書かれた順序で連結されます。
+- ``Cat(x: Iterable[Data])`` は、ハードウェア信号を含む単一の Scala iterable コレクション（Seq / Set / List / ...）を取ります。
+  このバージョンは、リストの最初の要素をLSBに配置し、最後の要素をMSBに配置します。
+  
+この見かけの違いは、ほとんどが、 ``Bits`` が最も高いインデックスから最も低いインデックスまで書かれるという慣習から来ていますが、
+リストはインデックス 0 から最高のインデックスまで書かれます。 ``Cat`` は両方の慣習のインデックス 0 を LSB に配置します。
 
 .. code-block:: scala
 
@@ -56,7 +56,7 @@ Lists are written down starting from index 0 to the highest index. ``Cat`` place
 
    val first = Cat(bit2, bit1, bit0)
 
-   // is equivalent to
+   // は以下と同等です
    
    val signals = List(bit0, bit1, bit2)
    val second = Cat(signals)
@@ -64,31 +64,32 @@ Lists are written down starting from index 0 to the highest index. ``Cat`` place
 Cloning hardware datatypes
 --------------------------
 
-You can clone a given hardware data type by using the ``cloneOf(x)`` function.
-It will return a new instance of the same Scala type and parameters.
+与えられたハードウェアデータ型を、``cloneOf(x)`` 関数を使用してクローンすることができます。
+これにより、同じ Scala 型とパラメータの新しいインスタンスが返されます。
 
-For example:
+例えば:
 
 .. code-block:: scala
 
    def plusOne(value : UInt) : UInt = {
-     // Will provide new instance of a UInt with the same width as ``value``
+     // ``value`` と同じ幅の UInt の新しいインスタンスを提供します
      val temp = cloneOf(value)
      temp := value + 1
      return temp
    }
 
-   // treePlusOne will become a 8 bits value
+   //  treePlusOne は 8ビットの値になります
    val treePlusOne = plusOne(U(3, 8 bits))
 
-You can get more information about how hardware data types are managed on the :ref:`Hardware types page <hardware_type>`.
+ハードウェアデータ型の管理方法については、:ref:`Hardware types page <hardware_type>` を参照してください。
 
 .. note::
-   If you use the ``cloneOf`` function on a ``Bundle``, this ``Bundle`` should be a ``case class`` or should override the clone function internally.
-
+   ``Bundle`` で ``cloneOf`` 関数を使用する場合、この ``Bundle`` は ``case class`` であるか、
+   内部でクローン関数をオーバーライドする必要があります。
+   
 .. code-block:: scala
 
-   // An example of a regular 'class' with 'override def clone()' function
+   // 'class' に 'override def clone()' 関数を持つ例
    class MyBundle(ppp : Int) extends Bundle {
       val a = UInt(ppp bits)
       override def clone = new MyBundle(ppp)
@@ -97,22 +98,23 @@ You can get more information about how hardware data types are managed on the :r
     val typeDef = HardType(new MyBundle(3))
     val y = typeDef()
 
-    cloneOf(x) // Need clone method, else it errors
-    cloneOf(y) // Is ok
+    cloneOf(x) // クローンメソッドが必要です、そうでないとエラーになります
+    cloneOf(y) // 問題ありません
 
 
 Passing a datatype as construction parameter
 --------------------------------------------
 
-Many pieces of reusable hardware need to be parameterized by some data type.
-For example if you want to define a FIFO or a shift register, you need a parameter to specify which kind of payload you want for the component.
+多くの再利用可能なハードウェアの部品は、あるデータ型によってパラメータ化される必要があります。
+例えば、FIFO やシフトレジスタを定義したい場合、コンポーネントでどの種類のペイロードを使用するかを指定するパラメータが必要です。
 
-There are two similar ways to do this.
+これを行うための2つの類似した方法があります。
 
 The old way
 ^^^^^^^^^^^
 
-A good example of the old way to do this is in this definition of a ``ShiftRegister`` component:
+これを行う古い方法の良い例は、 ``ShiftRegister`` コンポーネントの定義です：
+
 
 .. code-block:: scala
 
@@ -124,20 +126,20 @@ A good example of the old way to do this is in this definition of a ``ShiftRegis
      // ...
    }
 
-And here is how you can instantiate the component:
+そして、コンポーネントをインスタンス化する方法は以下の通りです：
 
 .. code-block:: scala
 
    val shiftReg = ShiftRegister(Bits(32 bits), depth = 8)
 
-As you can see, the raw hardware type is directly passed as a construction parameter.
-Then each time you want to create an new instance of that kind of hardware data type, you need to use the ``cloneOf(...)`` function.
-Doing things this way is not super safe as it's easy to forget to use ``cloneOf``.
+ご覧の通り、生のハードウェアタイプが直接構築パラメータとして渡されます。
+その後、その種類のハードウェアデータ型の新しいインスタンスを作成するたびに、 ``cloneOf(...)`` 関数を使用する必要があります。
+この方法で作業を行うのは、 ``cloneOf`` を使用するのを忘れるのが簡単なため、非常に安全ではありません。
 
 The safe way
 ^^^^^^^^^^^^
 
-An example of the safe way to pass a data type parameter is as follows:
+データ型パラメータを安全に渡す方法の例は次の通りです：
 
 .. code-block:: scala
 
@@ -149,57 +151,59 @@ An example of the safe way to pass a data type parameter is as follows:
      // ...
    }
 
-And here is how you instantiate the component (exactly the same as before):
+そして、コンポーネントをインスタンス化する方法は以下の通りです（前述のものとまったく同じです）：
 
 .. code-block:: scala
 
    val shiftReg = ShiftRegister(Bits(32 bits), depth = 8)
 
-Notice how the example above uses a ``HardType`` wrapper around the raw data type ``T``, which is a "blueprint" definition of a hardware data type.
-This way of doing things is easier to use than the "old way", because to create a new instance of the hardware data type you only need to call the ``apply`` function of that ``HardType`` (or in other words, just add parentheses after the parameter).
+上記の例では、生のデータ型 ``T`` の周りに ``HardType`` ラッパーを使用しており、これはハードウェアデータ型の「設計図」の定義です。
+この方法は、「旧式の方法」よりも使いやすいです。なぜなら、ハードウェアデータ型の新しいインスタンスを作成するには、
+その ``HardType`` の ``apply`` 関数を呼び出すだけで済むからです（言い換えると、パラメータの後ろに括弧を追加するだけです）。
 
-Additionally, this mechanism is completely transparent from the point of view of the user, as a hardware data type can be implicitly converted into a ``HardType``.
+さらに、このメカニズムはユーザーの観点から完全に透明であり、ハードウェアデータ型は暗黙的に ``HardType`` に変換されることがあります。
 
 Frequency and time
 ------------------
 
-SpinalHDL has a dedicated syntax to define frequency and time values:
+SpinalHDLには、周波数や時間値を定義するための専用の構文があります：
 
 .. code-block:: scala
 
-   val frequency = 100 MHz	// infers type TimeNumber
-   val timeoutLimit = 3 ms	// infers type HertzNumber
-   val period = 100 us		// infers type TimeNumber
+   val frequency = 100 MHz	// 型 HertzNumber が推論されます
+   val timeoutLimit = 3 ms	// 型 TimeNumber が推論されます
+   val period = 100 us		// 型 TimeNumber が推論されます
 
-   val periodCycles = frequency * period             // infers type BigDecimal
-   val timeoutCycles = frequency * timeoutLimit      // infers type BigDecimal
+   val periodCycles = frequency * period             // 型 BigDecimal が推論されます
+   val timeoutCycles = frequency * timeoutLimit      // 型 BigDecimal が推論されます
 
-| For time definitions you can use following postfixes to get a ``TimeNumber``:
+| 時間の定義では、以下の接尾辞を使用して ``TimeNumber`` を取得できます：
 | ``fs``, ``ps``, ``ns``, ``us``, ``ms``, ``sec``, ``mn``, ``hr``
 
-| For time definitions you can use following postfixes to get a ``HertzNumber``:
+| 周波数の定義では、以下の接尾辞を使用して ``HertzNumber`` を取得できます：
 | ``Hz``, ``KHz``, ``MHz``, ``GHz``, ``THz``
 
-``TimeNumber`` and ``HertzNumber`` are based on the ``PhysicalNumber`` class which use  scala ``BigDecimal`` to store numbers.
+`` TimeNumber`` と ``HertzNumber`` は、 ``PhysicalNumber`` クラスに基づいており、数値の保存には scala の ``BigDecimal`` が使用されています。
 
 Binary prefix
 -------------
 
-SpinalHDL allows the definition of integer numbers using binary prefix notation according to IEC.
+
+SpinalHDL では、IEC に従ったバイナリ接頭辞表記を使用して整数を定義できます。
 
 .. code-block:: scala
 
-   val memSize = 512 MiB      // infers type BigInt
-   val dpRamSize = 4 KiB      // infers type BigInt
+   val memSize = 512 MiB      // 型 BigInt が推論されます
+   val dpRamSize = 4 KiB      // 型 BigInt が推論されます
 
-The following binary prefix notations are available:
+以下のバイナリ接頭辞表記が利用可能です：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 2
 
-   * - Binary Prefix
-     - Value
+   * - バイナリ接頭辞
+     - 値
    * - Byte, Bytes
      - 1
    * - KiB
@@ -220,7 +224,7 @@ The following binary prefix notations are available:
      - 1024\ :sup:`8` == 1 << 80
 
 
-Of course, BigInt can also be printed as a string in bytes unit. ``BigInt(1024).byteUnit``.
+もちろん、BigInt はバイト単位の文字列として出力することもできます。 ``BigInt(1024).byteUnit`` 。
 
 .. code-block:: scala
 

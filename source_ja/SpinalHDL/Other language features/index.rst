@@ -2,22 +2,24 @@
 Other language features
 =======================
 
-The core of the language defines the syntax for many features:
+SpinalHDL のコアとなる部分は、さまざまな機能の構文を定義しています:
 
-* Types / Literals
-* Register / Clock domains
-* Component / Area
-* RAM / ROM
+* 型とリテラル
+* レジスタとクロックドメイン
+* コンポーネントとエリア
+* RAM/ROM
 * When / Switch / Mux
-* BlackBox (to integrate VHDL or Verilog IPs inside Spinal)
-* SpinalHDL to VHDL converter
+* BlackBox ( VHDL や Verilog で記述された既存の IP を利用するための機能)
+* SpinalHDL から VHDL への変換: SpinalHDL で記述された回路を VHDL 形式に変換する機能
 
-Then, by using these features, you can define digital hardware, and also build powerful libraries and abstractions.
-It's one of the major advantages of SpinalHDL over other commonly used HDLs, because you can extend the language without having knowledge about the compiler.
+これらの機能を利用して、デジタル回路を定義したり、強力なライブラリや抽象化を作成することができます。
 
-One good example of this is the :ref:`SpinalHDL lib <lib_introduction>` which adds many utilities, tools, buses, and methodologies.
+SpinalHDL が他の一般的な HDL と比べて大きな利点の一つは、コンパイラの詳細な知識がなくても言語を拡張できることです。
 
-To use features introduced in the following chapter you need to ``import spinal.core._`` in your sources.
+この利点を活用した良い例として、 :ref:`SpinalHDL lib <lib_introduction>` があります。このライブラリは、ユーティリティ、ツール、バス、設計手法など、さまざまな機能を提供します。
+
+以降の章で紹介される機能を使用するには、ソースコードで ``import spinal.core._`` をインポートする必要があります
+
 
 .. toctree::
    :hidden:

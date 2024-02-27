@@ -4,31 +4,32 @@
 VHDL and Verilog generation
 ===========================
 
-Generate VHDL and Verilog from a SpinalHDL Component
------------------------------------------------------
+SpinalHDL コンポーネントから VHDL と Verilog を生成する
+---------------------------------------------------------------
 
-To generate the VHDL from a SpinalHDL component you just need to call ``SpinalVhdl(new YourComponent)`` in a Scala ``main``.
+SpinalHDL コンポーネントから VHDL を生成するには、Scala の ``main`` 内で ``SpinalVhdl(new YourComponent)`` を呼び出すだけです。
 
-Generating Verilog is exactly the same, but with ``SpinalVerilog`` in place of ``SpinalVHDL``
+Verilog を生成する方法も同様ですが、 ``SpinalVHDL`` の代わりに ``SpinalVerilog`` を使用します。
+
 
 .. code-block:: scala
 
    import spinal.core._
 
-   // A simple component definition.
+   // 単純なコンポーネントの定義
    class MyTopLevel extends Component {
-     // Define some input/output signals. Bundle like a VHDL record or a Verilog struct.
+     // VHDL のレコードや Verilog の struct のように、入出力信号をバンドルします。
      val io = new Bundle {
        val a = in  Bool()
        val b = in  Bool()
        val c = out Bool()
      }
 
-     // Define some asynchronous logic.
+     // 非同期ロジックを定義します。
      io.c := io.a & io.b
    }
 
-   // This is the main function that generates the VHDL and the Verilog corresponding to MyTopLevel.
+   // MyTopLevel に対応する VHDL と Verilog を生成するメイン関数です。
    object MyMain {
      def main(args: Array[String]) {
        SpinalVhdl(new MyTopLevel)
@@ -37,67 +38,68 @@ Generating Verilog is exactly the same, but with ``SpinalVerilog`` in place of `
    }
 
 .. important::
-   ``SpinalVhdl`` and ``SpinalVerilog`` may need to create multiple instances of your component class, therefore the first argument is not a ``Component`` reference, but a function that returns a new component.
+   ``SpinalVhdl`` および ``SpinalVerilog`` では、コンポーネントクラスの複数のインスタンスを作成する必要がある場合があります。
+   そのため、第1引数は ``Component`` の参照ではなく、新しいコンポーネントを返す関数です。
 
 .. important::
-   The ``SpinalVerilog`` implementation began the 5th of June, 2016.
-   This backend successfully passes the same regression tests as the VHDL one (RISCV CPU, Multicore and pipelined mandelbrot, UART RX/TX, Single clock fifo, Dual clock fifo, Gray counter, ...).
+   ``SpinalVerilog`` の実装は 2016 年 6 月 5 日に開始されました。
+   このバックエンドは、VHDL と同じリグレッションテスト（RISCV CPU、マルチコアおよびパイプライン化されたマンデルブロ、UART RX/TX、シングルクロック FIFO、デュアルクロックFIFO、グレーカウンターなど）を正常にパスしています。
 
-   If you have any issues with this new backend, please make a `Github issue <https://github.com/SpinalHDL/SpinalHDL/issues>`_ describing the problem.
-
-Parametrization from Scala
+   この新しいバックエンドに問題がある場合は、 `GitHubの問題 <https://github.com/SpinalHDL/SpinalHDL/issues>`_  に問題を説明してください。
+   
+Scala からのパラメータ化
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 5
 
-   * - Argument name
-     - Type
-     - Default
-     - Description
+   * - 引数名
+     - タイプ
+     - デフォルト
+     - 説明
    * - ``mode``
      - SpinalMode
      - null
-     - | Set the SpinalHDL hdl generation mode.
-       | Can be set to ``VHDL`` or ``Verilog``
+     - | SpinalHDL の hdl 生成モードを設定します。
+       | ``VHDL`` または ``Verilog`` に設定できます。
    * - ``defaultConfigForClockDomains``
      - ClockDomainConfig
      - | RisingEdgeClock
        | AsynchronousReset
        | ResetActiveHigh
        | ClockEnableActiveHigh
-     - Set the clock configuration that will be used as the default value for all new ``ClockDomain``.
+     - すべての新しい ``ClockDomain`` に対してデフォルト値として使用されるクロック構成を設定します。
    * - ``onlyStdLogicVectorAtTopLevelIo``
      - Boolean
      - false
-     - Change all unsigned/signed toplevel io into std_logic_vector.
+     - すべての unsigned/signed をトップレベル io に変更して std_logic_vector にします。
    * - ``defaultClockDomainFrequency``
      - IClockDomainFrequency
      -  UnknownFrequency
-     - Default clock frequency.
+     - デフォルトのクロック周波数。
    * - ``targetDirectory``
      - String
-     - Current directory
-     - Directory where files are generated.
+     - 現在のディレクトリ
+     - ファイルが生成されるディレクトリ。
 
 
-And this is the syntax to specify them:
+そして、それらを指定する構文は次のとおりです：
 
 .. code-block:: scala
 
    SpinalConfig(mode=VHDL, targetDirectory="temp/myDesign").generate(new UartCtrl)
 
-   // Or for Verilog in a more scalable formatting:
+   // またはよりスケーラブルなフォーマットでVerilogの場合：
    SpinalConfig(
      mode=Verilog,
      targetDirectory="temp/myDesign"
    ).generate(new UartCtrl)
 
-Parametrization from shell
+シェルからのパラメータ化
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can also specify generation parameters by using command line arguments.
+コマンドライン引数を使用して生成パラメータを指定することもできます。
 
 .. code-block:: scala
 
@@ -105,7 +107,7 @@ You can also specify generation parameters by using command line arguments.
      SpinalConfig.shell(args)(new UartCtrl)
    }
 
-The syntax for command line arguments is:
+コマンドライン引数の構文は次のとおりです：
 
 .. code-block:: text
 
@@ -120,32 +122,34 @@ The syntax for command line arguments is:
      -o <value> | --targetDirectory <value>
            Set the target directory
 
-Generated VHDL and Verilog
---------------------------
 
-How a SpinalHDL RTL description is translated into VHDL and Verilog is important:
+生成された VHDL および Verilog
+---------------------------------
 
-* Names in Scala are preserved in VHDL and Verilog.
-* ``Component`` hierarchy in Scala is preserved in VHDL and Verilog.
-* ``when`` statements in Scala are emitted as if statements in VHDL and Verilog.
-* ``switch`` statements in Scala are emitted as case statements in VHDL and Verilog in all standard cases.
+SpinalHDL の RTL 記述が VHDL および Verilog にどのように変換されるかは重要です：
 
-Organization
+* Scala の名前は VHDL および Verilog で保持されます。
+* Scala の ``Component`` 階層は VHDL および Verilog で保持されます。
+* Scala の ``when`` 文は、VHDL および Verilog においてはif文として出力されます。
+* Scala の ``switch`` 文は、標準的なケースでは VHDL および Verilog において case 文として出力されます。
+  
+組織
 ^^^^^^^^^^^^
 
-When you use the VHDL generator, all modules are generated into a single file which contain three sections:
+VHDL ジェネレーターを使用すると、すべてのモジュールが1つのファイルに生成されます。そのファイルには次の3つのセクションが含まれています：
 
-#. A package that contains the definition of all Enums
-#. A package that contains functions used by the architectural elements
-#. All components needed by your design
+#. すべての Enum の定義を含むパッケージ
+#. アーキテクチャ要素で使用される関数を含むパッケージ
+#. デザインに必要なすべてのコンポーネント
 
-When you use the Verilog generation, all modules are generated into a single file which contains two sections:
+Verilog ジェネレーションを使用すると、すべてのモジュールが1つのファイルに生成されます。そのファイルには次の2つのセクションが含まれています：
 
-#. All enumeration definitions used
-#. All modules needed by your design
+#. 使用されるすべての Enum の定義
+#. デザインに必要なすべてのモジュール
+ 
 
-Combinational logic
-^^^^^^^^^^^^^^^^^^^
+組み合わせロジック
+^^^^^^^^^^^^^^^^^^^^^
 
 Scala:
 
@@ -207,8 +211,8 @@ VHDL:
      end process;
    end arch;
 
-Sequential logic
-^^^^^^^^^^^^^^^^
+シーケンシャルロジック
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Scala:
 
@@ -279,12 +283,12 @@ VHDL:
 
 .. _vhdl-and-verilog-attributes:
 
-VHDL and Verilog attributes
+VHDL および Verilog 属性
 ---------------------------
 
-In some situations, it is useful to give attributes for some signals in a design to modify how they are synthesized.
+特定の状況では、設計内の一部の信号に属性を付与して、それらが合成される方法を変更することが役立ちます。
 
-To do that, you can call the following functions on any signals or memories in the design:
+そのためには、設計内の任意の信号やメモリに対して、以下の関数を呼び出すことができます:
 
 .. list-table::
    :header-rows: 1
@@ -293,19 +297,19 @@ To do that, you can call the following functions on any signals or memories in t
    * - Syntax
      - Description
    * - ``addAttribute(name)``
-     - Add a boolean attribute with the given ``name`` set to true
+     - 指定された ``name`` を持つブール属性をtrueに設定します
    * - ``addAttribute(name, value)``
-     - Add a string attribute with the given ``name`` set to ``value``
+     - 指定された ``name`` を持つ文字列属性を ``value`` に設定します
 
 
-Example:
+例:
 
 .. code-block:: scala
 
    val pcPlus4 = pc + 4
    pcPlus4.addAttribute("keep")
 
-Produced declaration in VHDL:
+VHDLで生成される宣言：
 
 .. code-block:: vhdl
 
@@ -313,7 +317,7 @@ Produced declaration in VHDL:
    signal pcPlus4 : unsigned(31 downto 0);
    attribute keep of pcPlus4: signal is true;
 
-Produced declaration in Verilog:
+Verilogで生成される宣言：
 
 .. code-block:: verilog
 
