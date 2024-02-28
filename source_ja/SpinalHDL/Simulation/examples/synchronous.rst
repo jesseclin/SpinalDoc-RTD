@@ -3,16 +3,17 @@
 Synchronous adder
 =================
 
-This example creates a ``Component`` out of sequential logic that does some simple arithmetic on 3 operands.
+この例では、3つのオペランドに対して単純な算術演算を行うシーケンシャルロジックから ``Component`` を作成します。
 
-The test bench performs the following steps 100 times:
+テストベンチは、以下の手順を 100 回繰り返します：
 
- * Initialize ``a``, ``b``, and ``c`` to random integers in the 0..255 range.
- * Stimulate the :abbr:`DUT (Device Under Test)`'s matching ``a``, ``b``, ``c`` inputs.
- * Wait until the simulation samples the DUT's signals again.
- * Check for correct output.
+ * ``a`` 、 ``b`` 、 ``c`` を 0 から 255 の範囲のランダムな整数で初期化します。
+ * :abbr:`DUT (Device Under Test)` に対応する ``a`` 、 ``b`` 、 ``c`` の入力を刺激します。
+ * シミュレーションが DUT の信号を再度サンプリングするまで待機します。
+ * 正しい出力を確認します。
 
-The main difference between this example and the :ref:`Asynchronous adder <sim_example_asynchronous_adder>` example is that this ``Component`` has to use ``forkStimulus`` to generate a clock signal, since it is using sequential logic internally.
+この例と:ref:`Asynchronous adder <sim_example_asynchronous_adder>` の例の主な違いは、
+この ``Component`` が内部でシーケンシャルロジックを使用しているため、 ``forkStimulus`` を使用してクロック信号を生成する必要があることです。
 
 .. code-block:: scala
 

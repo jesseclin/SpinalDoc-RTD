@@ -4,11 +4,11 @@ Uart encoder
 
 .. code-block:: scala
 
-     // Fork a simulation process which will get chars typed into the simulation terminal and transmit them on the simulation uartPin.
+     // シミュレーションターミナルに入力された文字を取得し、シミュレーションの uartPin に送信するシミュレーションプロセスをフォークします。
      fork{
        uartPin #= true
        while(true) {
-         // System.in is the java equivalent of the C's stdin.
+         // System.in は C の stdin に相当するJavaの機能です。 
          if(System.in.available() != 0) {
            val buffer = System.in.read()
            uartPin #= false
@@ -22,7 +22,7 @@ Uart encoder
            uartPin #= true
            sleep(baudPeriod)
          } else {
-           sleep(baudPeriod * 10) // Sleep a little while to avoid polling System.in too often.
+           sleep(baudPeriod * 10) // System.inを頻繁にポーリングしないように、少し待機します。
          }
        }
      }

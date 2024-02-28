@@ -3,19 +3,18 @@
 Single clock fifo
 =================
 
-This example creates a ``StreamFifo``, and spawns 3 simulation threads.
-Unlike the :ref:`Dual clock fifo <sim_example_dual_clock_fifo>` example, this FIFO does not need complex clock management.
+この例では、 ``StreamFifo`` を作成し、3つのシミュレーションスレッドを生成します。
+:ref:`Dual clock fifo <sim_example_dual_clock_fifo>` の例とは異なり、この FIFO は複雑なクロック管理が必要ありません。
 
-The 3 simulation threads handle:
+3つのシミュレーションスレッドは次の処理を行います：
 
- - Managing the clock/reset
- - Pushing to the FIFO
- - Popping from the FIFO
+ - クロック/リセットの管理
+ - FIFO へのデータのプッシュ
+ - FIFO からのデータのポップ
 
-The FIFO push thread randomizes the inputs.
+FIFO へのプッシュスレッドは、入力をランダム化します。
 
-The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s outputs against the reference model (an ordinary ``scala.collection.mutable.Queue`` instance).
-
+FIFO からのポップスレッドは、:abbr:`DUT (Device Under Test)` の出力を通常の ``scala.collection.mutable.Queue`` インスタンスの参照モデルと比較します。
 
 .. code-block:: scala
 
@@ -27,7 +26,7 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
 
    object SimStreamFifoExample {
      def main(args: Array[String]): Unit = {
-       // Compile the Component for the simulator.
+       // シミュレータのためにコンポーネントをコンパイルします。
        val compiled = SimConfig.withWave.allOptimisation.compile(
          rtl = new StreamFifo(
            dataType = Bits(32 bits),
@@ -35,14 +34,14 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
          )
        )
 
-       // Run the simulation.
+       // シミュレーションを実行します。
        compiled.doSimUntilVoid{dut =>
          val queueModel = mutable.Queue[Long]()
 
          dut.clockDomain.forkStimulus(period = 10)
          SimTimeout(1000000*10)
 
-         // Push data randomly, and fill the queueModel with pushed transactions.
+         // データをランダムにプッシュし、プッシュされたトランザクションで queueModel を埋めます。
          val pushThread = fork {
            dut.io.push.valid #= false
            while(true) {
@@ -55,7 +54,7 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
            }
          }
 
-         // Pop data randomly, and check that it match with the queueModel.
+         // データをランダムにポップし、それが queueModel と一致するかどうかを確認します。
          val popThread = fork {
            dut.io.pop.ready #= true
            for(i <- 0 until 100000) {

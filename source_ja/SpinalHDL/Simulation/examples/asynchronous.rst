@@ -3,14 +3,14 @@
 Asynchronous adder
 ==================
 
-This example creates a ``Component`` out of combinational logic that does some simple arithmetic on 3 operands.
+この例では、3つのオペランドに対して単純な算術演算を行う組み合わせ論理の ``Component`` を作成します。
 
-The test bench performs the following steps 100 times:
+テストベンチは、以下の手順を 100 回実行します：
 
- * Initialize ``a``, ``b``, and ``c`` to random integers in the 0..255 range.
- * Stimulate the :abbr:`DUT (Device Under Test)`'s matching ``a``, ``b``, ``c`` inputs.
- * Wait 1 simulation timestep (to allow the inputs to propagate).
- * Check for correct output.
+ * a、b、および c を 0 から 255 の範囲のランダムな整数に初期化します。
+ * :abbr:`DUT (Device Under Test)` に一致する a、b、c の入力を刺激します。
+ * 1つのシミュレーションタイムステップ待ちます（入力が伝播するのを許可するため）。
+ * 正しい出力を確認します。
 
 .. code-block:: scala
 
@@ -37,7 +37,7 @@ The test bench performs the following steps 100 times:
            dut.io.a #= a
            dut.io.b #= b
            dut.io.c #= c
-           sleep(1) // Sleep 1 simulation timestep
+           sleep(1) // 1つのシミュレーションタイムステップ待ち
            assert(dut.io.result.toInt == ((a + b - c) & 0xFF))
            idx += 1
          }

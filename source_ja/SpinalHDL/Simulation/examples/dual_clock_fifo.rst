@@ -3,17 +3,17 @@
 Dual clock fifo
 ===============
 
-This example creates a ``StreamFifoCC``, which is designed for crossing clock domains, along with 3 simulation threads.
+この例では、クロックドメインをクロスするために設計された ``StreamFifoCC`` を作成し、3つのシミュレーションスレッドを含めています。
 
-The threads handle:
+スレッドは次のような処理を行います：
 
- - Management of the two clocks
- - Pushing to the FIFO
- - Popping from the FIFO
+ - 2つのクロックの管理
+ - FIFO へのデータのプッシュ
+ - FIFO からのデータのポップ
 
-The FIFO push thread randomizes the inputs.
+FIFO へのプッシュスレッドは、入力をランダム化します。
 
-The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s outputs against the reference model (an ordinary ``scala.collection.mutable.Queue`` instance).
+FIFO からのポップスレッドは、 :abbr:`DUT (Device Under Test)` の出力を通常の ``scala.collection.mutable.Queue`` インスタンスの参照モデルと比較します。
 
 .. code-block:: scala
 
@@ -25,7 +25,7 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
 
    object SimStreamFifoCCExample {
      def main(args: Array[String]): Unit = {
-       // Compile the Component for the simulator.
+       // シミュレータのためにコンポーネントをコンパイルします。
        val compiled = SimConfig.withWave.allOptimisation.compile(
          rtl = new StreamFifoCC(
            dataType = Bits(32 bits),
@@ -35,26 +35,26 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
          )
        )
 
-       // Run the simulation.
+       // シミュレーションを実行します。
        compiled.doSimUntilVoid{dut =>
          val queueModel = mutable.Queue[Long]()
 
-         // Fork a thread to manage the clock domains signals
+         // クロックドメイン信号を管理するスレッドをフォークします
          val clocksThread = fork {
-           // Clear the clock domains' signals, to be sure the simulation captures their first edges.
+           // クロックドメインの信号をクリアして、シミュレーションが最初のエッジを捕捉することを確認します。
            dut.pushClock.fallingEdge()
            dut.popClock.fallingEdge()
            dut.pushClock.deassertReset()
            sleep(0)
 
-           // Do the resets.
+           // リセットを実行します。
            dut.pushClock.assertReset()
            sleep(10)
            dut.pushClock.deassertReset()
            sleep(1)
 
-           // Forever, randomly toggle one of the clocks.
-           // This will create asynchronous clocks without fixed frequencies.
+           // ランダムにクロックをトグルします。
+           // これにより、固定されていない周波数の非同期クロックが作成されます。
            while(true) {
              if(Random.nextBoolean()) {
                dut.pushClock.clockToggle()
@@ -65,7 +65,7 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
            }
          }
 
-         // Push data randomly, and fill the queueModel with pushed transactions.
+         // データをランダムにプッシュし、プッシュされたトランザクションで queueModel を埋めます。
          val pushThread = fork {
            while(true) {
              dut.io.push.valid.randomize()
@@ -77,7 +77,7 @@ The FIFO pop thread handles checking the the :abbr:`DUT (Device Under Test)`'s o
            }
          }
 
-         // Pop data randomly, and check that it match with the queueModel.
+         // データをランダムにポップし、それが queueModel と一致するかどうかを確認します。
          val popThread = fork {
            for(i <- 0 until 100000) {
              dut.io.pop.ready.randomize()
