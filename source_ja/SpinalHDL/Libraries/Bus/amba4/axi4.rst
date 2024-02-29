@@ -1,21 +1,21 @@
 Axi4
 ====
 
-The AXI4 is a high bandwidth bus defined by ARM.
+AXI4 は、ARM によって定義された高帯域幅のバスです。
 
 Configuration and instanciation
 -------------------------------
 
-First each time you want to create a AXI4 bus, you will need a configuration object. This configuration object is an ``Axi4Config`` and has following arguments :
+AXI4 バスを作成するたびに、まず構成オブジェクトが必要です。この構成オブジェクトは ``Axi4Config`` であり、以下の引数を持ちます：
 
-Note : useXXX specify if the bus has XXX signal present.
+注意：useXXX は、バスに XXX 信号が存在するかどうかを指定します。
 
 .. list-table::
    :header-rows: 1
 
-   * - Parameter name
-     - Type
-     - Default
+   * - パラメータ名
+     - タイプ
+     - デフォルト
    * - addressWidth
      - Int
      - 
@@ -69,7 +69,7 @@ Note : useXXX specify if the bus has XXX signal present.
      - false
 
 
-There is in short how the AXI4 bus is defined in the SpinalHDL library :
+SpinalHDL ライブラリで AXI4 バスがどのように定義されているかを簡単に説明します：
 
 .. code-block:: scala
 
@@ -86,7 +86,7 @@ There is in short how the AXI4 bus is defined in the SpinalHDL library :
      }
    }
 
-There is a short example of usage :
+使用例を示します：
 
 .. code-block:: scala
 
@@ -102,48 +102,48 @@ There is a short example of usage :
      //...
    }
 
-Variations
-----------
+バリエーション
+------------------
 
-There is 3 other variation of the Axi4 bus :
+AXI4 バスの他に、3つのバリエーションがあります：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - Type
-     - Description
+   * - タイプ
+     - 説明
    * - Axi4ReadOnly
-     - Only AR and R channels are present
+     - AR と R チャンネルのみが存在します
    * - Axi4WriteOnly
-     - Only AW, W and B channels are present
+     - AW、W、および B チャンネルのみが存在します
    * - Axi4Shared
-     - | This variation is a library initiative.
-       | It use 4 channels, W, B ,R and also a new one which is named AWR. 
-       | The AWR channel can be used to transmit AR and AW transactions. To dissociate them, a signal ``write`` is present. 
-       | The advantage of this Axi4Shared variation is to use less area, especially in the interconnect.
+     - | このバリエーションは、ライブラリのイニシアティブです。
+       | W、B、R の4つのチャンネルを使用し、新しいチャンネルである AWR も使用します。
+       | AWR チャンネルは、AR と AW トランザクションを転送するために使用できます。それらを分離するために、 ``write`` 信号が存在します。
+       | この Axi4Shared バリエーションの利点は、特にインターコネクトでの領域を少なく使用できることです。
 
 
-Functions and operators
+関数と演算子
 -----------------------
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 5
 
-   * - Name
-     - Return
-     - Description
+   * - 名前
+     - 戻り値
+     - 説明
    * - X >> Y
      - 
-     - Connect X to Y. Able infer default values as specified in the AXI4 specification, and also to adapt some width in a safe manner.
+     - X を Y に接続します。AXI4 仕様で指定されたデフォルト値を推測でき、安全な方法で幅を適応することもできます。
    * - X << Y
      - 
-     - Do the reverse of the >> operator
+     - 演算子 ">>" の逆を行います
    * - X.toWriteOnly
      - Axi4WriteOnly
-     - Return an Axi4WriteOnly bus drive by X
+     - X によって駆動される Axi4WriteOnly バスを返します
    * - X.toReadOnly
      - Axi4ReadOnly
-     - Return an Axi4ReadOnly bus drive by X
+     - X によって駆動される Axi4ReadOnly バスを返します
 

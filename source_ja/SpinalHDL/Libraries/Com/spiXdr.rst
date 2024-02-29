@@ -2,12 +2,13 @@
 SPI XDR
 ========
 
-There is a SPI controller which support :
+SPI コントローラーは、以下をサポートしています：
 
-- half/full duplex
-- single/dual/quad SPI
-- SDR/DDR/.. data rate
+- ハーフ/フルデュプレックス
+- シングル/デュアル/クアッドSPI
+- SDR/DDR/...データレート
 
+その APB3 の実装はこちらにあります：
 
 You can find its APB3 implementation here : 
 
@@ -16,29 +17,29 @@ https://github.com/SpinalHDL/SpinalHDL/blob/68b6158700fc2440ea7980406f927262c004
 Configuration
 ----------------------------
 
-Here is an example.
+以下は例です。
 
 .. code-block:: scala
 
       Apb3SpiXdrMasterCtrl(
         SpiXdrMasterCtrl.MemoryMappingParameters(
           SpiXdrMasterCtrl.Parameters(
-            dataWidth = 8, // Each transfer will be 8 bits
-            timerWidth = 12, // The timer is used to slow down the transmition
-            spi = SpiXdrParameter( //Specify the physical SPI interface
-              dataWidth = 4, //Number of physical SPI data pins
-              ioRate = 1, //Specify the number of transfer that each spi pin can do per clock 1 => SDR, 2 => DDR
-              ssWidth = 1 //Number of chip selects
+            dataWidth = 8, // 各転送は8ビットになります
+            timerWidth = 12, // タイマーは送信を遅くします
+            spi = SpiXdrParameter( // 物理的なSPIインターフェースを指定します
+              dataWidth = 4, // 物理SPIデータピンの数
+              ioRate = 1, // 1クロックあたりの各SPIピンの転送回数を指定します。1 => SDR、2 => DDR
+              ssWidth = 1 // チップセレクトの数
             )
           )
-          .addFullDuplex(id = 0) // Add support for regular SPI (MISO / MOSI) using the mode id 0
-          .addHalfDuplex( // Add another mode
-            id = 1,  // mapped on mode id 1
-            rate = 1, // When rate is 1, the clock will do up to one toggle per cycle, divided by the (timer+1)
-                      // When rate bigger (ex 2), the controller will ignore the timer, and use the SpiXdrParameter.ioRate
-                      // capabilities to emit up to "rate" transition per clock cycle.
-            ddr = false, // sdr => 1 bit per SPI clock, DDR => 2 bits per SPI clock
-            spiWidth = 4 //Number of physical SPI data pin used for serialisation
+          .addFullDuplex(id = 0) // モード ID 0 を使用して通常のSPI（MISO / MOSI）をサポートする
+          .addHalfDuplex( // 別のモードを追加
+            id = 1,  // モード ID 1 にマップされます
+            rate = 1, // rate が 1の場合、クロックごとに 1つのトグルが行われ、（タイマー+1）で割られます
+                      // rate が大きい場合（例：2）、コントローラーはタイマーを無視し、SpiXdrParameter.ioRateを使用して
+                      // クロックサイクルあたりの最大 "rate" のトランジションを送信します。
+            ddr = false, // sdr => SPI クロックごとに 1ビット、DDR => SPI クロックごとに2ビット
+            spiWidth = 4 // シリアライゼーションに使用される物理 SPI データピンの数
           ),
           cmdFifoDepth = 32,
           rspFifoDepth = 32,
@@ -49,7 +50,7 @@ Here is an example.
 Software Driver
 ----------------------------
 
-See :
+以下を参照してください：
 
 https://github.com/SpinalHDL/SaxonSoc/blob/dev-0.3/software/standalone/driver/spi.h
 https://github.com/SpinalHDL/SaxonSoc/blob/dev-0.3/software/standalone/spiDemo/src/main.c

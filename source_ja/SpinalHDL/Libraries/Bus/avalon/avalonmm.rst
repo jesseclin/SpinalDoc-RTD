@@ -2,16 +2,18 @@
 AvalonMM
 ========
 
-The AvalonMM bus fit very well in FPGA. It is very flexible :
+AvalonMM バスは FPGA に非常に適しています。非常に柔軟性があります：
 
-* Able of the same simplicity than APB
-* Better for than AHB in many application that need bandwidth because AvalonMM has a mode that decouple read response from commands (reduce latency read latency impact).
-* Less performance than AXI but use much less area (Read and write command use the same handshake channel. The master don't need to store address of pending request to avoid Read/Write hazard)
+* APB と同じくらいシンプルな操作が可能です
+* 帯域幅が必要な多くのアプリケーションにとって、AHB よりも優れています。なぜなら、AvalonMM には読み取り応答をコマンドから分離するモードがあるためです（読み取り遅延の影響を減らす）。
+* AXI よりも性能は低いですが、領域をはるかに少なく使用します（読み取りおよび書き込みコマンドは同じハンドシェイクチャネルを使用します。マスターは読み取り/書き込みハザードを避けるために保留中のリクエストのアドレスを保存する必要はありません）
 
 Configuration and instanciation
 -------------------------------
 
-The ``AvalonMM`` Bundle has a construction argument ``AvalonMMConfig``. Because of the flexible nature of the Avalon bus, the ``AvalonMMConfig`` as many configuration elements. For more information the Avalon spec could be find on the intel website.
+``AvalonMM`` バンドルには、構成引数 ``AvalonMMConfig`` があります。 
+``Avalon`` バスの柔軟な性質から、 ``AvalonMMConfig`` には多くの構成要素があります。
+詳細については、Avalon 仕様書を Intel のウェブサイトで見つけることができます。
 
 .. code-block:: scala
 
@@ -43,46 +45,46 @@ The ``AvalonMM`` Bundle has a construction argument ``AvalonMMConfig``. Because 
                               writeWaitTime : Int = 0
                               )
 
-This configuration class has also some functions :
+この構成クラスにはいくつかの関数もあります：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 5
 
-   * - Name
-     - Return
-     - Description
+   * - 名前
+     - 戻り値
+     - 説明
    * - getReadOnlyConfig
      - AvalonMMConfig
-     - Return a similar configuration but with all write feature disabled
+     - すべての書き込み機能を無効にした類似の構成を返します
    * - getWriteOnlyConfig
      - AvalonMMConfig
-     - Return a similar configuration but with all read feature disabled
+     - すべての読み取り機能を無効にした類似の構成を返します
 
 
-This configuration companion object has also some functions to provide some ``AvalonMMConfig`` templates :
+この構成コンパニオンオブジェクトには、いくつかの ``AvalonMMConfig``  テンプレートを提供するための関数もあります：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 4
 
-   * - Name
-     - Return
-     - Description
+   * - 名前
+     - 戻り値
+     - 説明
    * - fixed(addressWidth,dataWidth,readLatency)
      - AvalonMMConfig
-     - Return a simple configuration with fixed read timings
+     - 固定された読み取りタイミングを持つ単純な構成を返します
    * - pipelined(addressWidth,dataWidth)
      - AvalonMMConfig
-     - Return a configuration with variable latency read (readDataValid)
+     - 変動レイテンシの読み取り（readDataValid）を持つ構成を返します
    * - bursted(addressWidth,dataWidth,burstCountWidth)
      - AvalonMMConfig
-     - Return a configuration with variable latency read and burst capabilities
+     - 変動レイテンシの読み取りおよびバースト機能を持つ構成を返します
 
 
 .. code-block:: scala
 
-   // Create a write only AvalonMM configuration with burst capabilities and byte enable
+   // バースト機能とバイトイネーブルを備えた書き込み専用 AvalonMM 構成を作成します
    val myAvalonConfig =  AvalonMMConfig.bursted(
                            addressWidth = addressWidth,
                            dataWidth = memDataWidth,
@@ -93,5 +95,5 @@ This configuration companion object has also some functions to provide some ``Av
                            burstOnBurstBoundariesOnly = true
                          ).getWriteOnlyConfig
 
-   // Create an instance of the AvalonMM bus by using this configuration
+   // この構成を使用して AvalonMM バスのインスタンスを作成します
    val bus = AvalonMM(myAvalonConfig)

@@ -5,7 +5,7 @@ Tilelink
 Configuration and instanciation
 -------------------------------
 
-There is a short example to define two non coherent tilelink bus instance and connect them:
+以下は、2つの非整合性 TileLink バスインスタンスを定義し、それらを接続する簡単な例です：
 
 .. code-block:: scala
 
@@ -19,7 +19,7 @@ There is a short example to define two non coherent tilelink bus instance and co
     val busA, busB = tilelink.Bus(param)
     busA << busB
 
-Here is the same as above, but with coherency channels
+以下は、同じものですが、整合性チャネルを使用しています：
 
 .. code-block:: scala
 
@@ -40,8 +40,8 @@ Here is the same as above, but with coherency channels
     val busA, busB = tilelink.Bus(param)
     busA << busB
 
-Those above where for the hardware instanciation, the thing is that it is the simple / easy part. When things goes into SoC / memory coherency, you kind of need an additional layer to negociate / propagate parameters all around. 
-That's what tilelink.fabric.Node is about.
-
+上記はハードウェアのインスタンス化のためのもので、これは単純で簡単な部分です。
+しかし、SoC やメモリの整合性に関わるときは、パラメータを交渉/伝播させるための追加のレイヤーが必要です。
+それが tilelink.fabric.Node の役割です。
 
 

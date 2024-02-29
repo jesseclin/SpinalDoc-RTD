@@ -2,9 +2,9 @@
 UART
 ====
 
-The UART protocol could be used, for instance, to emit and receive RS232 / RS485 frames.
+UART プロトコルは、たとえば RS232 / RS485 フレームの送受信に使用できます。
 
-There is an example of an 8 bits frame, with no parity and one stop bit :
+以下は、パリティなしで 1ストップビットの 8ビットフレームの例です：
 
 .. image:: /asset/picture/uart.png
 
@@ -14,8 +14,8 @@ Bus definition
 .. code-block:: scala
 
    case class Uart() extends Bundle with IMasterSlave {
-     val txd = Bool() // Used to emit frames
-     val rxd = Bool() // Used to receive frames
+     val txd = Bool() // フレームを送信するために使用
+     val rxd = Bool() // フレームを受信するために使用
 
      override def asMaster(): Unit = {
        out(txd)
@@ -26,7 +26,9 @@ Bus definition
 UartCtrl
 --------
 
-An Uart controller is implemented in the library. This controller has the specificity to use a sampling window to read the ``rxd`` pin and then to using an majority vote to filter its value.
+ライブラリには、Uart コントローラーが実装されています。
+このコントローラーは、 ``rxd`` ピンを読み取るためにサンプリングウィンドウを使用し、
+その値をフィルタリングするために多数決を使用するという特異性があります。
 
 .. list-table::
    :header-rows: 1
@@ -39,22 +41,22 @@ An Uart controller is implemented in the library. This controller has the specif
    * - config
      - in
      - UartCtrlConfig
-     - Used to set the clock divider/parity/stop/data length of the controller
+     - コントローラーのクロック分周器/パリティ/ストップ/データ長を設定するために使用されま
    * - write
      - slave
      - Stream[Bits]
-     - Stream port used to request a frame transmission
+     - フレームの送信を要求するために使用されるストリームポート
    * - read
      - master
      - Flow[Bits]
-     - Flow port used to receive decoded frames
+     - デコードされたフレームを受信するために使用されるフローポート
    * - uart
      - master
      - Uart
-     - Interface to the real world
+     - 実際の世界とのインタフェース
 
 
-The controller could be instantiated via an ``UartCtrlGenerics`` configuration object :
+このコントローラーは、 ``UartCtrlGenerics`` 設定オブジェクトを介してインスタンス化できます：
 
 .. list-table::
    :header-rows: 1
@@ -65,17 +67,17 @@ The controller could be instantiated via an ``UartCtrlGenerics`` configuration o
      - Description
    * - dataWidthMax
      - Int
-     - Maximal number of bit inside a frame
+     - フレーム内の最大ビット数
    * - clockDividerWidth
      - Int
-     - Width of the internal clock divider
+     - 内部クロック分周器の幅
    * - preSamplingSize
      - Int
-     - Specify how many samplingTick are drop at the beginning of a UART baud
+     - UART ボーレートの最初のサンプリング時にドロップされる samplingTick の数を指定します
    * - samplingSize
      - Int
-     - Specify how many samplingTick are used to sample ``rxd`` values in the middle of the UART baud
+     - UARTボーレートの中間で ``rxd`` の値をサンプリングするために使用される samplingTick の数を指定します
    * - postSamplingSize
      - Int
-     - Specify how many samplingTick are drop at the end of a UART baud
+     - UART ボーレートの最後にドロップされるサンプリングTickの数を指定します
 

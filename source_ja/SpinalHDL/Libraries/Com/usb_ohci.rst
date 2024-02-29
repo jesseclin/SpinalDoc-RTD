@@ -2,35 +2,35 @@
 USB OHCI
 ========
 
-Here exists a USB OHCi controller (host) in the SpinalHDL library.
+SpinalHDL ライブラリには、USB OHCi コントローラー（ホスト）が存在します。
 
-A few bullet points to summarise support:
+サポートの要点をまとめると次のとおりです：
 
-- It follow the `OpenHCI Open Host Controller Interface Specification for USB` specification (OHCI).
-- It is compatible with the upstream linux / uboot OHCI drivers already. (there is also an OHCI driver on tinyUSB)
-- This provides USB host full speed and low speed capabilities (12Mbps and 1.5Mbps)
-- Tested on linux and uboot
-- One controller can host multiple ports (up to 16)
-- Bmb memory interface for DMA accesses
-- Bmb memory interace for the configuration
-- Requires a clock for the internal phy which is a multiple of 12 Mhz at least 48 Mhz
-- The controller frequency is not restricted
-- No external phy required
+- USB の OpenHCI Open Host Controller Interface Specification for USB（OHCI）仕様に従います。
+- 既存の Linux / U-Boot OHCI ドライバーと互換性があります（tinyUSB にも OHCI ドライバーがあります）。
+- USB ホストフルスピードおよびロースピード機能を提供します（12Mbps および 1.5Mbps）。
+- Linux および U-Boot でテスト済み。
+- 1つのコントローラーで複数のポートをホストできます（最大16個）。
+- DMA アクセス用の Bmb メモリインターフェイス。
+- 構成用の Bmb メモリインターフェイス。
+- 内部 PHY 用のクロックが必要であり、12 MHz の倍数であり、少なくとも 48 MHz である必要があります。
+- コントローラーの周波数に制限はありません。
+- 外部 PHY は不要です。
 
-Devices tested and functional :
+検証済みかつ機能するデバイス：
 
-- Mass storage (~8 Mbps on ArtyA7 linux)
-- Keyboard / Mouse
-- Audio output
-- Hub
+- マスストレージ（ArtyA7 Linuxで約8 Mbps）
+- キーボード/マウス
+- オーディオ出力
+- ハブ
 
-Limitations :
+制限事項：
 
-- Some USB hub (had one so far) do not like having a full speed host with low speed devices attached.
-- Some modern devices will not work on USB full speed (ex :  Gbps ethernet adapter)
-- Require memory coherency with the CPU (or the cpu need to be able to flush its data cache in the driver)
+- 一部の USB ハブ（これまでに 1つありました）は、ロースピードデバイスが接続されているフルスピードホストを受け付けません。
+- 一部の最新のデバイスは、USB フルスピードで動作しません（例：Gbps イーサネットアダプター）。
+- CPU とメモリの整合性が必要です（またはドライバーでデータキャッシュをフラッシュできる必要があります）。
 
-Deployments :
+デプロイメント：
 
 - https://github.com/SpinalHDL/SaxonSoc/tree/dev-0.3/bsp/digilent/ArtyA7SmpLinux
 - https://github.com/SpinalHDL/SaxonSoc/tree/dev-0.3/bsp/radiona/ulx3s/smp
@@ -65,7 +65,7 @@ Usage
       phyCc.input <> ohci.io.phy
       phyCc.output <> phy.io.ctrl
 
-      // propagate io signals
+      // 信号を伝播させる
       val irq = ohci.io.interrupt.toIo
       val ctrl = ohci.io.ctrl.toIo
       val dma = ohci.io.dma.toIo

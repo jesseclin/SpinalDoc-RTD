@@ -2,27 +2,27 @@
 USB device
 ==========
 
-Here exists a USB device controller in the SpinalHDL library.
+SpinalHDL ライブラリには USB デバイスコントローラーが存在します。
 
-A few bullet points to summarise support:
+サポートの要約をまとめるためのいくつかの要点：
 
-- Implemented to allow a CPU to configure and manage the endpoints
-- A internal ram which store the endpoints states and transactions descriptors
-- Up to 16 endpoints (for virtualy no price)
-- Support USB host full speed (12Mbps)
-- Test on linux using its own driver (https://github.com/SpinalHDL/linux/blob/dev/drivers/usb/gadget/udc/spinal_udc.c)
-- Bmb memory interace for the configuration
-- Require a clock for the internal phy which is a multiple of 12 Mhz at least 48 Mhz
-- The controller frequency is not restricted
-- No external phy required
+- CPU がエンドポイントを設定および管理できるように実装されています
+- エンドポイントの状態とトランザクションディスクリプタを格納する内部 RAM
+- 仮想的に追加費用なしで最大 16のエンドポイントをサポート
+- USB ホストフルスピード（12Mbps）をサポート
+- 独自のドライバを使用して Linux でテスト済み（https://github.com/SpinalHDL/linux/blob/dev/drivers/usb/gadget/udc/spinal_udc.c）
+- 構成用の Bmb メモリインターフェイス
+- 内部 PHY のクロックは少なくとも 12 MHzの倍数である必要がありますが、48 MHz以上である必要があります
+- コントローラーの周波数に制限はありません
+- 外部 PHY は不要です
 
-Linux gadget tested and functional :
+Linux ガジェットがテストされ、機能しています：
 
-- Serial connection
-- Ethernet connection
-- Mass storage (~8 Mbps on ArtyA7 linux)
-
-Deployments :
+- シリアル接続
+- イーサネット接続
+- マスストレージ（ArtyA7 linuxで約8 Mbps）
+  
+デプロイメント：
 
 - https://github.com/SpinalHDL/SaxonSoc/tree/dev-0.3/bsp/digilent/ArtyA7SmpLinux
 - https://github.com/SpinalHDL/SaxonSoc/tree/dev-0.3/bsp/radiona/ulx3s/smp
@@ -31,23 +31,25 @@ Deployments :
 Architecture
 ------------
 
-The controller is composed of : 
+コントローラーは次のように構成されています：
 
-- A few control registers
-- A internal ram used to store the endpoint status, the transfer descriptors and the endpoint 0 SETUP data.
+- 数個の制御レジスタ
+- エンドポイントの状態、転送記述子、エンドポイント 0 の SETUP データを格納するために使用される内部 RAM
 
-A linked list of descriptors for each endpoint in order to handle the USB IN/OUT transactions and data.
+USB IN/OUT トランザクションとデータを処理するために、各エンドポイントに対してディスクリプタのリンクリストがあります。
 
-The endpoint 0 manage the IN/OUT transactions like all the other endpoints but has some additional hardware to manage the SETUP transactions : 
+エンドポイン ト0は、他のエンドポイントと同様に IN/OUT トランザクションを処理しますが、
+SETUP トランザクションを処理するための追加のハードウェアがあります：
 
-- Its linked list is cleared on each setup transactions
-- The data from the SETUP transaction is stored in a fixed location (SETUP_DATA)
-- It has a specific interrupt flag for SETUP transactions  
+- 各セットアップトランザクションでリンクリストがクリアされます
+- SETUP トランザクションのデータは固定の位置（SETUP_DATA）に格納されます
+- SETUP トランザクション用の特定の割り込みフラグがあります
 
 Registers
 ---------
 
-Note that all registers and memories of the controller are only accessible in 32 bits word access, bytes access isn't supported.
+コントローラーのすべてのレジスターとメモリは、
+32 ビットのワードアクセスのみ可能であり、バイトアクセスはサポートされていません。
 
 FRAME (0xFF00)
 **********************
@@ -74,15 +76,15 @@ ADDRESS (0xFF04)
 |                         |      |           | Cleared by the hardware after any EP0 completion                 |
 +-------------------------+------+-----------+------------------------------------------------------------------+
 
-The idea here is to keep the whole register cleared until a USB SET_ADDRESS setup packet is received on EP0.
-At that moment, you can set the address and the trigger field, then provide the IN zero length descriptor to EP0 to 
-finalise the SET_ADDRESS sequance. The controller will then automaticaly turn on the address filtering at the completion of that descriptor.
+ここでのアイデアは、USB の SET_ADDRESS セットアップパケットが EP0 で受信されるまで、レジスタ全体をクリアしたままにしておくことです。
+その時点で、アドレスとトリガー フィールドを設定し、次に IN ゼロ長記述子を EP0 に提供して、SET_ADDRESS シーケンスを完了させます。
+その記述子の完了時にコントローラーは、自動的にアドレスフィルタリングをオンにします。
 
 INTERRUPT (0xFF08)
 **********************
 
-Individual bits of this register can be cleared by writing '1' in them.
-Reading this register returns the current interrupt status.
+このレジスタの個々のビットは、それぞれに '1' を書き込むことでクリアできます。
+このレジスタを読み取ると、現在の割り込み状態が返されます。
 
 +--------------+-------+-----------+------------------------------------------------------------------+
 | Name         | Type  | Bits      | Description                                                      |
@@ -103,8 +105,10 @@ Reading this register returns the current interrupt status.
 HALT (0xFF0C)
 **********************
 
-This register allows placement of a single endpoint into a dormant state in order to ensure atomicity of CPU operations, allowing to do things as read/modify/write on the endpoint registers and descriptors.
-The peripheral will return NAK if the given endpoint is addressed by the usb host while halt is enabled and the endpoint is enabled.
+このレジスタは、単一のエンドポイントを休止状態に配置し、CPU 操作のアトミシティを確保することを可能にします。
+これにより、エンドポイントレジスタやディスクリプタの読み取り/変更/書き込みなどの操作が行えます。
+このペリフェラルは、エンドポイントが有効になっており、休止が有効になっている場合、
+および USB ホストが該当するエンドポイントにアクセスしようとした場合に、NAK を返します。
 
 +-------------------------+------+-----------+------------------------------------------------------------------+
 | Name                    | Type | Bits      | Description                                                      |
@@ -144,7 +148,7 @@ INFO (0xFF20)
 ENDPOINTS (0x0000 - 0x003F)
 *********************************
 
-The endpoints status are stored at the begining of the internal ram over one 32 bits word each.
+エンドポイントの状態は、内部 RAM の先頭に、それぞれ 1つの 32ビットワードで格納されています。
 
 +---------------+------+-----------+------------------------------------------------------------------+
 | Name          | Type | Bits      | Description                                                      |
@@ -166,26 +170,27 @@ The endpoints status are stored at the begining of the internal ram over one 32 
 | maxPacketSize |  RW  | 31-22     |                                                                  |
 +---------------+------+-----------+------------------------------------------------------------------+
 
-To get a endpoint responsive you need : 
+エンドポイントを応答可能にするには、次の手順が必要です：
 
-- Set its enable flag to 1
+- その有効フラグを 1 に設定します
 
-Then the there is a few cases :
-- Either you have the stall or nack flag set, and so, the controller will always respond with the corresponding responses 
-- Either, for EP0 setup request, the controller will not use descriptors, but will instead write the data into the SETUP_DATA register, and ACK
-- Either you have a empty linked list (head==0) in which case it will answer NACK
-- Either you have at least one descriptor pointed by head, in which case it will execute it and ACK if all was going smooth
+その後、いくつかのケースがあります：
+
+- ストールまたは NACK フラグが設定されている場合、コントローラは常に対応する応答で応答します
+- EP0 のセットアップリクエストの場合、コントローラはディスクリプタを使用せず、代わりにデータを SETUP_DATA レジスタに書き込み、ACK を返します
+- 空のリンクリスト（head == 0）の場合、NACK で応答します
+- head が指す少なくとも 1つのディスクリプタがある場合、それを実行し、すべてが順調に進んだ場合は ACK を返します
 
 SETUP_DATA (0x0040 - 0x0047)
 *********************************
 
-When endpoint 0 receives a SETUP transaction, the data of the transaction will be stored in this location. 
+エンドポイント 0 が SETUP トランザクションを受信すると、トランザクションのデータはこの場所に格納されます。
 
 Descriptors 
 -----------
 
-Descriptors allows to specify how an endpoint needs to handle the data phase of IN/OUT transactions.
-They are stored in the internal ram, can be linked together via their linked lists and need to be aligned on 16 bytes boundaries
+ディスクリプタは、IN/OUT トランザクションのデータフェーズをどのように処理するかを指定するためのものです。
+これらは内部 RAM に格納され、リンクリストを介して連結されることができ、16 バイト境界に整列する必要があります。
 
 +-------------------+------+-----------+------------------------------------------------------------------+
 | Name              | Word | Bits      | Description                                                      |
@@ -215,9 +220,9 @@ They are stored in the internal ram, can be linked together via their linked lis
 | data              | ...  | ...       |                                                                  |
 +-------------------+------+-----------+------------------------------------------------------------------+
 
-Note, if the controller receives a frame where the IN/OUT does not match the descriptor IN/OUT, the frame will be ignored.
+注意：コントローラーが、IN/OUT がディスクリプタの IN/OUT と一致しないフレームを受信した場合、そのフレームは無視されます。
 
-Also, to initialise a descriptor, the CPU should set the code field to 0xF
+また、ディスクリプタを初期化するには、CPU はコードフィールドを 0xF に設定する必要があります。
 
 Usage
 -----

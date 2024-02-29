@@ -5,32 +5,32 @@ AHB-Lite3
 Configuration and instanciation
 -------------------------------
 
-First each time you want to create a AHB-Lite3 bus, you will need a configuration object. This configuration object is an ``AhbLite3Config`` and has following arguments :
+まず、AHB-Lite3 バスを作成するたびに、構成オブジェクトが必要です。この構成オブジェクトは AhbLite3Config であり、以下の引数を持ちます：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 2
 
-   * - Parameter name
-     - Type
-     - Default
-     - Description
+   * - パラメータ名
+     - タイプ
+     - デフォルト
+     - 説明
    * - addressWidth
      - Int
      - 
-     - Width of HADDR (byte granularity)
+     - HADDRの幅（バイト単位）
    * - dataWidth
      - Int
      - 
-     - Width of HWDATA and HRDATA
+     - HWDATAとHRDATAの幅
 
 
-There is in short how the AHB-Lite3 bus is defined in the SpinalHDL library :
+SpinalHDL ライブラリで AHB-Lite3 バスがどのように定義されているかを簡単に説明します：
 
 .. code-block:: scala
 
    case class AhbLite3(config: AhbLite3Config) extends Bundle with IMasterSlave{
-     //  Address and control
+     //  アドレスと制御
      val HADDR = UInt(config.addressWidth bits)
      val HSEL = Bool()
      val HREADY = Bool()
@@ -41,11 +41,11 @@ There is in short how the AHB-Lite3 bus is defined in the SpinalHDL library :
      val HTRANS = Bits(2 bits)
      val HMASTLOCK = Bool()
 
-     //  Data
+     //  データ
      val HWDATA = Bits(config.dataWidth bits)
      val HRDATA = Bits(config.dataWidth bits)
 
-     //  Transfer response
+     //  転送応答
      val HREADYOUT = Bool()
      val HRESP = Bool()
 
@@ -55,7 +55,7 @@ There is in short how the AHB-Lite3 bus is defined in the SpinalHDL library :
      }
    }
 
-There is a short example of usage :
+使用例を示します：
 
 .. code-block:: scala
 
@@ -70,7 +70,8 @@ There is a short example of usage :
      //...
    }
 
-Variations
-----------
+バリエーション
+------------------
 
-There is an AhbLite3Master variation. The only difference is the absence of the ``HREADYOUT`` signal. This variation should only be used by masters while the interconnect and slaves use ``AhbLite3``.
+AhbLite3Master バリエーションがあります。唯一の違いは ``HREADYOUT`` シグナルの欠如です。
+このバリエーションは、インターコネクトとスレーブが ``AhbLite3`` を使用する間、マスターだけが使用すべきです。

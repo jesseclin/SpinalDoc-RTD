@@ -2,40 +2,40 @@
 Apb3
 ====
 
-The AMBA3-APB bus is commonly used to interface low bandwidth peripherals.
+AMBA3-APB バスは、低帯域幅の周辺機器とのインタフェースに一般的に使用されます。
 
 Configuration and instanciation
 -------------------------------
 
-First each time you want to create a APB3 bus, you will need a configuration object. This configuration object is an ``Apb3Config`` and has following arguments :
+APB3 バスを作成するたびに、まず構成オブジェクトが必要です。この構成オブジェクトは ``Apb3Config`` であり、以下の引数を持ちます：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 2
 
-   * - Parameter name
-     - Type
-     - Default
-     - Description
+   * - パラメータ名
+     - タイプ
+     - デフォルト
+     - 説明
    * - addressWidth
      - Int
      - 
-     - Width of PADDR (byte granularity)
+     - PADDR の幅（バイト単位）
    * - dataWidth
      - Int
      - 
-     - Width of PWDATA and PRDATA
+     - PWDATA と PRDATA の幅
    * - selWidth
      - Int
      - 1
-     - With of PSEL
+     - PSEL の幅
    * - useSlaveError
      - Boolean
      - false
-     - Specify the presence of PSLVERROR
+     - PSLVERROR の存在を指定します
 
 
-There is in short how the APB3 bus is defined in the SpinalHDL library :
+SpinalHDL ライブラリで APB3 バスがどのように定義されているかを簡単に説明します：
 
 .. code-block:: scala
 
@@ -51,7 +51,7 @@ There is in short how the APB3 bus is defined in the SpinalHDL library :
      //...
    }
 
-There is a short example of usage :
+使用例を示します：
 
 .. code-block:: scala
 
@@ -66,20 +66,21 @@ There is a short example of usage :
      //...
    }
 
-Functions and operators
+関数と演算子
 -----------------------
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 5
 
-   * - Name
-     - Return
-     - Description
+   * - 名前
+     - 戻り値
+     - 説明
    * - X >> Y
      - 
-     - Connect X to Y. Address of Y could be smaller than the one of X
+     - X を Y に接続します。 Y のアドレスは X よりも小さくすることができます
    * - X << Y
      - 
-     - Do the reverse of the >> operator
+     - 演算子 ">>" の逆を行います
+
 

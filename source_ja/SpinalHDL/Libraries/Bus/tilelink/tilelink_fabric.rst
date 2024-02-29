@@ -2,48 +2,49 @@
 tilelink.fabric.Node
 ===========================
 
-tilelink.fabric.Node is an additional layer over the regular tilelink hardware instanciation which handle negociation and parameters propagation at a SoC level.
+tilelink.fabric.Node は、通常の TileLink ハードウェアインスタンス化の上に追加のレイヤーであり、
+SoC レベルでのネゴシエーションとパラメータの伝播を処理します。
 
-It is mostly based on the Fiber API, which allows to create elaboration time fibers (user-space threads), allowing to schedule future parameter propagation / negociation and hardware elaboration.
+これは主に Fiber API に基づいており、エラボレーション時のファイバー（ユーザースペーススレッド）を作成することができ、
+将来のパラメータの伝播/ネゴシエーションとハードウェアのエラボレーションをスケジュールすることができます。
 
-A Node can be created in 3 ways : 
+ノードは3つの方法で作成できます：
 
-- tilelink.fabric.Node.down() : To create a node which can connect downward (toward slaves), so it would be used in a CPU / DMA / bridges agents
-- tilelink.fabric.Node() : To create an intermediate nodes 
-- tilelink.fabric.Node.up() : To create a node which can connect upward (toward masters), so it would be used in peripherals / memories / bridges agents
+- tilelink.fabric.Node.down()：下方向に接続できるノードを作成します（スレーブ側に向かって），CPU / DMA / ブリッジエージェントで使用されます。
+- tilelink.fabric.Node()：中間ノードを作成します
+- tilelink.fabric.Node.up()：上方向に接続できるノードを作成します（マスター側に向かって），周辺機器 / メモリ / ブリッジエージェントで使用されます
 
-Nodes mostly have the following attributes :
+ノードには次のような属性が主にあります：
 
-- bus : Handle[tilelink.Bus]; the hardware instance of the bus
-- m2s.proposed : Handle[tilelink.M2sSupport]; The set of features which is proposed by the upward connections
-- m2s.supported : Handle[tilelink.M2sSupport] : The set of feature supported by the downward connections
-- m2s.parameter : Handle[tilelink.M2sParameter] : The final bus parameter
+- bus：Handle[tilelink.Bus]；バスのハードウェアインスタンス
+- m2s.proposed：Handle[tilelink.M2sSupport]；上向き接続によって提案される機能のセット
+- m2s.supported：Handle[tilelink.M2sSupport]：下向き接続によってサポートされる機能のセット
+- m2s.parameter：Handle[tilelink.M2sParameter]：最終的なバスパラメータ
 
-You can note that they all are Handles. Handle is a way in SpinalHDL to have share a value between fibers. If a fiber read a Handle while this one has no value yet, it will block the execution of that fiber until another fiber provide a value to the Handle.
+これらはすべて Handles であることに注意してください。Handle は、SpinalHDL で値をファイバー間で共有する方法です。
+ファイバーが Handle を読み取ると、まだ値がない場合、他のファイバーが Handle に値を提供するまでそのファイバーの実行がブロックされます。
 
-There is also a set of attribues like m2s, but reversed (named s2m) which specify the parameters for the transactions initiated by the slave side of the interconnect (ex memory coherency).
+また、s2m（名前付きm2sの逆）のような一連の属性もありますが、これはインターコネクトのスレーブ側から開始されたトランザクションのパラメーターを指定します（例：メモリの整合性）。
 
-There is two talks which where introducing the tilelink.fabric.Node. Those talk may not exactly follow the actual syntax, they are still follow the concepts : 
+- 入門 : https://youtu.be/hVi9xOGuuek
+- 詳細 : https://peertube.f-si.org/videos/watch/bcf49c84-d21d-4571-a73e-96d7eb89e907
 
-- Introduction : https://youtu.be/hVi9xOGuuek
-- In depth : https://peertube.f-si.org/videos/watch/bcf49c84-d21d-4571-a73e-96d7eb89e907
-
-Example Toplevel
+トップレベルの例
 -------------------
 
-Here is an example of a simple fictive SoC toplevel :
+ここに、単純な架空の SoC トップレベルの例があります：
 
 .. code-block:: scala
 
       val cpu = new CpuFiber()
 
       val ram = new RamFiber()
-      ram.up at(0x10000, 0x200) of cpu.down // map the ram at [0x10000-0x101FF], the ram will infer its own size from it
+      ram.up at(0x10000, 0x200) of cpu.down // ラムを [0x10000-0x101FF] にマップします。ラムはそのサイズを自分で推定します
 
       val gpio = new GpioFiber()
-      gpio.up at 0x20000 of cpu.down // map the gpio at [0x20000-0x20FFF], its range of 4KB being fixed internally
+      gpio.up at 0x20000 of cpu.down // gpio を[0x20000-0x20FFF]にマップします。4KB の範囲が内部で固定されています
 
-You can also define intermediate nodes in the interconnect as following : 
+また、以下のように、インターコネクトに中間ノードを定義することもできます：
 
 .. code-block:: scala
 
@@ -52,9 +53,9 @@ You can also define intermediate nodes in the interconnect as following :
       val ram = new RamFiber()
       ram.up at(0x10000, 0x200) of cpu.down
         
-      // Create a peripherals namespace to keep things clean
+      // ネームスペースを作成してきれいに保ちます
       val peripherals = new Area{
-        // Create a intermediate node in the interconnect
+        // インターコネクトに中間ノードを作成します
         val access = tilelink.fabric.Node()
         access at 0x20000 of cpu.down
 
@@ -69,7 +70,7 @@ You can also define intermediate nodes in the interconnect as following :
 Example GpioFiber
 ----------------------
 
-GpioFiber is a simple tilelink peripheral which can read / drive a 32 bits tristate array.
+GpioFiber は、32 ビットのトライステート配列を読み取り/ドライブできるシンプルな TileLink ペリフェラルです。
 
 .. code-block:: scala
 
@@ -77,35 +78,34 @@ GpioFiber is a simple tilelink peripheral which can read / drive a 32 bits trist
     import spinal.lib.bus.tilelink
     import spinal.core.fiber.Fiber
     class GpioFiber extends Area {
-      // Define a node facing upward (toward masters only)
+      // 上方向（マスター側のみ）に向かうノードを定義します
       val up = tilelink.fabric.Node.up()
 
-      // Define a elaboration thread to specify the "up" parameters and generate the hardware
+      // "up"パラメータを指定し、ハードウェアを生成するためのエラボレーションスレッドを定義します
       val fiber = Fiber build new Area {
-        // Here we first define what our up node support. m2s mean master to slave requests
+        // まず、up ノードがサポートする内容を定義します。m2 sはマスターからスレーブへのリクエストを意味します
         up.m2s.supported load tilelink.M2sSupport(
           addressWidth = 12,
           dataWidth = 32,
-          // Transfers define which kind of memory transactions our up node will support.
-          // Here it only support 4 bytes get/putfull
+          // 転送は、up ノードがサポートするメモリトランザクションの種類を定義します。
+          // ここでは、4バイトの get/putfull のみをサポートしています
           transfers = tilelink.M2sTransfers(
             get = tilelink.SizeRange(4),
             putFull = tilelink.SizeRange(4)
           )
         )
-        // s2m mean slave to master requests, those are only use for memory coherency purpose
-        // So here we specify we do not need any
+        // s2m はスレーブからマスターへのリクエストであり、これらはメモリ整合性の目的でのみ使用されます
+        // したがって、ここでは必要なしと指定します
         up.s2m.none()
 
-        // Then we can finally generate some hardware
-        // Starting by defining a 32 bits TriStateArray (Array meaning that each pin has its own writeEnable bit
+        // 最後にハードウェアを生成できます
+        // 最初に32ビットのTriStateArrayを定義します（Arrayは各ピンに独自のwriteEnableビットを持つことを意味します）
         val pins = master(TriStateArray(32 bits)) 
         
-        // tilelink.SlaveFactory is a utility allowing to easily generate the logic required 
-        // to control some hardware from a tilelink bus.
+        // tilelink.SlaveFactory は、タイルリンクバスからハードウェアを制御するために必要なロジックを簡単に生成するユーティリティです。
         val factory = new tilelink.SlaveFactory(up.bus, allowBurst = false)
         
-        // Use the SlaveFactory API to generate some hardware to read / drive the pins
+        // SlaveFactory API を使用して、ピンを読み取る/ドライブするためのハードウェアを生成します
         val writeEnableReg = factory.drive(pins.writeEnable, 0x0) init (0)
         val writeReg = factory.drive(pins.write, 0x4) init(0)
         factory.read(pins.read, 0x8)
@@ -115,8 +115,7 @@ GpioFiber is a simple tilelink peripheral which can read / drive a 32 bits trist
 Example RamFiber
 ----------------------
 
-RamFiber is the integration layer of a regular tilelink Ram component.
-
+RamFiber は、通常の TileLink Ram コンポーネントの統合レイヤーです。
 
 .. code-block:: scala
 
@@ -126,17 +125,16 @@ RamFiber is the integration layer of a regular tilelink Ram component.
       val up = tilelink.fabric.Node.up()
 
       val thread = Fiber build new Area {
-        // Here the supported parameters are function of what the master would like us to idealy support.
-        // The tilelink.Ram support all addressWidth / dataWidth / burst length / get / put accesses
-        // but doesn't support atomic / coherency. So we take what is proposed to use and restrict it to 
-        // all sorts of get / put request
+        // ここでサポートされるパラメータは、マスターが理想的にサポートする内容に依存します。
+        // tilelink.Ram はすべての addressWidth / dataWidth / バースト長 / get / put アクセスをサポートしています
+        // ただし、アトミック/整合性はサポートしていません。したがって、使用されるものを取り、すべての get / put リクエストに制限します
         up.m2s.supported load up.m2s.proposed.intersect(M2sTransfers.allGetPut)
         up.s2m.none()
 
-        // Here we infer how many bytes our ram need to be, by looking at the memory mapping of the connected masters
+        // ここでは、接続されたマスターのメモリマッピングを見て、ラムがどれだけのバイトを必要とするかを推論します
         val bytes = up.ups.map(e => e.mapping.value.highestBound - e.mapping.value.lowerBound + 1).max.toInt
         
-        // Then we finaly generate the regular hardware
+        // 最後に通常のハードウェアを生成します
         val logic = new tilelink.Ram(up.bus.p.node, bytes)
         logic.io.up << up.bus
       }
@@ -145,8 +143,7 @@ RamFiber is the integration layer of a regular tilelink Ram component.
 Example CpuFiber
 ----------------------
 
-CpuFiber is an fictive example of a master integration.
-
+CpuFiber は、マスターの統合の架空の例です。
 
 .. code-block:: scala
 
@@ -154,27 +151,27 @@ CpuFiber is an fictive example of a master integration.
     import spinal.core.fiber.Fiber
 
     class CpuFiber extends Area {
-      // Define a node facing downward (toward slaves only)
+      // 下方向（スレーブ側のみ）に向かうノードを定義します
       val down = tilelink.fabric.Node.down()
 
       val fiber = Fiber build new Area {
-        // Here we force the bus parameters to a specific configurations
+        // ここで、バスパラメータを特定の構成に強制します
         down.m2s forceParameters tilelink.M2sParameters(
           addressWidth = 32,
           dataWidth = 64,
-          // We define the traffic of each master using this node. (one master => one M2sAgent)
-          // In our case, there is only the CpuFiber.
+          // このノードを使用して各マスターのトラフィックを定義します。（1つのマスター=> 1つの M2sAgent）
+          // この場合、CpuFiber のみです。
           masters = List(
             tilelink.M2sAgent(
-              name = CpuFiber.this, // Reference to the original agent.
-              // A agent can use multiple sets of source ID for different purposes
-              // Here we define the usage of every sets of source ID
-              // In our case, let's say we use ID [0-3] to emit get/putFull requests
+              name = CpuFiber.this, // オリジナルのエージェントへの参照。
+              // エージェントは、異なる目的のために複数のソース ID のセットを使用できます
+              // ここでは、すべてのセットのソース ID の使用方法を定義します
+              // この場合、get/putFull リクエストの送信に ID [0-3]を使用するとします
               mapping = List(
                 tilelink.M2sSource(
                   id = SizeMapping(0, 4),
                   emits = M2sTransfers(
-                    get = tilelink.SizeRange(1, 64), //Meaning the get access can be any power of 2 size in [1, 64]
+                    get = tilelink.SizeRange(1, 64), //get アクセスは [1, 64] の任意の 2の累乗サイズであることを意味します
                     putFull = tilelink.SizeRange(1, 64)
                   )
                 )
@@ -183,27 +180,27 @@ CpuFiber is an fictive example of a master integration.
           )
         )
 
-        // Lets say the CPU doesn't support any slave initiated requests (memory coherency)
+        // CPU はスレーブ発行リクエスト（メモリ整合性）をサポートしていないとします
         down.s2m.supported load tilelink.S2mSupport.none()
 
-        // Then we can generate some hardware (nothing usefull in this example)
+        // それからいくつかのハードウェアを生成できます（この例では何も役に立ちません）
         down.bus.a.setIdle()
         down.bus.d.ready := True
       }
     }
 
-One particularity of Tilelink, is that it assumes a master will not emit requests to a unmapped memory space.
-To allow a master to identify what memory access it is allowed to do, you can use the spinal.lib.system.tag.MemoryConnection.getMemoryTransfers tool as following : 
+Tilelink の特異性の 1つは、マスターがマッピングされていないメモリ空間にリクエストを送信しないと仮定していることです。
+マスターがどのメモリアクセスを行うことが許可されているかを特定するために、spinal.lib.system.tag.MemoryConnection.getMemoryTransfers ツールを次のように使用できます：
 
 .. code-block:: scala
 
         val mappings = spinal.lib.system.tag.MemoryConnection.getMemoryTransfers(down)
-        // Here we just print the values out in stdout, but instead you can generate some hardware from it.
+        // ここでは、単にstdout に値を出力していますが、代わりにそれからハードウェアを生成することができます。
         for(mapping <- mappings){
           println(s"- ${mapping.where} -> ${mapping.transfers}")
         }
 
-If you run this in the Cpu's fiber, in the following soc : 
+この Cpu のファイバーで、次の soc で実行すると：
 
 .. code-block:: scala
 
@@ -212,9 +209,9 @@ If you run this in the Cpu's fiber, in the following soc :
       val ram = new RamFiber()
       ram.up at(0x10000, 0x200) of cpu.down
         
-      // Create a peripherals namespace to keep things clean
+      // クリーンに保つためのペリフェラル名前空間を作成します
       val peripherals = new Area{
-        // Create a intermediate node in the interconnect
+        // インターコネクトに中間ノードを作成します
         val access = tilelink.fabric.Node()
         access at 0x20000 of cpu.down
 
@@ -225,7 +222,7 @@ If you run this in the Cpu's fiber, in the following soc :
         gpioB.up at 0x1000 of access
       }
 
-You will get : 
+次のようになります：
 
 .. code-block:: 
 
@@ -233,47 +230,47 @@ You will get :
     - toplevel/peripherals_gpioA_up mapped=SM(0x20000, 0x1000) through=List(OT(0x20000), OT(0x0))  -> GF
     - toplevel/peripherals_gpioB_up mapped=SM(0x21000, 0x1000) through=List(OT(0x20000), OT(0x1000))  -> GF
 
-- "through=" specify the chain of address transformations done to reach the target.
-- "SM" means SizeMapping(address, size)
-- "OT" means OffsetTransformer(offset)
+- "through=" は、ターゲットに到達するために行われたアドレス変換のチェーンを指定します。
+- "SM" は、SizeMapping(address, size) を意味します。
+- "OT" は、OffsetTransformer(offset) を意味します。
 
-Note that you can also add PMA (Physical Memory Attributes) to nodes and retreives them via this getMemoryTransfers utilities.
+また、ノードに PMA (Physical Memory Attributes) を追加し、この getMemoryTransfers ユーティリティを介してそれらを取得することもできます。
 
-The currently defined PMA are : 
+現在定義されている PMA は次のとおりです：
 
 .. code-block:: 
 
   object MAIN          extends PMA
   object IO            extends PMA
-  object CACHABLE      extends PMA // an intermediate agent may have cached a copy of the region for you
-  object TRACEABLE     extends PMA // the region may have been cached by another master, but coherence is being provided
-  object UNCACHABLE    extends PMA // the region has not been cached yet, but should be cached when possible
-  object IDEMPOTENT    extends PMA // reads return most recently put content, but content should not be cached
-  object EXECUTABLE    extends PMA // Allows an agent to fetch code from this region
-  object VOLATILE      extends PMA // content may change without a write
-  object WRITE_EFFECTS extends PMA // writes produce side effects and so must not be combined/delayed
-  object READ_EFFECTS  extends PMA // reads produce side effects and so must not be issued speculatively
+  object CACHABLE      extends PMA // 中間エージェントがリージョンのキャッシュコピーを持っている場合があります
+  object TRACEABLE     extends PMA // リージョンが別のマスターによってキャッシュされているかもしれませんが、整合性が提供されています
+  object UNCACHABLE    extends PMA // リージョンはまだキャッシュされていませんが、可能な限りキャッシュする必要があります
+  object IDEMPOTENT    extends PMA // 読み取りは最後に入れたコンテンツを返しますが、コンテンツをキャッシュしてはいけません
+  object EXECUTABLE    extends PMA // エージェントがこのリージョンからコードを取得できるようにします
+  object VOLATILE      extends PMA // コンテンツは書き込みなしに変更される可能性があります
+  object WRITE_EFFECTS extends PMA // 書き込みに副作用があり、したがって組み合わせたり遅延させたりしてはいけません
+  object READ_EFFECTS  extends PMA // 読み取りに副作用があり、したがって仮定的に発行してはいけません
 
-
-The getMemoryTransfers utility rely on a dedicated SpinalTag :
+getMemoryTransfers ユーティリティは、専用の SpinalTag に依存しています：
 
 .. code-block:: 
 
     trait MemoryConnection extends SpinalTag {
-      def up : Nameable with SpinalTagReady // Side toward the masters of the system
-      def down : Nameable with SpinalTagReady // Side toward the slaves of the system
-      def mapping : AddressMapping //Specify the memory mapping of the slave from the master address (before transformers are applied)
-      def transformers : List[AddressTransformer]  //List of alteration done to the address on this connection (ex offset, interleaving, ...)
-      def sToM(downs : MemoryTransfers, args : MappedNode) : MemoryTransfers = downs //Convert the slave MemoryTransfers capabilities into the master ones
+      def up : Nameable with SpinalTagReady // システムのマスター側に向かう側
+      def down : Nameable with SpinalTagReady // システムのスレーブ側に向かう側
+      def mapping : AddressMapping // マスターアドレスからスレーブのメモリマッピングを指定します（トランスフォーマーが適用される前）
+      def transformers : List[AddressTransformer]  // この接続で行われた変更のリスト（オフセット、インタリーブなど）
+      def sToM(downs : MemoryTransfers, args : MappedNode) : MemoryTransfers = downs // スレーブ MemoryTransfers の機能をマスターのものに変換します
     }
 
-That SpinalTag can be used applied to both ends of a given memory bus connection to keep this connection discoverable at elaboration time, creating a graph of MemoryConnection. One good thing about it is that is is bus agnostic, meaning it isn't tilelink specific.
+この SpinalTag は、与えられたメモリバス接続の両端に適用でき、エラボレーション時にこの接続を検出可能にします。
+これに関して良い点の 1つは、バスに依存しないことです。つまり、TileLink 固有のものではありません。
 
 
 Example WidthAdapter
 ---------------------
 
-The width adapter is a simple example of bridge.
+幅適応器はブリッジのシンプルな例です。
 
 .. code-block:: 
 
@@ -281,7 +278,7 @@ The width adapter is a simple example of bridge.
       val up = Node.up()
       val down = Node.down()
 
-      // Populate the MemoryConnection graph
+      // MemoryConnection グラフを構築します
       new MemoryConnection {
         override def up = up
         override def down = down
@@ -290,25 +287,25 @@ The width adapter is a simple example of bridge.
         populate()
       }
 
-      // Fiber in which we will negociate the data width parameters and generate the hardware
+      // データ幅パラメータを交渉し、ハードウェアを生成するファイバー
       val logic = Fiber build new Area{
-        // First, we propagate downward the parameter proposal, hopping that the downward side will agree
+        // まず、パラメータ提案を下方向に伝播させ、下方向が同意することを期待します
         down.m2s.proposed.load(up.m2s.proposed)
 
-        // Second, we will propagate upward what is actualy supported, but will take care of any dataWidth missmatch
+        // 次に、実際にサポートされているものを上方向に伝播させますが、データ幅の不一致に注意します
         up.m2s.supported load down.m2s.supported.copy(
           dataWidth = up.m2s.proposed.dataWidth
         )
 
-        // Third, we propagate downward the final bus parameter, but will take care of any dataWidth missmatch
+        // 次に、最終的なバスパラメータを下方向に伝播させますが、データ幅の不一致に注意します
         down.m2s.parameters load up.m2s.parameters.copy(
           dataWidth = down.m2s.supported.dataWidth
         )
 
-        // No alteration on s2m parameters
+        // s2m パラメータに変更はありません
         up.s2m.from(down.s2m)
 
-        // Finaly, we generate the hardware
+        // 最後に、ハードウェアを生成します
         val bridge = new tilelink.WidthAdapter(up.bus.p, down.bus.p)
         bridge.io.up << up.bus
         bridge.io.down >> down.bus
