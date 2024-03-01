@@ -2,19 +2,20 @@
 QSysify
 =======
 
-QSysify is a tool which is able to generate a QSys IP (tcl script) from a SpinalHDL component by analysing its IO definition. It currently implement the following interfaces features :
+QSysify は、SpinalHDL コンポーネントの IO 定義を解析して QSys IP（tclスクリプト）を生成できるツールです。
+現在、次のインターフェース機能が実装されています：
 
-* Master/Slave AvalonMM
-* Master/Slave APB3
-* Clock domain input
-* Reset output
-* Interrupt input
-* Conduit (Used in last resort)
+* マスター/スレーブ AvalonMM
+* マスター/スレーブ APB3
+* クロックドメイン入力
+* リセット出力
+* 割り込み入力
+* コンデュイト（最後の手段として使用されます）
 
-Example
+例
 -------
 
-In the case of a UART controller :
+UART コントローラの場合：
 
 .. code-block:: scala
 
@@ -27,27 +28,27 @@ In the case of a UART controller :
      //...
    }
 
-The following  ``main`` will generate the Verilog and the QSys TCL script with io.bus as an AvalonMM and io.uart as a conduit :
+次の ``main`` では、io.bus が AvalonMM として、io.uart がコンデュイトとして、Verilog と QSys TCL スクリプトを生成します：
 
 .. code-block:: scala
 
    object AvalonMMUartCtrl {
      def main(args: Array[String]) {
-       //Generate the Verilog
+       // Verilogを生成する
        val toplevel = SpinalVerilog(AvalonMMUartCtrl(UartCtrlMemoryMappedConfig(...))).toplevel
 
-       //Add some tags to the avalon bus to specify it's clock domain (information used by QSysify)
+       // Avalon バスにいくつかのタグを追加して、そのクロックドメインを指定する（QSysifyで使用される情報）
        toplevel.io.bus addTag(ClockDomainTag(toplevel.clockDomain))
 
-       //Generate the QSys IP (tcl script)
+       // QSys IP（tclスクリプト）を生成する
        QSysify(toplevel)
      }
    }
 
-tags
-----
+タグ
+-------
 
-Because QSys require some information that are not specified in the SpinalHDL hardware specification, some tags should be added to interface:
+QSys は、SpinalHDL ハードウェア仕様で指定されていない情報が必要ですので、いくつかのタグをインターフェースに追加する必要があります：
 
 AvalonMM / APB3
 ^^^^^^^^^^^^^^^
@@ -70,9 +71,10 @@ Reset output
 
    io.resetOutput addTag(ResetEmitterTag(resetOutputClockDomain))
 
-Adding new interface support
-----------------------------
 
-Basically, the QSysify tool can be setup with a list of interface ``emitter`` `(as you can see here) <https://github.com/SpinalHDL/SpinalHDL/blob/764193013f84cfe4f82d7d1f1739c4561ef65860/lib/src/main/scala/spinal/lib/eda/altera/QSys.scala#L12>`_
+新しいインターフェースのサポートの追加
+-----------------------------------------
 
-You can create your own emitter by creating a new class extending `QSysifyInterfaceEmiter <https://github.com/SpinalHDL/SpinalHDL/blob/764193013f84cfe4f82d7d1f1739c4561ef65860/lib/src/main/scala/spinal/lib/eda/altera/QSys.scala#L24>`_
+基本的に、QSysify ツールは、インターフェース ``emitter`` のリストでセットアップできます `(ここで見ることができます) <https://github.com/SpinalHDL/SpinalHDL/blob/764193013f84cfe4f82d7d1f1739c4561ef65860/lib/src/main/scala/spinal/lib/eda/altera/QSys.scala#L12>`_。
+
+独自のエミッタを作成するには、 `QSysifyInterfaceEmiter <https://github.com/SpinalHDL/SpinalHDL/blob/764193013f84cfe4f82d7d1f1739c4561ef65860/lib/src/main/scala/spinal/lib/eda/altera/QSys.scala#L24>`_ を拡張する新しいクラスを作成します。

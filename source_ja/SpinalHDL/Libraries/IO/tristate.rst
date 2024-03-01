@@ -3,25 +3,28 @@
 TriState
 ========
 
-Tri-state signals are difficult to handle in many cases:
+トライステート信号は多くの場合扱いにくいです：
 
-* They are not really kind of digital things
-* And except for IO, they aren't used for digital design
-* The tristate concept doesn't fit naturally in the SpinalHDL internal graph.
+* それらは本当の意味でデジタル的なものではありません
+* IO を除いては、デジタル設計には使用されません
+* トライステートの概念は、SpinalHDL の内部グラフに自然には適合しません。
 
-SpinalHDL provides two different abstractions for tristate signals. The ``TriState`` bundle and :ref:`section-analog_and_inout` signals.
-Both serve different purposes:
+SpinalHDL では、トライステート信号のための 2つの異なる抽象化が提供されています。 ``TriState`` バンドルと :ref:`section-analog_and_inout` 信号です。
+それぞれ異なる目的に使用されます：
 
-* TriState should be used for most purposes, especially within a design. The bundle contains an additional signal to carry the current direction.
-* ``Analog`` and ``inout`` should be used for drivers on the device boundary and in some other special cases. See the referenced documentation page for more details.
+* デザイン内でのほとんどの目的、特にデザイン内での目的には ``TriState`` を使用する必要があります。
+  バンドルには現在の方向を伝える追加の信号が含まれています。
+* ``Analog`` と ``inout`` は、デバイス境界上のドライバやその他の特殊なケースで使用する必要があります。
+  詳細については、参照されたドキュメントページを参照してください。
 
-As stated above, the recommended approach is to use ``TriState`` within a design. On the top-level the ``TriState`` bundle is then assigned to an analog inout to get the
-synthesis tools to infer the correct I/O driver. This can be done automatically done via the :ref:`InOutWrapper <section-analog_and_inout>` or manually if needed.
+上記のように、推奨されるアプローチはデザイン内で ``TriState`` を使用することです。
+トップレベルでは、 ``TriState`` バンドルがアナログ inout に割り当てられ、合成ツールが正しい I/O ドライバを推論できるようにします。
+これは、必要に応じて :ref:`InOutWrapper <section-analog_and_inout>` を介して自動的に行うか、手動で行うことができます。
 
 TriState
 --------
 
-The TriState bundle is defined as following :
+TriState バンドルは以下のように定義されます：
 
 .. code-block:: scala
 
@@ -35,10 +38,10 @@ The TriState bundle is defined as following :
      }
    }
 
-A master can use the ``read`` signal to read the outside value, the ``writeEnable`` to enable the output,
-and finally use ``write`` to set the value that is driven on the output.
+マスターは、外部の値を読み取るために ``read`` 信号、出力を有効にするために ``writeEnable`` 、
+そして最後に出力される値を設定するために ``write`` を使用できます。
 
-There is an example of usage:
+以下に使用例が示されています：
 
 .. code-block:: scala
 
@@ -55,9 +58,10 @@ There is an example of usage:
 TriStateArray
 -------------
 
-In some case, you need to have the control over the output enable of each individual pin (Like for GPIO). In this range of cases, you can use the TriStateArray bundle.
+いくつかの場合、各個のピンの出力イネーブルを制御する必要があります（GPIOの場合など）。
+この範囲のケースでは、TriStateArrayバンドルを使用できます。
 
-It is defined as following :
+次のように定義されます：
 
 .. code-block:: scala
 
@@ -70,9 +74,9 @@ It is defined as following :
      }
    }
 
-It is the same than the TriState bundle, except that the ``writeEnable`` is an Bits to control each output buffer.
+これは TriState バンドルと同じですが、 ``writeEnable`` が各出力バッファを制御する Bits です。
 
-There is an example of usage :
+使用例が以下に示されています：
 
 .. code-block:: scala
 

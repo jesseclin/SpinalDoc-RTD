@@ -7,15 +7,15 @@ Plugin
 Introduction
 --------------------
 
-For some design, instead of implementing your Component's hardware directly in it, 
-you may instead want to compose its hardware by using some sorts of Plugins. This can provide a few key features : 
+ある設計では、コンポーネントのハードウェアを直接実装する代わりに、
+いくつかの種類のプラグインを使用してそのハードウェアを構成したい場合があります。
+これにより、いくつかの重要な機能が提供されます：
 
-- You can extend the features of your component by adding new plugins in its parameters. For instance adding Floating point support in a CPU.
-- You can swap various implementations of the same functionality just by using another set of plugins. For instance one implementation of a CPU multiplier may fit well on some FPGA, while others may fit well on ASIC.
-- It avoid the very very very large hand written toplevel syndrom where everything has to be connected manualy. Instead plugins can discover their neighborhood by looking/using the software interface of other plugins.
+- 新しいプラグインをパラメータに追加することで、コンポーネントの機能を拡張できます。たとえば、CPU に浮動小数点サポートを追加します。
+- 同じ機能のさまざまな実装を、別のセットのプラグインを使用して簡単に交換できます。たとえば、ある FPGA に適した CPU 乗算器の1つの実装は、他の ASIC に適したものとは異なる場合があります。
+- すべてを手動で接続する必要がある非常に非常に大きな手書きのトップレベルシンドロームを回避します。代わりに、プラグインは他のプラグインのソフトウェアインターフェースを見て/使用して、自分の近隣を発見できます。
 
-VexRiscv and NaxRiscv projects are an example of this. Their are CPUs which have a mostly empty toplevel, 
-and their hardware parts are injected using plugins. For instance : 
+VexRiscv と NaxRiscv プロジェクトがこれの例です。これらはほとんど空のトップレベルを持つ CPU で、そのハードウェア部分はプラグインを使用して注入されます。たとえば：
 
 - PcPlugin
 - FetchPlugin
@@ -24,35 +24,35 @@ and their hardware parts are injected using plugins. For instance :
 - IntAluPlugin
 - ...
 
-And those plugins will then negociate/propagate/interconnect to each others via their pool of services.
+そして、これらのプラグインは、それぞれのサービスプールを介して相互に交渉/伝達/相互接続します。
 
-While VexRiscv use a strict synchronous 2 phase system (setup/build callback), NaxRiscv uses a more flexible approach which uses the spinal.core.fiber API to fork elaboration threads which can interlock each others in order to ensure a workable elaboration ordering.
+VexRiscv は厳格な同期 2フェーズシステム（セットアップ/ビルドコールバック）を使用しますが、NaxRiscv は、スパイナルコアファイバー API を使用してエラボレーションスレッドをフォークし、互いに相互ロックして動作可能なエラボレーション順序を確保するより柔軟なアプローチを使用します。
 
-The Plugin API provide a NaxRiscv like system to define composable components using plugins.
+プラグイン API は、プラグインを使用して合成可能なコンポーネントを定義する NaxRiscv のようなシステムを提供します。
 
 Execution order
 --------------------
 
-The main idea is that you have multiple 2 executions phases : 
+基本的な考え方は、複数の 2つの実行フェーズがあることです：
 
-- Setup phase, in which plugins can lock/retain each others. The idea is not to start negociation / elaboration yet.
-- Build phase, in which plugins can negociation / elaboration hardware.
+- セットアップフェーズ：このフェーズでは、プラグインがお互いをロック/保持できます。考え方は、まだ交渉/エラボレーションを開始しないことです。
+- ビルドフェーズ：このフェーズでは、プラグインがハードウェアの交渉/エラボレーションを行うことができます。
 
-The build phase will not start before all FiberPlugin are done with their setup phase.
+ビルドフェーズは、すべての FiberPlugin がセットアップフェーズを終えるまで開始されません。
 
 .. code-block:: scala
 
       class MyPlugin extends FiberPlugin {
         val logic = during setup new Area {
-          // Here we are executing code in the setup phase
+          // こでは、セットアップフェーズでコードを実行しています
           awaitBuild()
-          // Here we are executing code in the build phase
+          // ここでは、ビルドフェーズでコードを実行しています
         }
       }
 
       class MyPlugin2 extends FiberPlugin {
         val logic = during build new Area {
-          // Here we are executing code in the build phase
+          // ここでは、ビルドフェーズでコードを実行しています
         }
       }
 
@@ -60,33 +60,33 @@ The build phase will not start before all FiberPlugin are done with their setup 
 Simple example
 --------------------
 
-Here is a simple dummy example with a SubComponent which will be composed using 2 plugins :
+以下は、2 つのプラグインを使用して構成される SubComponent を持つ簡単なダミー例です：
 
 .. code-block:: scala
 
       import spinal.core._
       import spinal.lib.misc.plugin._
 
-      // Let's define a Component with a PluginHost instance
+      // プラグインホストインスタンスを持つComponentを定義します
       class SubComponent extends Component {
         val host = new PluginHost()
       }
 
-      // Let's define a plugin which create a register
+      // レジスタを作成するプラグインを定義します
       class StatePlugin extends FiberPlugin {
-        // during build new Area { body } will run the body of code in the Fiber build phase, in the context of the PluginHost
+        // during build new Area { body } は、Plugin のコンテキスト Fiber ビルドフェーズでコードを実行します
         val logic = during build new Area {
           val signal = Reg(UInt(32 bits))
         }
       }
 
-      // Let's define a plugin which will make the StatePlugin's register increment
+      // StatePlugin のレジスタをインクリメントするプラグインを定義します
       class DriverPlugin extends FiberPlugin {
-        // We define how to get the instance of StatePlugin.logic from the PluginHost. It is a lazy val, because we can't evaluate it until the plugin is binded to its host.
+        // PluginHost から StatePlugin.logic のインスタンスを取得する方法を定義します。これは遅延評価される必要があるため、lazy val としています。
         lazy val sp = host[StatePlugin].logic.get
 
         val logic = during build new Area {
-          // Generate the increment hardware
+          // インクリメントハードウェアを生成します
           sp.signal := sp.signal + 1
         }
       }
@@ -94,12 +94,12 @@ Here is a simple dummy example with a SubComponent which will be composed using 
       class TopLevel extends Component {
         val sub = new SubComponent()
 
-        // Here we create plugins and embed them in sub.host
+        // ここで、プラグインを作成し、sub.host に埋め込みます
         new DriverPlugin().setHost(sub.host)
         new StatePlugin().setHost(sub.host)
       }
 
-Such TopLevel would generate the following Verilog code : 
+このような TopLevel は、以下の Verilog コードを生成します：
 
 .. code-block:: verilog
 
@@ -128,18 +128,18 @@ Such TopLevel would generate the following Verilog code :
       end
     endmodule
 
-Note each "during build" fork an elaboration thread, the DriverPlugin.logic thread execution will be blocked on the "sp" evaluation until the StatePlugin.logic execution is done.
-
+注意： "during build" はそれぞれのエラボレーションスレッドをフォークします。
+DriverPlugin.logic スレッドの実行は、"sp"の評価が完了するまで StatePlugin.logic の実行でブロックされます。
 
 Interlocking / Ordering
 ----------------------------------------
 
-Plugins can interlock each others using Retainer instances.
-Each plugin instance has a built in lock which can be controlled using retain/release functions.
+プラグインは、Retainer インスタンスを使用して互いに相互作用できます。
+各プラグインインスタンスには、retain/release 関数を使用して制御できる組み込みのロックがあります。
 
-Here is an example based on the above `Simple example` but that time, the DriverPlugin will increment the StatePlugin.logic.signal
-by an amount set by other plugins (SetupPlugin in our case). And to ensure that the DriverPlugin doesn't generate the hardware too early, 
-the SetupPlugin uses the DriverPlugin.retain/release functions.
+以下は、上記の `シンプルな例` に基づく例ですが、
+この場合、DriverPlugin は StatePlugin.logic.signal を他のプラグイン（今回の場合は SetupPlugin ）によって設定された量だけ増分します。
+そして、DriverPlugin がハードウェアを早すぎる段階で生成しないようにするために、SetupPlugin は DriverPlugin.retain/release 関数を使用します。
 
 .. code-block:: scala
 
@@ -158,37 +158,37 @@ the SetupPlugin uses the DriverPlugin.retain/release functions.
   }
 
   class DriverPlugin extends FiberPlugin {
-    // incrementBy will be set by others plugin at elaboration time
+    // incrementBy は、展開時に他のプラグインによって設定されます。
     var incrementBy = 0
-    // retainer allows other plugins to create locks, on which this plugin will wait before using incrementBy
+    // retainer は、他のプラグインがロックを作成できるようにし、このプラグインが incrementBy を使用する前に待機します。
     val retainer = Retainer()
 
     val logic = during build new Area {
       val sp = host[StatePlugin].logic.get
       retainer.await()
 
-      // Generate the incrementer hardware
+      // インクリメンターのハードウェアを生成します
       sp.signal := sp.signal + incrementBy
     }
   }
 
-  // Let's define a plugin which will modify the DriverPlugin.incrementBy variable because letting it elaborate its hardware
+  // ドライバープラグインの incrementBy 変数を変更するプラグインを定義します。なぜなら、それがハードウェアを詳細に記述することを許可するからです。
   class SetupPlugin extends FiberPlugin {
-    // during setup { body } will spawn the body of code in the Fiber setup phase (it is before the Fiber build phase)
+    // during setup { body } は、コードの本体を Fiber のセットアップフェーズに生成します（これは Fiber ビルドフェーズより前です）。
     val logic = during setup new Area {
-      // *** Setup phase code ***
+      // *** セットアップフェーズのコード ***
       val dp = host[DriverPlugin]
 
-      // Prevent the DriverPlugin from executing its build's body (until release() is called)
+      // DriverPlugin がビルドの本体を実行するのを防止します（release() が呼び出されるまで）。
       val lock = dp.retainer()
-      // Wait until the fiber phase reached build phase
+      // ファイバーフェーズがビルドフェーズに達するまで待機します。
       awaitBuild()
 
-      // *** Build phase code ***
-      // Let's mutate DriverPlugin.incrementBy
+      // *** ビルドフェーズのコード ***
+      // DriverPlugin.incrementBy を変更しましょう。
       dp.incrementBy += 1
 
-      // Allows the DriverPlugin to execute its build's body
+      // DriverPlugin がビルドの本体を実行するのを許可します。
       lock.release()
     }
   }
@@ -200,11 +200,11 @@ the SetupPlugin uses the DriverPlugin.retain/release functions.
       new DriverPlugin(),
       new StatePlugin(),
       new SetupPlugin(),
-      new SetupPlugin() //Let's add a second SetupPlugin, because we can
+      new SetupPlugin() // できるので、第二の SetupPlugin を追加しましょう。
     )
   }
 
-Here is the generated verilog
+生成されたVerilogは次のようになります。
 
 .. code-block:: verilog
 
@@ -233,8 +233,8 @@ Here is the generated verilog
       end
     endmodule
 
-Clearly, those examples are overkilled for what they do, the idea in general is more about : 
+これらの例は、行っていることに対してやや過剰ですが、一般的なアイデアは次のようなものです：
 
-- Negociate / create interfaces between plugins (ex jump / flush ports)
-- Schedule the elaboration (ex decode / dispatch specification)
-- Provide a distributed framework which can scale up (minimal hardcoding)
+- プラグイン間のインターフェイスの交渉/作成（例：ジャンプ/フラッシュポート）
+- エラボレーションのスケジューリング（例：デコード/ディスパッチ仕様）
+- 最小限のハードコーディングでスケールアップできる分散フレームワークを提供

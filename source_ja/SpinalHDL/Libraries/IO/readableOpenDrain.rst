@@ -2,7 +2,7 @@
 ReadableOpenDrain
 =================
 
-The ReadableOpenDrain bundle is defined as following :
+ReadableOpenDrain バンドルは、次のように定義されます：
 
 .. code-block:: scala
 
@@ -15,9 +15,9 @@ The ReadableOpenDrain bundle is defined as following :
      }
    }
 
-Then, as a master, you can use the ``read`` signal to read the outside value and use the ``write`` to set the value that you want to drive on the output.
+次に、マスターとして、外部値を読み取るために ``read`` シグナルを使用し、出力にドライブする値を設定するために ``write`` を使用できます。
 
-There is an example of usage :
+使用例があります：
 
 .. code-block:: scala
 

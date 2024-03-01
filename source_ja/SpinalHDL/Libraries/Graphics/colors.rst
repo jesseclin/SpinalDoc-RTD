@@ -5,7 +5,8 @@ Colors
 RGB
 ---
 
-You can use an Rgb bundle to model colors in hardware. This Rgb bundle take as parameter an RgbConfig classes which specify the number of bits for each channels :
+RGB バンドルを使用すると、ハードウェアで色をモデル化できます。この RGB バンドルは、
+各チャンネルのビット数を指定する RgbConfig クラスをパラメーターとして取ります。
 
 .. code-block:: scala
 
@@ -19,7 +20,7 @@ You can use an Rgb bundle to model colors in hardware. This Rgb bundle take as p
      val b = UInt(c.bWidth bits)
    }
 
-Those classes could be used as following :
+これらのクラスは、次のように使用できます：
 
 .. code-block:: scala
 

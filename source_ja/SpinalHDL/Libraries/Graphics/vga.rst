@@ -4,10 +4,10 @@
 VGA
 ===
 
-VGA bus
--------
+VGA バス
+------------
 
-An VGA bus definition is available via the Vga bundle.
+VGA バスの定義は、Vga バンドルを使用して利用できます。
 
 .. code-block:: scala
 
@@ -15,16 +15,16 @@ An VGA bus definition is available via the Vga bundle.
      val vSync = Bool()
      val hSync = Bool()
 
-     val colorEn = Bool()  //High when the frame is inside the color area
+     val colorEn = Bool()  // フレームがカラーエリア内にあるときにHighになります
      val color = Rgb(rgbConfig)
 
      override def asMaster() = this.asOutput()
    }
 
-VGA timings
------------
+VGA タイミング
+----------------
 
-VGA timings could be modeled in hardware by using an VgaTimings bundle :
+VGA タイミングは、VgaTimings バンドルを使用してハードウェア内でモデル化できます：
 
 .. code-block:: scala
 
@@ -43,10 +43,10 @@ VGA timings could be modeled in hardware by using an VgaTimings bundle :
       def driveFrom(busCtrl : BusSlaveFactory,baseAddress : Int) = ...
    }
 
-VGA controller
---------------
+VGAコントローラ
+-------------------
 
-An VGA controller is available. Its definition is the following :
+VGA コントローラが利用可能です。その定義は以下の通りです：
 
 .. code-block:: scala
 
@@ -64,6 +64,6 @@ An VGA controller is available. Its definition is the following :
      // ...
    }
 
-| ``frameStart`` is a signals that pulse one cycle at the beginning of each new frame.
-| ``pixels`` is a stream of color used to feed the VGA interface when needed.
-| ``error`` is high when a transaction on the pixels is needed, but nothing is present.
+| ``frameStart`` は、各新しいフレームの開始時に 1サイクルのパルスとなります。
+| ``pixels`` は、必要なときに VGA インタフェースにデータを供給する色のストリームです。
+| ``error`` は、pixels のトランザクションが必要ですが、何も存在しないときに High になります。

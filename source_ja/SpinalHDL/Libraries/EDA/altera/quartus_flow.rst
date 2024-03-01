@@ -2,17 +2,21 @@
 QuartusFlow
 ===========
 
-A compilation flow is an Altera-defined sequence of commands that use a combination of command-line executables.
-A full compilation flow launches all Compiler modules in sequence to synthesize, fit, analyze final timing, and generate a device programming file. 
+コンパイルフローは、Altera が定義した一連のコマンドのシーケンスであり、
+コマンドラインの実行可能ファイルの組み合わせを使用します。
+完全なコンパイルフローは、すべてのコンパイラモジュールをシーケンスで起動して、
+最終的なタイミングの合成、適合、解析、およびデバイスプログラミングファイルの生成を行います。
 
-Tools in `this file <https://github.com/SpinalHDL/SpinalHDL/blob/dev/lib/src/main/scala/spinal/lib/eda/altera/QuartusFlow.scala>`__ help you get rid of redundant Quartus GUI.
+`このファイル <https://github.com/SpinalHDL/SpinalHDL/blob/dev/lib/src/main/scala/spinal/lib/eda/altera/QuartusFlow.scala>`_ 内のツールは、Quartus GUI の冗長性を排除するのに役立ちます。
 
-For a single rtl file
----------------------
 
-The object ``spinal.lib.eda.altera.QuartusFlow`` can automatically report the used area and maximum frequency of a single rtl file.
+単一のrtlファイルの場合
+--------------------------
 
-Example
+``spinal.lib.eda.altera.QuartusFlow`` オブジェクトは、単一の rtl ファイルの使用された領域と最大周波数を自動的にレポートします。
+
+
+例
 ^^^^^^^
 
 .. code-block:: scala
@@ -27,33 +31,34 @@ Example
    )
    println(report)
 
-The code above will create a new Quartus project with ``TopLevel.vhd``.
+上記のコードは、新しい Quartus プロジェクトを ``TopLevel.vhd`` で作成します。
 
 .. warning::
-   This operation will remove the folder ``workspacePath``!
+   この操作は、フォルダー ``workspacePath`` を削除します！
 
 .. note::
-   The ``family`` and ``device`` values are passed straight to the Quartus CLI as parameters. Please check the Quartus documentation for the correct value to use in your project.
-   
-Tip
-^^^
+   ``family`` および ``device`` の値は、Quartus CLI にパラメーターとして直接渡されます。プロジェクトで使用する正しい値については、Quartus のドキュメントを確認してください。
 
-To test a component that has too many pins, set them as ``VIRTUAL_PIN``.
+ヒント
+^^^^^^^^^
+
+ピンが多すぎるコンポーネントをテストするには、それらを ``VIRTUAL_PIN`` として設定します。
 
 .. code-block:: scala
 
    val miaou: Vec[Flow[Bool]] = Vec(master(Flow(Bool())), 666)
    miaou.addAttribute("altera_attribute", "-name VIRTUAL_PIN ON")
 
-For an existing project
------------------------
+既存のプロジェクトの場合
+--------------------------
 
-The class ``spinal.lib.eda.altera.QuartusProject`` can automatically find configuration files in an existing project. Those are used for compilation and programming the device. 
+クラス ``spinal.lib.eda.altera.QuartusProject`` は、既存のプロジェクト内の設定ファイルを自動的に見つけることができます。
+これらは、デバイスのコンパイルおよびプログラミングに使用されます。
 
-Example
+例
 ^^^^^^^
 
-Specify the path that contains your project files like ``.qpf`` and ``.cdf``.  
+プロジェクトファイル ``.qpf`` および ``.cdf`` を含むパスを指定します。
 
 .. code-block:: scala
 
@@ -62,8 +67,7 @@ Specify the path that contains your project files like ``.qpf`` and ``.cdf``.
       workspacePath = "G:/"
    )
    prj.compile()
-   prj.program()  // automatically find Chain Description File of the project 
+   prj.program()  //プロジェクトの Chain Description File を自動的に検出します
 
 .. important::
-   Remember to save the ``.cdf`` of your project before calling ``prj.program()``.
-   
+   ``prj.program()`` を呼び出す前に、プロジェクトの ``.cdf`` を保存することを忘れないでください。
