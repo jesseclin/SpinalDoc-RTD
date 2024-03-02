@@ -2,36 +2,42 @@
 Introduction
 ============
 
-spinal.lib.misc.pipeline provides a pipelining API. The main advantages over manual pipelining are : 
+spinal.lib.misc.pipeline は、パイプライン API を提供します。手動のパイプライニングと比較して、主な利点は次のとおりです：
 
-- You don't have to predefine all the signal elements needed for the entire staged system upfront. You can create and consume stagable signals in a more ad hoc fashion as your design requires - without needing to refactor all the intervening stages to know about the signal
-- Signals of the pipeline can utilize the powerful parametrization capabilities of SpinalHDL and be subject to optimization/removal if a specific design build does not require a particular parametrized feature, without any need to modify the staging system design or project code base in a significant way.
-- Manual retiming is much easier, as you don't have to handle the registers / arbitration manualy
-- Manage the arbitration by itself
+- 全体のステージングされたシステムに必要なすべての信号要素を事前に定義する必要はありません。
+  デザインが要求するように、ステージャブルな信号をよりアドホックな方法で作成および利用できます。
+  中間段階をすべて再構成して信号について知る必要はありません
+- パイプラインの信号は、SpinalHDL の強力なパラメータ化機能を利用し、
+  特定の設計ビルドが特定のパラメータ化された機能を必要としない場合は、
+  最適化/削除されることができます。ステージングシステムの設計やプロジェクトコードベースを大幅に変更する必要はありません。
+- 手動のリタイミングがはるかに簡単になります。レジスタ/アービトレーションを手動で処理する必要がありません
+- アービトレーションを自動的に管理します
 
-The API is composed of 4 main things : 
+この API は 4つの主要な要素で構成されています：
 
-- Node : which represents a layer in the pipeline
-- Link : which allows to connect nodes to each other
-- Builder : which will generate the hardware required for a whole pipeline
-- Payload : which are used to retrieve hardware signals on nodes along the pipeline
+- Node：パイプライン内のレイヤーを表す
+- Link：ノードを互いに接続する
+- Builder：全体のパイプラインに必要なハードウェアを生成する
+- Payload：パイプライン沿いのノードでハードウェア信号を取得するために使用されます
 
-It is important to understand that Payload isn't a hardware data/signal instance, but a key to retrieve a data/signal on nodes along the pipeline, and that the pipeline builder will then automatically interconnect/pipeline every occurrence of a given Payload between nodes.
+Payload は ハードウェアのデータ/信号インスタンスではなく、
+パイプライン沿いのノードでデータ/信号を取得するためのキーであることを理解することが重要であり、
+その後、パイプラインビルダーは、ノード間の特定の Payload のすべての出現を自動的に相互接続/パイプライン化します。
 
-Here is an example to illustrate : 
+次に示す例で説明します：
 
 .. image:: /asset/image/pipeline/intro_pip.png
    :scale: 70 %
 
-
-Here is a video about this API : 
+このAPIに関するビデオはこちらです：
 
 - https://www.youtube.com/watch?v=74h_-FMWWIM
 
-Simple example
+
+シンプルな例
 ----------------
 
-Here is a simple example which only uses the basics of the API :
+以下は、API の基本のみを使用するシンプルな例です：
 
 
 .. code-block:: scala
@@ -47,40 +53,40 @@ Here is a simple example which only uses the basics of the API :
         val down = master Stream (UInt(16 bits))
       }
 
-      // Let's define 3 Nodes for our pipeline
+      //  パイプラインのための 3つのノードを定義しましょう
       val n0, n1, n2 = Node()
 
-      // Let's connect those nodes by using simples registers
+      // これらのノードをシンプルなレジスタを使用して接続しましょう
       val s01 = StageLink(n0, n1)
       val s12 = StageLink(n1, n2)
 
-      // Let's define a few Payload things that can go through the pipeline
+      // パイプラインを通過するいくつかの Payload を定義しましょう
       val VALUE = Payload(UInt(16 bits))
       val RESULT = Payload(UInt(16 bits))
 
-      // Let's bind io.up to n0
+      // io.up を n0 にバインドしましょう
       io.up.ready := n0.ready
       n0.valid := io.up.valid
       n0(VALUE) := io.up.payload
 
-      // Let's do some processing on n1
+      // n1 でいくつかの処理を行いましょう
       n1(RESULT) := n1(VALUE) + 0x1200
 
-      // Let's bind n2 to io.down
+      // n2 を io.down にバインドしましょう
       n2.ready := io.down.ready
       io.down.valid := n2.valid
       io.down.payload := n2(RESULT)
 
-      // Let's ask the builder to generate all the required hardware
+      // ビルダーに必要なハードウェアを生成するように要求しましょう
       Builder(s01, s12)
     }
 
-This will produce the following hardware : 
+これにより、次のハードウェアが生成されます：
 
 .. image:: /asset/image/pipeline/simple_pip.png
    :scale: 70 %
 
-Here is a simulation wave : 
+以下は、シミュレーション波形です：
 
 .. wavedrom::
 
@@ -102,8 +108,7 @@ Here is a simulation wave :
      {name: 'io_down_valid', wave: '0.......10...'},
    ]}
 
-Here is the same example but using more of the API :
-
+より多くの API を使用した同じ例は次の通りです：
 
 .. code-block:: scala
 
@@ -116,38 +121,39 @@ Here is the same example but using more of the API :
       val VALUE = Payload(UInt(16 bits))
 
       val io = new Bundle{
-        val up = slave Stream(VALUE)  //VALUE can also be used as a HardType
+        val up = slave Stream(VALUE)  // VALUE は HardType としても使用できます
         val down = master Stream(VALUE)
       }
       
-      // NodesBuilder will be used to register all the nodes created, connect them via stages and generate the hardware
+      // ノードが作成され、ステージを介して接続され、ハードウェアが生成されるための NodesBuilder が使用されます
       val builder = new NodesBuilder()
 
-      // Let's define a Node which connect from io.up
+      // io.up から接続するノードを定義しましょう
       val n0 = new builder.Node{
         arbitrateFrom(io.up)
         VALUE := io.up.payload
       }
 
-      // Let's define a Node which do some processing
+      // いくつかの処理を行うノードを定義しましょう
       val n1 = new builder.Node{
         val RESULT = insert(VALUE + 0x1200)
       }
 
-      //  Let's define a Node which connect to io.down
+      // io.down に接続するノードを定義しましょう
       val n2 = new builder.Node {
         arbitrateTo(io.down)
         io.down.payload := n1.RESULT
       }
 
-      // Let's connect those nodes by using registers stages and generate the related hardware
+      // レジスタステージを使用してこれらのノードを接続し、関連するハードウェアを生成しましょう
       builder.genStagedPipeline()
     }
 
 Payload
 ============
 
-Payload objects are used to refer to data which can go through the pipeline. Technicaly speaking, Payload is a HardType which has a name and is used as a "key" to retrieve the signals in a certain pipeline stage.
+Payload オブジェクトは、パイプラインを通過するデータを参照するために使用されます。
+技術的には、Payload は名前を持ち、特定のパイプライン段階で信号を取得するための "キー" として使用される HardType です。
 
 .. code-block:: scala
     
@@ -160,59 +166,69 @@ Payload objects are used to refer to data which can go through the pipeline. Tec
     n0(PC) := 0x42
     n1(PC_PLUS_4) := n1(PC) + 4
 
-Note that I got used to name the Payload instances using uppercase. This is to make it very explicit that the thing isn't a hardware signal, but are more like a "key/type" to access things.
+Payload インスタンスの名前を大文字で指定するのに慣れています。
+これは、そのものがハードウェア信号ではなく、ある種の "キー/タイプ" であることを非常に明示的にするためです。
 
 Node
 ============
 
-Node mostly hosts the valid/ready arbitration signals, and the hardware signals required for all the Payload values going through it.
+ノードは主に、valid/ready のアービトレーション信号と、それを介して通過するすべての Payload 値に必要なハードウェア信号を保持します。
 
-You can access its arbitration via :
-
+そのアービトレーションには以下のようにアクセスできます：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 1 10
 
    * - API
-     - Access
-     - Description
+     - アクセス
+     - 説明
    * - node.valid
      - RW
-     - Is the signal which specifies if a transaction is present on the node. It is driven by the upstream. Once asserted, it must only be de-asserted the cycle after which either both valid and ready or node.cancel are high. valid must not depend on ready.
+     - そのノードにトランザクションが存在するかどうかを指定する信号です。
+       上流から駆動されます。アサートされると、
+       有効およびレディまたは node.cancel のいずれかが高い状態になった後のサイクルのみに解除される必要があります。
+       valid は ready に依存してはいけません。
    * - node.ready
      - RW
-     - Is the signal which specifies if the node's transaction can proceed downstream. It is driven by the downstream to create backpresure. The signal has no meaning when there is no transaction (node.valid being deasserted)
+     - ノードのトランザクションが下流に進むことができるかどうかを指定する信号です。
+       バックプレッシャーを作成するために下流から駆動されます。
+       トランザクションがない場合（ node.valid が解除されている場合）、この信号に意味がありません。
    * - node.cancel
      - RW
-     - Is the signal which specifies if the node's transaction in being canceled from the pipeline. It is driven by the downstream. The signal has no meaning when there is no transaction (node.valid being deasserted)
+     - パイプラインからノードのトランザクションがキャンセルされているかどうかを指定する信号です。
+       下流から駆動されます。トランザクションがない場合（ node.valid が解除されている場合）、この信号に意味がありません。
    * - node.isValid
      - RO
-     - node.valid's read only accessor
+     - node.valid の読み取り専用アクセサです。
    * - node.isReady
      - RO
-     - node.ready's read only accessor
+     - node.ready の読み取り専用アクセサです。
    * - node.isCancel
      - RO
-     - node.cancel's read only accessor
+     - node.cancel の読み取り専用アクセサです。
    * - node.isFiring
      - RO
-     - True when the node transaction is successfuly moving futher (valid && ready && !cancel). Useful to commit state changes.
+     - ノードトランザクションが正常に進行中である場合は True（valid && ready && !cancel）。状態の変更を確定するのに便利です。
    * - node.isMoving
      - RO
-     - True when the node transaction will not be present anymore on the node (starting from the next cycle),
-       either because downstream is ready to take the transaction,
-       or because the transaction is canceled from the pipeline. (valid && (ready || cancel)). Useful to "reset" states.
+     - ノードのトランザクションが次のサイクル以降にノード上に存在しなくなる場合に True です。
+       これは、下流がトランザクションを受け取る準備ができているか、
+       またはパイプラインからトランザクションがキャンセルされるためです（valid && (ready || cancel)）。
+       状態を「リセット」するのに役立ちます。
    * - node.isCanceling
      - RO
-     - True when the node transaction is being canceled. Meaning that it will not appear anywhere in the pipeline in future cycles.
+     - ノードトランザクションがキャンセルされている場合はTrueです。
+       これは、将来のサイクルでパイプラインのどこにも表示されないことを意味します。
 
-Note that the node.valid/node.ready signals follows the same conventions than the :doc:`../stream`'s ones .
+ノードの valid/node.ready 信号は、 :doc:`../stream` での信号と同じ規則に従います。
 
-The Node controls (valid/ready/cancel) and status (isValid, isReady, isCancel, isFiring, ...) signals are created on demande.
-So for instance you can create pipeline with no backpresure by never refering to the ready signal. That's why it is important to use status signals when you want to read the status of something and only use control signals when you to drive something.
+ノードの制御（valid/ready/cancel）およびステータス（isValid、isReady、isCancel、isFiringなど）信号は、必要に応じて作成されます。
+たとえば、ready 信号を参照しないことで、バックプレッシャーのないパイプラインを作成できます。
+そのため、何かの状態を読み取る場合はステータス信号を使用し、何かを駆動する場合は制御信号のみを使用することが重要です。
 
-Here is a list of arbitration cases you can have on a node. valid/ready/cancel define the state we are in, while isFiring/isMoving result of those :
+以下は、ノードで発生するアービトレーションのケースのリストです。
+valid/ready/cancel は私たちがどの状態にあるかを定義し、isFiring/isMoving はそれらの結果です：
 
 +-------+-------+-----------+------------------------------+----------+----------+
 | valid | ready | cancel    | Description                  | isFiring | isMoving |
@@ -227,23 +243,25 @@ Here is a list of arbitration cases you can have on a node. valid/ready/cancel d
 +-------+-------+-----------+------------------------------+----------+----------+
 
 
-Note that if you want to model things like for instance a CPU stage which can block and flush stuff, take a look a the CtrlLink, as it provides the API to do such things.
+CPU のステージのようにブロックしたりフラッシュしたりするようなものをモデル化したい場合は、
+CtrlLink を見てください。それはそのようなことを行うためのAPIを提供します。
 
-You can access signals referenced by a Payload via: 
+Payload で参照されるシグナルにアクセスするには、次のようにします：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 5
 
    * - API
-     - Description
+     - 説明
    * - node(Payload)
-     - Return the corresponding hardware signal
+     - 対応するハードウェア信号を返します
    * - node(Payload, Any)
-     - Same as above, but include a second argument which is used as a "secondary key". This eases the construction of multi-lane hardware. For instance, when you have a multi issue CPU pipeline, you can use the lane Int id as secondary key
+     - 上記と同様ですが、2番目の引数を含めると、それが "セカンダリキー" として使用されます。
+       これにより、マルチレーンハードウェアの構築が容易になります。
+       たとえば、マルチイシュー CPU パイプラインの場合、レーン Int id をセカンダリキーとして使用できます
    * - node.insert(Data)
-     - Return a new Payload instance which is connected to the given Data hardware signal
-
+     - 指定した Data ハードウェア信号に接続された新しいペイロードインスタンスを返します
 
 
 .. code-block:: scala
@@ -254,35 +272,35 @@ You can access signals referenced by a Payload via:
     n0(PC) := 0x42
     n0(PC, "true") := 0x42
     n0(PC, 0x666) := 0xEE
-    val SOMETHING = n0.insert(myHardwareSignal) //This create a new Payload
+    val SOMETHING = n0.insert(myHardwareSignal) // これで新しいペイロードが作成されます
     when(n1(SOMETHING) === 0xFFAA){ ... }
     
 
-While you can manualy drive/read the arbitration/data of the first/last stage of your pipeline, there is a few utilities to connect its boundaries.
-
+パイプラインの最初や最後の段階のアービトレーション/データを手動で制御/読み取ることができますが、
+その境界を接続するためのいくつかのユーティリティがあります。
 
 .. list-table::
    :header-rows: 1
    :widths: 5 5
 
    * - API
-     - Description
+     - 説明
    * - node.arbitrateFrom(Stream[T]])
-     - Drive a node arbitration from a stream.
+     - ストリームからノードのアービトレーションを駆動します。
    * - node.arbitrateFrom(Flow[T]])
-     - Drive a node arbitration from the Flow. 
+     - フローからノードのアービトレーションを駆動します。 
    * - node.arbitrateTo(Stream[T]])
-     - Drive a stream arbitration from the node. 
+     - ノードからストリームのアービトレーションを駆動します。 
    * - node.arbitrateTo(Flow[T]])
-     - Drive a Flow arbitration from the node. 
+     - ノードからフローのアービトレーションを駆動します。
    * - node.driveFrom(Stream[T]])((Node, T) => Unit)
-     - Drive a node from a stream. The provided lambda function can be use to connect the data
+     - ストリームからノードを駆動します。提供されたラムダ関数はデータを接続するために使用できます。
    * - node.driveFrom(Flow[T]])((Node, T) => Unit)
-     - Same as above but for Flow
+     - 上記と同じですが、フローの場合
    * - node.driveTo(Stream[T]])((T, Node) => Unit)
-     - Drive a stream from the node. The provided lambda function can be use to connect the data
+     - ノードからストリームを駆動します。提供されたラムダ関数はデータを接続するために使用できます。
    * - node.driveTo(Flow[T]])((T, Node) => Unit)
-     - Same as above but for Flow
+     - 上記と同じですが、フローの場合
 
 
 .. code-block:: scala
@@ -294,21 +312,20 @@ While you can manualy drive/read the arbitration/data of the first/last stage of
 
     n1(OUT) := n1(IN) + 0x42
 
-    // Define the input / output stream that will be later connected to the pipeline
+    // 以降のパイプラインに接続される入力/出力ストリームを定義します
     val up = slave Stream(UInt(16 bits))
-    val down = master Stream(UInt(16 bits)) //Note master Stream(OUT) is good aswell
+    val down = master Stream(UInt(16 bits)) // 注意：master Stream(OUT)も使用できます
 
     n0.driveFrom(up)((self, payload) => self(IN) := payload)
     n2.driveTo(down)((payload, self) => payload := self(OUT))
 
-
-In order to reduce verbosity, there is a set of implicit conversions between Payload toward their data representation which can be used when you are in the context of a Node : 
+冗長性を減らすために、ノードに関連する Payload 間の一連の暗黙の変換があります。これらは、ノードのコンテキストで使用することができます。
 
 .. code-block:: scala
 
     val VALUE = Payload(UInt(16 bits))
     val n1 = new Node{
-        val PLUS_ONE = insert(VALUE + 1) // VALUE is implicitly converted into its n1(VALUE) representation
+        val PLUS_ONE = insert(VALUE + 1) // VALUE が暗黙的にn1(VALUE)の表現に変換されます
     }
 
 You can also use those implicit conversions by importing them : 
@@ -323,8 +340,7 @@ You can also use those implicit conversions by importing them :
         val PLUS_ONE = insert(VALUE) + 1 // Equivalent to n1.insert(n1(VALUE)) + 1
     }
 
-
-There is also an API which alows you to create new Area which provide the whole API of a given node instance (including implicit convertion) without import : 
+また、指定されたノードインスタンスの全APIを提供する新しい Area を作成する API もあります（インポートなしで暗黙の変換を含む）。
 
 .. code-block:: scala
 
@@ -332,24 +348,23 @@ There is also an API which alows you to create new Area which provide the whole 
     val VALUE = Payload(UInt(16 bits))
 
     val n1Stuff = new n1.Area{
-        val PLUS_ONE = insert(VALUE) + 1 // Equivalent to n1.insert(n1(VALUE)) + 1
+        val PLUS_ONE = insert(VALUE) + 1 // n1.insert(n1(VALUE)) + 1と同等
     }
 
-Such feature is very useful when you have parametrizable pipeline locations for your hardware (see retiming example).
-
+このような機能は、ハードウェアのパラメータ指定可能なパイプラインの場所を持つ場合に非常に便利です（リタイミングの例を参照）。
 
 Links
 ============
 
-There is few different Links already implemented (but you could also create your own custom one).
-The idea of Links is to connect two nodes together in various ways.
-They generally have a `up` Node and a `down` Node.
+すでにいくつかの異なるリンクが実装されています（ただし、独自のカスタムリンクを作成することもできます）。
+リンクのアイデアは、さまざまな方法で2つのノードを接続することです。
+
+一般的に、 `up` ノードと `down` ノードがあります。
 
 DirectLink
 ------------------
 
-Very simple, it connect two nodes with wires only. Here is an example : 
-
+非常にシンプルで、ノードをワイヤで直接接続します。以下は例です。
 
 .. code-block:: scala
     
@@ -360,7 +375,7 @@ Very simple, it connect two nodes with wires only. Here is an example :
 StageLink
 ------------------
 
-This connect two nodes using registers on the data / valid signals and some arbitration on the ready.
+データ/有効信号にレジスタを使用し、ready にアービトレーションを行うことで、2つのノードを接続します。
 
 .. code-block:: scala
     
@@ -370,7 +385,7 @@ This connect two nodes using registers on the data / valid signals and some arbi
 S2mLink
 ------------------
 
-This connect two nodes using registers on the ready signal, which can be useful to improve backpresure combinatorial timings.
+準備信号にレジスタを使用して、2つのノードを接続します。これは、バックプレッシャーの組み合わせタイミングを改善するのに役立ちます。
 
 .. code-block:: scala
     
@@ -379,9 +394,10 @@ This connect two nodes using registers on the ready signal, which can be useful 
 CtrlLink
 ------------------
 
-This is kind of a special Link, as connect two nodes with optional flow control / bypass logic. Its API should be flexible enough to implement a CPU stage with it.
+これは、任意のフロー制御/バイパスロジックで 2つのノードを接続する特別なリンクの一種です。
+その API は、CPU ステージを実装するのに十分な柔軟性があるはずです。
 
-Here is its flow control API (The Bool arguments enable the features) :
+以下はそのフロー制御 API です（Bool引数で機能を有効にします）：
 
 .. list-table::
    :header-rows: 1
@@ -390,19 +406,19 @@ Here is its flow control API (The Bool arguments enable the features) :
    * - API
      - Description
    * - haltWhen(Bool)
-     - Allows to block the current transaction (clear up.ready down.valid)
+     - 現在のトランザクションをブロックできます（up.ready をクリアし、down.valid をクリアします）
    * - throwWhen(Bool)
-     - Allows to cancel the current transaction from the pipeline (clear down.valid and make the transaction driver forget its current state)
+     - パイプラインから現在のトランザクションをキャンセルできます（ down.valid をクリアし、トランザクションドライバーが現在の状態を忘れます）
    * - forgetOneWhen(Bool)
-     - Allows to request the upstream to forget its current transaction  (but doesn't clear the down.valid)
+     - 上流に現在のトランザクションを忘れるように要求できます（ただし、down.valid はクリアされません）
    * - ignoreReadyWhen(Bool)
-     - Allows to ignore the downstream ready (set up.ready)
+     - 下流のreadyを無視することができます（up.ready を設定します）
    * - duplicateWhen(Bool)
-     - Allows to duplicate the current transaction (clear up.ready)
+     - 現在のトランザクションを複製できます（up.ready をクリアします）
    * - terminateWhen(Bool)
-     - Allows to hide the current transaction from downstream (clear down.valid)
+     - 現在のトランザクションを下流から非表示にできます（down.valid をクリアします）
 
-Also note that if you want to do flow control in a conditional scope (ex in a when statement), you can call the following functions :
+また、条件スコープ内でフロー制御を行いたい場合（たとえば、when ステートメント内）、次の関数を呼び出すことができます：
 
 - haltIt(), duplicateIt(), terminateIt(), forgetOneNow(), ignoreReadyNow(), throwIt()
 
@@ -410,30 +426,30 @@ Also note that if you want to do flow control in a conditional scope (ex in a wh
     
     val c01 = CtrlLink(n0, n1)
 
-    c01.haltWhen(something) // Explicit halt request
+    c01.haltWhen(something) // 明示的な停止リクエスト
 
     when(somethingElse){
-        c01.haltIt() // Conditional scope sensitive halt request, same as c01.haltWhen(somethingElse)
+        c01.haltIt() // 条件スコープに敏感な停止リクエスト、c01.haltWhen(somethingElse)と同じ
     }
 
-You can retrieve which nodes are connected to the Link using node.up / node.down.
+リンクに接続されているノードは、node.up / node.down を使用して取得できます。
 
-The CtrlLink also provide an API to access Payload :
+CtrlLink には、Payload にアクセスするAPIも提供されています：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 5
 
    * - API
-     - Description
+     - 説明
    * - link(Payload)
-     - Same as Link.down(Payload)
+     - Link.down(Payload) と同じ
    * - link(Payload, Any)
-     - Same as Link.down(Payload, Any)
+     - Link.down(Payload, Any) と同じ
    * - link.insert(Data)
-     - Same as Link.down.insert(Data)
+     - Link.down.insert(Data) と同じ
    * - link.bypass(Payload)
-     - Allows to conditionaly override a Payload value between link.up -> link.down. This can be used to fix data hazard in CPU pipelines for instance.
+     - link.up -> link.down 間の Payload 値を条件付きで上書きできます。これは、CPU パイプラインでのデータハザードを修正するために使用できます。
 
 
 .. code-block:: scala
@@ -445,14 +461,14 @@ The CtrlLink also provide an API to access Payload :
     c01(PC, 0x666) := 0xEE
 
     val DATA = Payload(UInt(32 bits))
-    // Let's say Data is inserted in the pipeline before c01
+    // データが c01 の前にパイプラインに挿入されているとします
     when(hazard){
         c01.bypass(DATA) := fixedValue
     }
     
-    // c01(DATA) and below will get the hazard patch
+    // c01(DATA) 以下には、ハザードパッチが適用されます
 
-Note that if you create a CtrlLink without node arguments, it will create its own nodes internally.
+CtrlLink を引数なしで作成すると、内部で独自のノードが作成されます。
 
 .. code-block:: scala
 
@@ -462,15 +478,15 @@ Note that if you create a CtrlLink without node arguments, it will create its ow
     val d2e = StageLink(decode.down, execute.up)
 
 
-Other Links
+その他のリンク
 ------------------------------------
 
-There is also a JoinLink / ForkLink implemented.
+JoinLink / ForkLink も実装されています。
 
-Your custom Link
+カスタムリンク
 ------------------------------------
 
-You can implement your custom links by implementing the Link base class.
+リンクベースクラスを実装することで、カスタムリンクを実装できます。
 
 .. code-block:: scala
 
@@ -483,112 +499,115 @@ You can implement your custom links by implementing the Link base class.
       def build() : Unit
     }
 
-But that API may change a bit, as it is still fresh.
+ただし、この API はまだ新しいため、変更される可能性があります。
 
 Builder
 ============
 
-To generate the hardware of your pipeline, you need to give a list of all the Links used in your pipeline.
-
+パイプラインのハードウェアを生成するには、パイプラインで使用されるすべてのリンクのリストを提供する必要があります。
 
 .. code-block:: scala
 
-      // Let's define 3 Nodes for our pipeline
+      // パイプライン用の3つのノードを定義しましょう
       val n0, n1, n2 = Node()
 
-      // Let's connect those nodes by using simples registers
+      // これらのノードをシンプルなレジスタで接続しましょう
       val s01 = StageLink(n0, n1)
       val s12 = StageLink(n1, n2)
 
-      // Let's ask the builder to generate all the required hardware
+      // ビルダーに必要なすべてのハードウェアを生成するように依頼しましょう
       Builder(s01, s12)
 
-There is also a set of "all in one" builders that you can instanciate to help yourself. 
 
-For instance there is the NodesBuilder class which can be used to create sequentially staged pipelines : 
+また、自分自身を助けるためにインスタンス化できる "all in one" ビルダーのセットもあります。
+
+たとえば、NodesBuilder クラスがあり、順次段階的なパイプラインを作成するために使用できます：
 
 .. code-block:: scala
   
       val builder = new NodesBuilder()
 
-      // Let's define a few nodes
+      // いくつかのノードを定義しましょう
       val n0, n1, n2 = new builder.Node
 
-      // Let's connect those nodes by using registers and generate the related hardware
+      // レジスタを使用してこれらのノードを接続し、関連するハードウェアを生成しましょう
       builder.genStagedPipeline()
 
-Composability
+組み合わせ可能性
 ========================
 
-One good thing about the API is that it easily allows to compose a pipeline with multiple parallel things. What i mean by "compose" is that sometime the pipeline you need to design has parallel processing to do. 
+この API の良いところは、複数の並列処理を持つパイプラインを簡単に構築できることです。
+ここで言う "組み合わせる" とは、時には設計する必要のあるパイプラインが並列処理を行う場合があるということです。
 
-Imagine you need to do floating point multiplication on 4 pairs of numbers (to later sum them). If those 4 pairs a provided at the same time by a single stream of data, then you don't want 4 different pipelines to multiply them, instead you want to process them all in parallel in the same pipeline.
+4 組の数値で浮動小数点乗算を行う必要があると想像してみてください（後でそれらを合計するため）。
+これらの 4組の数値が単一のデータストリームで同時に提供される場合、
+それらをすべて別々のパイプラインで乗算するのではなく、同じパイプラインで並列に処理したいです。
 
-The example below show a pattern which composes a pipeline with multiple lanes to process them in parallel.
+以下の例は、複数のレーンで並列に処理するパイプラインを構成するパターンを示しています。
 
 
 .. code-block:: scala
 
-    // This area allows to take a input value and do +1 +1 +1 over 3 stages.
-    // I know that's useless, but let's pretend that instead it does a multiplication between two numbers over 3 stages (for FMax reasons)
+    // この領域では、入力値を受け取り、3つのステージで+1 +1 +1を行います。
+    // 無駄なことをしているとわかっていますが、代わりに3つのステージで2つの数値の乗算を行うとしましょう（FMaxの理由で）
     class Plus3(INPUT: Payload[UInt], stage1: Node, stage2: Node, stage3: Node) extends Area {
       val ONE = stage1.insert(stage1(INPUT) + 1)
       val TWO = stage2.insert(stage2(ONE) + 1)
       val THREE = stage3.insert(stage3(TWO) + 1)
     }
 
-    // Let's define a component which takes a stream as input, 
-    // which carries 'lanesCount' values that we want to process in parallel
-    // and put the result on an output stream
+    // ストリームを入力として受け取り、
+    // 'lanesCount' 個の値を並列に処理し、結果を出力ストリームに配置するコンポーネントを定義します
     class TopLevel(lanesCount : Int) extends Component {
       val io = new Bundle{
         val up = slave Stream(Vec.fill(lanesCount)(UInt(16 bits))) 
         val down = master Stream(Vec.fill(lanesCount)(UInt(16 bits)))
       }
 
-      // Let's define 3 Nodes for our pipeline
+      // パイプライン用の3つのノードを定義しましょう
       val n0, n1, n2 = Node()
 
-      // Let's connect those nodes by using simples registers
+      // これらのノードをシンプルなレジスタで接続しましょう
       val s01 = StageLink(n0, n1)
       val s12 = StageLink(n1, n2)
 
-      // Let's bind io.up to n0
+      // io.up を n0 にバインドしましょう
       n0.arbitrateFrom(io.up)
       val LANES_INPUT = io.up.payload.map(n0.insert(_))
 
-      // Let's use our "reusable" Plus3 area to generate each processing lane
+      // 使用可能な "再利用可能な" Plus3 エリアを使用して、各処理レーンを生成します
       val lanes = for(i <- 0 until lanesCount) yield new Plus3(LANES_INPUT(i), n0, n1, n2)
 
-      // Let's bind n2 to io.down
+      // n2 を io.down にバインドしましょう
       n2.arbitrateTo(io.down)
       for(i <- 0 until lanesCount) io.down.payload(i) := n2(lanes(i).THREE)
 
-      // Let's ask the builder to generate all the required hardware
+      // すべての必要なハードウェアを生成するようにビルダーに依頼しましょう
       Builder(s01, s12)
     }
 
-This will produce the following data path (assuming lanesCount = 2), abitration not being shown :
+これにより、次のようなデータパスが生成されます (lanesCount = 2 の場合)、アービトレーションは表示されません：
 
 .. image:: /asset/image/pipeline/composable_lanes.png
    :scale: 70 %
 
 
-Retiming / Variable lenth
+リタイミング／可変長
 ================================================
 
-Sometime you want to design a pipeline, but you don't really know where the critical paths will be and what the right balance between stages is. And often you can't rely on the synthesis tool doing a good job with automatic retiming.
+時には、パイプラインを設計したいと思うけれども、クリティカル・パスがどこにあるかや、
+ステージ間の適切なバランスが何かを正確に知らないことがあります。
+そして、自動リタイミングで合成ツールが十分な仕事をすることに頼ることができないことがよくあります。
 
-So, you kind of need a easy way to move the logic of your pipeline around.
+だから、パイプラインのロジックを簡単に移動する方法が必要です。
 
-Here is how it can be done with this pipelining API : 
-
+このパイプライン API でこれがどのように行われるかを以下に示します：
 
 .. code-block:: scala
     
-    // Define a component which will take a input stream of RGB value
-    // Process (~(R + G + B)) * 0xEE
-    // And provide that result into an output stream
+    // RGB値の入力ストリームを受け取り、
+    // (~(R + G + B)) * 0xEE を処理し、
+    // その結果を出力ストリームに提供するコンポーネントを定義します
     class RgbToSomething(addAt : Int,
                          invAt : Int,
                          mulAt : Int,
@@ -599,51 +618,51 @@ Here is how it can be done with this pipelining API :
         val down = master Stream (UInt(16 bits))
       }
 
-      // Let's define the Nodes for our pipeline
+      // パイプライン用のノードを定義しましょう
       val nodes = Array.fill(resultAt+1)(Node())
 
-      // Let's specify which node will be used for what part of the pipeline
+      // パイプラインのどの部分にどのノードを使用するかを指定しましょう
       val insertNode = nodes(0)
       val addNode = nodes(addAt)
       val invNode = nodes(invAt)
       val mulNode = nodes(mulAt)
       val resultNode = nodes(resultAt)
 
-      // Define the hardware which will feed the io.up stream into the pipeline
+      // io.up ストリームをパイプラインにフィードするハードウェアを定義します
       val inserter = new insertNode.Area {
         arbitrateFrom(io.up)
         val RGB = insert(io.up.payload)
       }
 
-      // sum the r g b values of the color
+      // 色の r g b 値を合計します
       val adder = new addNode.Area {
         val SUM = insert(inserter.RGB.r + inserter.RGB.g + inserter.RGB.b)
       }
 
-      // flip all the bit of the RGB sum
+      // RGB の合計のビットを反転します
       val inverter = new invNode.Area {
         val INV = insert(~adder.SUM)
       }
 
-      // multiply the inverted bits with 0xEE
+      // 反転されたビットを 0xEE で乗算します
       val multiplier = new mulNode.Area {
         val MUL = insert(inverter.INV*0xEE)
       }
 
-      // Connect the end of the pipeline to the io.down stream
+      // パイプラインの末尾を io.down ストリームに接続します
       val resulter = new resultNode.Area {
         arbitrateTo(io.down)
         io.down.payload := multiplier.MUL
       }
 
-      // Let's connect those nodes sequencialy by using simples registers
+      // これらのノードをシンプルなレジスタで順次接続します
       val links = for (i <- 0 to resultAt - 1) yield StageLink(nodes(i), nodes(i + 1))
 
-      // Let's ask the builder to generate all the required hardware
+      // ビルダーに必要なすべてのハードウェアを生成するように依頼します
       Builder(links)
     }
 
-If then you generate this component like this : 
+その後、次のようにしてこのコンポーネントを生成すると：
 
 .. code-block:: scala
     
@@ -656,12 +675,13 @@ If then you generate this component like this :
         )
       )
 
-You will get a 4 stages separated by 3 layer of flip flop doing your processing : 
+あなたは、3層のフリップフロップによって分離された 4つのステージを持ち、処理を行うことになります：
 
 .. image:: /asset/image/pipeline/rgbToSomething.png
    :scale: 70 %
 
-Note the generated hardware verilog is kinda clean (by my standards at least :P) : 
+
+生成されたハードウェア Verilog は、かなりクリーンです（少なくとも私の基準では:P）：
 
 .. code-block:: verilog
 
@@ -775,9 +795,8 @@ Note the generated hardware verilog is kinda clean (by my standards at least :P)
 
     endmodule
 
-
-Also, you can easily tweak how many stages and where you want the processing to be done, for instance you may want to move the inversion hardware in the same stage as the adder. This can be done the following way : 
-
+また、ステージの数や処理を行う場所を簡単に調整することができます。
+例えば、反転ハードウェアをアダーと同じステージに移動したい場合、次のようにします：
 
 .. code-block:: scala
     
@@ -790,7 +809,7 @@ Also, you can easily tweak how many stages and where you want the processing to 
         )
       )
 
-Then you may want to remove the output register stage : 
+その後、出力レジスタステージを削除したい場合は：
 
 .. code-block:: scala
     
@@ -805,14 +824,14 @@ Then you may want to remove the output register stage :
 
 
 
-Simple CPU example
+シンプルなCPUの例
 ================================================
 
-Here is a simple/stupid 8 bits CPU example with : 
+下は、シンプルで愚直な8ビットCPUの例です：
 
-- 3 stages (fetch, decode, execute)
-- embedded fetch memory
-- add / jump / led /delay instructions
+- 3つのステージ（フェッチ、デコード、実行）
+- 組み込みのフェッチメモリ
+- 追加／ジャンプ／LED／遅延命令
 
 .. code-block:: scala
 
@@ -882,8 +901,7 @@ Here is a simple/stupid 8 bits CPU example with :
     Builder(fetch, decode, execute, f2d, d2e)
   }
 
-
-Here is a simple testbench which implement a loop which will make the led counting up.
+以下は、LED が数え上がるループを実装する単純なテストベンチです。
 
 .. code-block:: scala
 
