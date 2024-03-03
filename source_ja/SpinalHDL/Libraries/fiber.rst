@@ -7,86 +7,90 @@ Fiber framework
 ====================
 
 .. warning::
-   This framework is not expected to be used for general RTL generation and targets large system
-   design management and code generation. It is currently used as toplevel integration tool in SaxonSoC.
+   このフレームワークは一般的な RTL 生成には使用されないことが想定されており、
+   大規模なシステム設計管理とコード生成を対象としています。
+   現在は SaxonSoC でトップレベルの統合ツールとして使用されています。
 
-Currently in developpement.
+現在開発中です。
 
-The Fiber to run the hardware elaboration in a out of order manner, a bit similarly to Makefile, where you can define rules and dependencies which will then be solved when you run a make command. It is very similar to the Scala Future feature.
+ハードウェアの詳細な作成を順不同に実行するためのファイバーは、
+Makefile に少し似ており、ルールと依存関係を定義し、その後、make コマンドを実行すると解決されます。
+Scala Future 機能と非常に似ています。
 
-Using this framework can complicate simple things but provide some strong features for complex cases :
+このフレームワークを使用すると、単純なことを複雑にすることができますが、複雑なケースにはいくつかの強力な機能を提供します：
 
-- You can define things before even knowing all their requirements, ex :
-  instantiating a interruption controller, before knowing how many interrupt signal lines you need
-- Abstract/lazy/partial SoC architecture definition allowing the creation of SoC template for further specialisations
-- Automatic requirement negotiation between multiple agents in a decentralized way, ex : between masters and slaves of a memory bus
+- すべての要件を完全に把握する前にも、事柄を定義できます。
+  例：必要な割り込み信号線の数を知らないまま割り込みコントローラーをインスタンス化する
+- 抽象的で遅延された/部分的な SoC アーキテクチャの定義により、SoC テンプレートの作成が可能になります
+- 分散型で複数のエージェント間の要件交渉を自動化します。例：メモリバスのマスターとスレーブ間での自動要件交渉
 
-The framework is mainly composed of : 
+このフレームワークは主に次のようなもので構成されています：
 
-- ``Handle[T]``, which can be used later to store a value of type ``T``.
-- ``handle.load`` which allow to set the value of a handle (will reschedule all tasks waiting on it)
-- ``handle.get``, which return the value of the given handle. Will block the task execution if that handle isn't loaded yet
-- ``Handle{ /*code*/ }``, which fork a new task which will execute the given code. The result of that code will be loaded into the Handle
-- ``soon(handle)``, which allows the current task to announce that it will load ``handle`` with a value (used for scheduling)
-
-
-Simple dummy example
+- ``Handle[T]``：後で型 ``T`` の値を格納するために使用できます。
+- ``handle.load``：ハンドルの値を設定することができます（これにより、それに待機しているすべてのタスクが再スケジュールされます）
+- ``handle.get``：指定されたハンドルの値を返します。そのハンドルがまだロードされていない場合、タスクの実行がブロックされます
+- ``Handle{ /*code*/ }``：指定されたコードを実行する新しいタスクをフォークします。そのコードの結果は Handle にロードされます
+- ``soon(handle)``：現在のタスクが ``handle`` を値でロードすることを発表できるようにします（スケジューリングに使用されます）
+ 
+シンプルなダミーの例
 --------------------
 
-There is a simple example :
+シンプルな例があります：
 
 .. code-block:: scala
 
   import spinal.core.fiber._
 
-  // Create two empty Handles
+  // ２つの空のハンドルを作成する
   val a, b = Handle[Int] 
 
-  // Create a Handle which will be loaded asynchronously by the given body result
+  // 指定されたボディの結果によって非同期にロードされるハンドルを作成する
   val calculator = Handle {  
-      a.get + b.get // .get will block until they are loaded
+      a.get + b.get // .get は、ロードされるまでブロックされます
   }
 
-  // Same as above
+  // 上記と同じ
   val printer = Handle {
-      println(s"a + b = ${calculator.get}") // .get is blocking until the calculator body is done
+      println(s"a + b = ${calculator.get}") // .get は、calculator ボディの実行が完了するまでブロックされま
   }
 
-  // Synchronously load a and b, this will unblock a.get and b.get 
+  // a と b を同期的にロードすると、a.get と b.get がアンブロックされます
   a.load(3)
   b.load(4)
 
-Its runtime will be : 
+ランタイムは次のようになります：
 
-- create a and b
-- fork the calculator task, but is blocked when executing a.get
-- fork the printer task, but is blocked when executing calculator.get
-- load a and b, which reschedule the calculator task (as it was waiting on a)
-- calculator do its a + b sum, and load its Handle with that result, which reschedule the printer task
-- printer task print its stuff
-- everything done
+- a と b を作成する
+- calculator タスクをフォークするが、 a.get を実行するとブロックされる
+- printer タスクをフォークするが、 calculator.get を実行するとブロックされる
+- a と b をロードし、 calculator タスクを再スケジュールする（a に待機していたため）
+- calculator は a + b の合計を実行し、その結果を持つハンドルをロードし、printer タスクを再スケジュールします
+- printer タスクはその内容を印刷します
+- すべての処理が完了します
 
-
-So, the main point of that example is to show that we kind of overcome the sequential execution of things, as a and b are loaded after the definition of the calculator.
-
+したがって、この例の主なポイントは、a と b が calculator の定義の後にロードされるという順序実行をある程度克服したことを示すことです。
 
 Handle[T]
 --------------------
 
-Handle[T] are a bit like scala's Future[T], they allow to talk about something before it is even existing, and wait on it.
+Handle[T] は、scala の Future[T] に少し似ています。
+それらは、まだ存在しないものについて話すことを可能にし、それを待つことができます。
 
 .. code-block:: scala
     
     val x,y = Handle[Int]
-    val xPlus2 : Handle[Int] = x.produce(x.get + 2) //x.produce can be used to generate a new Handle when x is loaded
-    val xPlus3 : Handle[Int] = x.derivate(_ + 3)    //x.derivate is as x.produce, but also provide the x.get as argument of the lambda function
-    x.load(3) //x will now contain the value 3
+    val xPlus2 : Handle[Int] = x.produce(x.get + 2) // x がロードされると、x.produce は新しいハンドルを生成するために使用できます
+    val xPlus3 : Handle[Int] = x.derivate(_ + 3)    // x.derivate は x.produce と同じですが、x.get を lambda 関数の引数として提供します
+    x.load(3) // x は今、値 3 を含んでいます
 
 
 soon(handle)
 ^^^^^^^^^^^^^^^^^^^^
 
-In order to maintain a proper graph of dependencies between tasks and Handle, a task can specify in advance that it will load a given handle. This is very usefull in case of a generation starvation/deadlock for SpinalHDL to report accuratly where is the issue.
+タスクとハンドルの間の依存関係の適切なグラフを維持するために、タスクは事前に指定して、
+特定のハンドルをロードすることを示すことができます。
+これは、 SpinalHDL において生成の停滞やデッドロックが発生した場合に、
+問題がどこにあるかを正確に報告するために非常に役立ちます。
 
 
 

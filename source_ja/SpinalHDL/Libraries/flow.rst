@@ -2,83 +2,83 @@
 Flow
 ====
 
-Specification
+仕様
 -------------
 
-The Flow interface is a simple valid/payload protocol which means the slave can't halt the bus.
-It could be used to represent data coming from an UART controller, requests to write an on-chip memory, etc.
+Flow インターフェースは、スレーブがバスを停止させることができないシンプルな有効/ペイロード プロトコルであり、
+UART コントローラからのデータ、オンチップ メモリへの書き込みリクエストなどを表すために使用できます。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 10 1
 
-   * - Signal
-     - Type
-     - Driver
-     - Description
-     - Don't care when
+   * - シグナル
+     - タイプ
+     - ドライバー
+     - 説明
+     - これが発生したときに気にしない
    * - valid
      - Bool
-     - Master
-     - When high => payload present on the interface
+     - マスター
+     - ハイの場合 => インターフェース上にペイロードが存在します
      - 
    * - payload
      - T
-     - Master
-     - Content of the transaction
-     - valid is low
+     - マスター
+     - トランザクションの内容
+     - valid がローの場合
 
 
-Functions
+機能
 ---------
 
 .. list-table::
    :header-rows: 1
    :widths: 1 10 1 1
 
-   * - Syntax
-     - Description
-     - Return
-     - Latency
+   * - 構文
+     - 説明
+     - 戻り値
+     - レイテンシー
    * - Flow(type : Data)
-     - Create a Flow of a given type
+     - 指定されたタイプの Flow を作成します
      - Flow[T]
      - 
    * - master/slave Flow(type : Data)
-     - | Create a Flow of a given type
-       | Initialized with corresponding in/out setup
+     - | 指定されたタイプの Flow を作成します
+       | 対応する in/out セットアップで初期化されます
      - Flow[T]
      - 
    * - x.m2sPipe()
-     - | Return a Flow drived by x
-       | through a register stage that cut valid/payload paths
+     - | x によって駆動される Flow を返します
+       | レジスタ ステージを通過し、有効/ペイロード パスをカットします
      - Flow[T]
      - 1
    * - | x << y
        | y >> x
-     - Connect y to x
+     - y を x に接続します
      - 
      - 0
    * - | x <-< y
        | y >-> x
-     - Connect y to x through a m2sPipe
+     - y を x に m2sPipe を介して接続します
      - 
      - 1
    * - x.throwWhen(cond : Bool)
-     - | Return a Flow connected to x 
-       | When cond is high, transaction are dropped
+     - | 条件が high の場合、x に接続された Flow を返します
+       | トランザクションがドロップされます
      - Flow[T]
      - 0
    * - x.toReg()
-     - Return a register which is loaded with ``payload`` when valid is high
+     - valid が high の場合に ``payload`` で読み込まれるレジスタを返します
      - T
      - 
    * - x.setIdle()
-     - Set the Flow in an Idle state: ``valid`` is ``False`` and don't care about ``payload``.
+     - Flow をアイドル状態に設定します： ``valid`` は ``False`` で、``payload`` については構いません。 
      -
      -
    * - x.push(newPayload: T)
-     - Assign a new valid payload to the Flow. ``valid`` is set to ``True``.
+     - 新しい有効なペイロードを ``Flow`` に割り当てます。 ``valid`` が ``True`` に設定されます。
      -
      -
 
@@ -90,21 +90,21 @@ Code example
    :start-at: case class FlowExample()
    :end-before: // end FlowExample
 
-Simulation Support
-------------------
+シミュレーション サポート
+-------------------------
 
 .. list-table::
   :header-rows: 1
   :widths: 1 5
   
-  * - Class
-    - Usage
+  * - クラス
+    - 使用法
   * - FlowMonitor
-    - Used for both master and slave sides, calls function with payload if Flow transmits data.
+    - マスターおよびスレーブ側に使用され、Flow がデータを送信するとペイロード付きで関数を呼び出します。 
   * - FlowDriver
-    - Testbench master side, drives values by calling function to apply value (if available). Function must return if value was available. Supports random delays.
+    - テストベンチ マスター側で使用され、値をドライブするために関数を呼び出します（利用可能な場合）。値が利用可能であったかどうかを返す必要があります。ランダムな遅延をサポートします。
   * - ScoreboardInOrder
-    - Often used to compare reference/dut data
+    - リファレンス/DUT データを比較するためによく使用されます
 
 .. literalinclude:: /../examples/src/main/scala/spinaldoc/libraries/flow/SimSupport.scala
    :language: scala

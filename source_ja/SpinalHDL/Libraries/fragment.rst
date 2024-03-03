@@ -2,80 +2,80 @@
 Fragment
 ========
 
-Specification
+仕様
 -------------
 
-The ``Fragment`` bundle is the concept of transmitting a "big" thing by using multiple "small" fragments. For examples :
+``Fragment`` バンドルは、 "大きな" ものを複数の "小さな" フラグメントを使用して送信する概念です。例えば：
 
+* 幅×高さのトランザクションで送信される画像は、 ``Stream[Fragment[Pixel]]`` 上で送信されます。
+* フロー制御のないコントローラから受信した UART パケットは、 ``Flow[Fragment[Bits]]`` 上で送信されます。
+* AXI リードバーストは、 ``Stream[Fragment[AxiReadResponse]]`` で送信される可能性があります。
 
-* A picture transmitted with width*height transaction on a ``Stream[Fragment[Pixel]]``
-* An UART packet received from an controller without flow control could be transmitted on a ``Flow[Fragment[Bits]]``
-* An AXI read burst could be carried by an ``Stream[Fragment[AxiReadResponse]]``
-
-Signals defined by the ``Fragment`` bundle are :
+``Fragment`` バンドルで定義されたシグナルは次のとおりです：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 5
 
-   * - Signal
-     - Type
-     - Driver
-     - Description
+   * - シグナル
+     - タイプ
+     - ドライバー
+     - 説明
    * - fragment
      - T
-     - Master
-     - The "payload" of the current transaction
+     - マスター
+     - 現在のトランザクションの "ペイロード" 
    * - last
      - Bool
-     - Master
-     - High when the fragment is the last of the current packet
+     - マスター
+     - ``Fragment`` が現在のパケットの最後のものである場合に高い
 
 
-As you can see with this specification and precedent example, the ``Fragment`` concept doesn't specify how transaction are transmitted (You can use Stream,Flow or any other communication protocol). It only add enough information (\ ``last``\ ) to know if the current transaction is the first one, the last one or one in the middle of a given packet.
+この仕様と先行例からわかるように、 ``Fragment`` の概念はトランザクションがどのように送信されるかを指定していません
+（Stream、Flow、または他の通信プロトコルを使用できます）。
+それは現在のトランザクションが最初のものか、最後のものか、または特定のパケットの途中にあるものかを知るための十分な情報 (\ ``last``\ ) のみを追加します。
 
 .. note::
-   The protocol didn't carry a \'first\' bit because it can be generated at any place by doing \'RegNextWhen(bus.last, bus.fire) init(True)\'
-
-Functions
+   このプロトコルは \'first\' ビットを伝送しなかったため、どこでも 'RegNextWhen（bus.last、bus.fire）init（True）' を実行することで生成できます。
+   
+機能
 ---------
 
-For ``Stream[Fragment[T]]`` and ``Flow[Fragment[T]]``\ , following function are presents :
+``Stream[Fragment[T]]`` および ``Flow[Fragment[T]]``\ のための、以下の機能が提供されています：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 20
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値	
+     - 説明
    * - x.first
      - Bool
-     - Return True when the next or the current transaction is/would be the first of a packet
+     - 次のトランザクションまたは現在のトランザクションが/される最初のパケットの場合に True を返します
    * - x.tail
      - Bool
-     - Return True when the next or the current transaction is/would be not the first of a packet
+     - 次のトランザクションまたは現在のトランザクションが/される最初でないパケットの場合に True を返します
    * - x.isFirst
      - Bool
-     - Return True when an transaction is present and is the first of a packet
+     - トランザクションが存在し、パケットの最初の場合に True を返します
    * - x.isTail
      - Bool
-     - Return True when an transaction is present and is the not the first/last of a packet
+     - トランザクションが存在し、パケットの最初でも最後でもない場合に True を返します
    * - x.isLast
      - Bool
-     - Return True when an transaction is present and is the last of a packet
+     - トランザクションが存在し、パケットの最後の場合に True を返します
 
 
-For ``Stream[Fragment[T]]``\ , following function are also accessible :
+``Stream[Fragment[T]]`` のために、以下の機能もアクセス可能です：
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値	
+     - 説明
    * - x.insertHeader(header : T)
      - Stream[Fragment[T]]
-     - Add the ``header`` to each packet on ``x`` and return the resulting bus
-
+     - ``x`` 上の各パケットに ``header`` を追加し、結果のバスを返します

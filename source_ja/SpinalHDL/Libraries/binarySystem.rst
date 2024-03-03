@@ -4,102 +4,101 @@ BinarySystem
 
 Specification
 -------------
-  
-| Here things have nothing to do with HDL, but they are very common in digital systems, In particular, the algorithm reference model is widely used. In addition, it is also used in build testbench. 
 
+| ここでは、HDL とは関係ありませんが、デジタルシステムで非常に一般的であり、特にアルゴリズムのリファレンスモデルが広く使用されています。また、テストベンチの構築にも使用されます。  
 
 
 .. list-table::
    :header-rows: 1
    :widths: 4 8  1
 
-   * - Syntax
-     - Description
-     - Return
+   * - 構文
+     - 説明
+     - 戻り値
 
    * - **String**.asHex
-     - HexString to BigInt == BigInt(string, 16)
+     - HexString を BigIntに変換 == BigInt(string, 16)
      - BigInt
    * - **String**.asDec
-     - Decimal String to BigInt == BigInt(string, 10)
+     - Decimal String を BigInt に変換 == BigInt(string, 10)
      - BigInt
    * - **String**.asOct
-     - Octal String to BigInt == BigInt(string, 8)
+     - Octal String を BigInt に変換 == BigInt(string, 8)
      - BigInt
    * - **String**.asBin
-     - Binary String to BigInt == BigInt(string, 2)
+     - Binary String を BigInt に変換 == BigInt(string, 2)
      - BigInt
    * - 
      - 
      -
    * - **Byte|Int|Long|BigInt**.hexString()
-     - to HEX String
+     - HEX 文字列に変換
      - String
    * - **Byte|Int|Long|BigInt**.octString()
-     - to Oct String
+     - Oct 文字列に変換
      - String
    * - **Byte|Int|Long|BigInt**.binString()
-     - to Bin String
+     - Bin 文字列に変換
      - String
    * - **Byte|Int|Long|BigInt**.hexString(bitSize)
-     - first align to bit Size, then to HEX String
+     - 最初にビットサイズに整列し、次に HEX 文字列に変換
      - String
    * - **Byte|Int|Long|BigInt**.octString(bitSize)
-     - first align to bit Size, then to Oct String
+     - 最初にビットサイズに整列し、次に Oct 文字列に変換
      - String
    * - **Byte|Int|Long|BigInt**.binString(bitSize)
-     - first align to bit Size, then to Bin String
+     - 最初にビットサイズに整列し、次に Bin 文字列に変換
      - String
    * - 
      - 
      -
    * - **Byte|Int|Long|BigInt**.toBinInts()
-     - to BinaryList 
+     - Binary リストに変換
      - List[Int]
    * - **Byte|Int|Long|BigInt**.toDecInts()
-     - to DecimalList 
+     - Decimal リストに変換
      - List[Int]
    * - **Byte|Int|Long|BigInt**.toOctInts()
-     - to OctalList 
+     - Octal リストに変換
      - List[Int]
    * - **Byte|Int|Long|BigInt**.toBinInts(num)
-     - to BinaryList, align to num size and fill 0
+     - Binary リストに変換、num のサイズに整列して 0で埋める
      - List[Int]
    * - **Byte|Int|Long|BigInt**.toDecInts(num)
-     - to DecimalList, align to num size and fill 0
+     - Decimal リストに変換、num のサイズに整列して 0で埋める
      - List[Int]
    * - **Byte|Int|Long|BigInt**.toOctInts(num)
-     - to OctalList, align to num size and fill 0
+     - Octal リストに変換、num のサイズに整列して 0で埋める
      - List[Int]
    * - **"3F2A"**.hexToBinInts
-     - Hex String to BinaryList
+     - Hex 文字列を Binary リストに変換
      - List[Int]
    * - **"3F2A"**.hexToBinIntsAlign
-     - Hex String to BinaryList Align to times of 4
+     - Hex 文字列を Binary リストに変換し、 4の倍数に整列
      - List[Int]
    * - 
      - 
      -
    * - **List(1,0,1,0,...)**.binIntsToHex 
-     - BinaryList to HexString 
+     - Binary リストを HexString に変換
      - String
    * - **List(1,0,1,0,...)**.binIntsToOct 
-     - BinaryList to OctString
+     - Binary リストを OctString に変換
      - String  
    * - **List(1,0,1,0,...)**.binIntsToHexAlignHigh 
-     - BinaryList size align to times of 4 (fill 0) then to HexString 
+     - Binary リストのサイズを 4の倍数に整列（ 0で埋める）してから HexString に変換
      - String
    * - **List(1,0,1,0,...)**.binIntsToOctAlignHigh
-     - BinaryList size align to times of 3 (fill 0) then to HexString 
+     - Binary リストのサイズを 3の倍数に整列（ 0で埋める）してから HexString に変換
      - String
    * - **List(1,0,1,0,...)**.binIntsToInt
-     - BinaryList (maxSize 32) to Int 
+     - Binary リスト（最大サイズ 32）を Int に変換
      - Int
    * - **List(1,0,1,0,...)**.binIntsToLong
-     - BinaryList (maxSIZE 64) to Long 
+     - Binary リスト（最大サイズ 64）を Long に変換
      - Long
    * - **List(1,0,1,0,...)**.binIntsToBigInt
-     - BinaryList (size no restrictions) to BigInt
+     - Binary リスト（サイズ制限なし）を BigInt に変換
      - BigInt
    * - 
      - 
@@ -114,8 +113,8 @@ Specification
      - 8.toByte.toBigInt == BigInt(8.toByte)
      - BigInt
     
-String to Int/Long/BigInt
--------------------------
+String を Int/Long/BigInt に変換
+------------------------------------
 
 .. code-block:: scala 
 
@@ -130,8 +129,8 @@ String to Int/Long/BigInt
    $: "10100011100111111".asBin
 
 
-Int/Long/BigInt to String
--------------------------
+Int/Long/BigInt を String に変換
+---------------------------------
 
 .. code-block:: scala 
 
@@ -151,8 +150,8 @@ Int/Long/BigInt to String
    100010
  
 
-Int/Long/BigInt to Binary-List
-------------------------------
+Int/Long/BigIntをBinary-Listに変換
+-----------------------------------------
 
 .. code-block:: scala
 
@@ -171,7 +170,7 @@ Int/Long/BigInt to Binary-List
    $: BigInt("123451118", 10).toBinInts
    List(0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1)
     
-align to a fixed width
+固定幅に整列する
 
 .. code-block:: scala
 
@@ -183,8 +182,8 @@ align to a fixed width
    List(1, 1, 1, 0, 0, 1, 0, 0)
 
 
-Binary-List to Int/Long/BigInt
-------------------------------
+Binary-List を Int/Long/BigInt に変換
+---------------------------------------
 
 .. code-block:: scala
 
@@ -211,8 +210,8 @@ Binary-List to Int/Long/BigInt
    47
 
 
-BigInt enricher 
----------------
+BigIntエンリッチャー
+-------------------------
 
 .. code-block:: scala
 

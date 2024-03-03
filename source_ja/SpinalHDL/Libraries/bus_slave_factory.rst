@@ -9,85 +9,84 @@ Bus Slave Factory
 Introduction
 ------------
 
-In many situation it's needed to implement a bus register bank. The ``BusSlaveFactory`` is a tool that provide an abstract and smooth way to define them.  
+多くの状況で、バスレジスタバンクを実装する必要があります。 ``BusSlaveFactory`` は、それらを定義するための抽象的でスムーズな方法を提供するツールです。
 
-To see capabilities of the tool, an simple example use the Apb3SlaveFactory variation to implement an :ref:`memory mapped UART <memory_mapped_uart>`. There is also another example with an :ref:`Timer <timer>` which contain a memory mapping function.
+このツールの機能を見るために、単純な例として、:ref:`memory_mapped_uart <memory_mapped_uart>` を実装するために Apb3SlaveFactory の変形を使用したものを見てみましょう。また、メモリマッピング機能を含む :ref:`Timer <timer>` の別の例もあります。
 
-You can find more documentation about the internal implementation of the ``BusSlaveFactory`` tool :ref:`there <bus_slave_factory_implementation>`
+``BusSlaveFactory`` ツールの内部実装に関する詳細なドキュメントは、:ref:`こちら <bus_slave_factory_implementation>` で見つけることができます。
 
 Functionality
 -------------
 
-| There are many implementations of the ``BusSlaveFactory`` tool : AHB3-lite, APB3, APB4, AvalonMM, AXI-lite 3, AXI4, BMB, Wishbone and PipelinedMemoryBus.
-| Each implementation of that tool take as an argument one instance of the corresponding bus and then offers the following functions to map your hardware into the memory mapping :
+| ``BusSlaveFactory`` ツールには、多くの実装があります：AHB3-lite、APB3、APB4、AvalonMM、AXI-lite 3、AXI4、BMB、Wishbone、および PipelinedMemoryBus。
+| このツールの各実装は、対応するバスのインスタンスを引数として受け取り、次のような機能を提供してハードウェアをメモリマッピングにマップします：
 
 .. list-table::
    :header-rows: 1
    :widths: 2 1 10
 
-   * - Name
-     - Return
-     - Description
+   * - 名前
+     - 戻り値
+     - 説明
    * - busDataWidth
      - Int
-     - Return the data width of the bus
+     - バスのデータ幅を返す
    * - read(that,address,bitOffset)
      - 
-     - When the bus read the ``address``\ , fill the response with ``that`` at ``bitOffset``
+     - バスが ``address`` を読み取るとき、レスポンスを ``bitOffset`` に ``that`` で満たす
    * - write(that,address,bitOffset)
      - 
-     - When the bus write the ``address``\ , assign ``that`` with bus's data from ``bitOffset``
+     - バスが ``address`` を書き込むとき、 ``that`` を ``bitOffset`` からのバスのデータで割り当てる
    * - onWrite(address)(doThat)
      - 
-     - Call ``doThat`` when a write transaction occur on ``address``
+     - ``address`` に書き込みトランザクションが発生したとき、 ``doThat`` を呼び出す
    * - onRead(address)(doThat)
      - 
-     - Call ``doThat`` when a read transaction occur on ``address``
+     - ``address`` で読み取りトランザクションが発生したとき、 ``doThat`` を呼び出す
    * - nonStopWrite(that,bitOffset)
      - 
-     - Permanently assign ``that`` by the bus write data from ``bitOffset``
+     - ``that`` を常にバスの書き込みデータから ``bitOffset`` で割り当てる
    * - readAndWrite(that,address,bitOffset)
      - 
-     - Make ``that`` readable and writable at ``address`` and placed at ``bitOffset`` in the word
+     - ``that`` を ``address`` で読み書き可能にし、単語内の ``bitOffset`` に配置する 
    * - readMultiWord(that,address)
      - 
-     - | Create the memory mapping to read ``that`` from 'address'. 
-       | If ``that`` is bigger than one word it extends the register on followings addresses
+     - | ``that`` を ``address`` から読み取るメモリマッピングを作成する。 
+       | ``that` が 1ワードよりも大きい場合、後続のアドレスにレジスタを拡張します
    * - writeMultiWord(that,address)
      - 
-     - | Create the memory mapping to write ``that`` at 'address'. 
-       | If ``that`` is bigger than one word it extends the register on followings addresses
+     - | ``that`` を ``address`` に書き込むメモリマッピングを作成します。 
+       | ``that`` が 1ワードよりも大きい場合、後続のアドレスにレジスタを拡張します
    * - createWriteOnly(dataType,address,bitOffset)
      - T
-     - Create a write only register of type ``dataType`` at ``address`` and placed at ``bitOffset`` in the word
+     - ``address`` と単語内の ``bitOffset`` にタイプ ``dataType`` の書き込み専用レジスタを作成します
    * - createReadWrite(dataType,address,bitOffset)
      - T
-     - Create a read write register of type ``dataType`` at ``address`` and placed at ``bitOffset`` in the word
+     - ``address`` と単語内の ``bitOffset`` にタイプ ``dataType`` の読み書き可能なレジスタを作成します
    * - createAndDriveFlow(dataType,address,bitOffset)
      - Flow[T]
-     - Create a writable Flow register of type ``dataType`` at ``address`` and placed at ``bitOffset`` in the word
+     - ``address`` と単語内の ``bitOffset`` に書き込み可能な ``Flow`` レジスタを作成します
    * - drive(that,address,bitOffset)
      - 
-     - Drive ``that`` with a register writable at ``address`` placed at ``bitOffset`` in the word
+     - ``that`` を、単語内の ``bitOffset`` に配置された ``address`` で書き込み可能なレジスタでドライブします
    * - driveAndRead(that,address,bitOffset)
      - 
-     - Drive ``that`` with a register writable and readable at ``address`` placed at ``bitOffset`` in the word
+     - ``that`` を、単語内の ``bitOffset`` に配置された ``address`` で書き込み可能で読み取り可能なレジスタでドライブします
    * - driveFlow(that,address,bitOffset)
      - 
-     - Emit on ``that`` a transaction when a write happen at ``address`` by using data placed at ``bitOffset`` in the word
+     - ``address`` で書き込みが発生した際に、単語内の ``bitOffset`` に配置されたデータを使用して、 ``that`` にトランザクションを送信します
    * - | readStreamNonBlocking(that,
        |                       address,
        |                       validBitOffset,
        |                       payloadBitOffset)
      - 
-     - | Read ``that`` and consume the transaction when a read happen at ``address``. 
-       | valid <= validBitOffset bit
-       | payload <= payloadBitOffset+widthOf(payload) downto ``payloadBitOffset``
+     - | ``address`` で読み込みが発生した際に、 ``that`` を読み取り、トランザクションを消費します。
+       | valid <= validBitOffset ビット 
+       | payload <= payloadBitOffset+widthOf(payload) ダウントゥ ``payloadBitOffset``」 
    * - | doBitsAccumulationAndClearOnRead(that,
        |                                  address,
        |                                  bitOffset)
      - 
-     - | Instantiate an internal register which at each cycle do :
-       | reg := reg | that
-       | Then when a read occur, the register is cleared. This register is readable at ``address`` and placed at ``bitOffset`` in the word
-
+     - | 毎サイクル、次のように内部レジスタをインスタンス化します： 
+       | reg := reg | that。
+       | その後、読み込みが発生すると、レジスタがクリアされます。このレジスタは、ワード内の ``address`` に配置され、 ``bitOffset`` に配置されています。 
