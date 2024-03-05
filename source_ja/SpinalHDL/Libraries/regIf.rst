@@ -2,16 +2,16 @@
 RegIf
 =====
 
-Register Interface Builder
+レジスタインターフェースビルダー
 
-- Automatic address, fields allocation and conflict detection
-- 28 Register Access types (Covering the 25 types defined by the UVM standard)
-- Automatic documentation generation
+- アドレス、フィールドの自動割り当てと競合検出
+- 28のレジスタアクセスタイプ（UVM標準で定義された25のタイプをカバー）
+- 自動ドキュメント生成
 
-Automatic allocation
+自動割り当て
 ====================
 
-Automatic address allocation
+自動アドレス割り当て
 
 .. code:: scala
 
@@ -36,7 +36,7 @@ Automatic address allocation
 
 .. image:: /asset/image/regif/reg-auto-allocate.gif
 
-Automatic fileds allocation
+自動フィールド割り当て
 
 .. code:: scala
 
@@ -51,7 +51,7 @@ Automatic fileds allocation
 
 .. image:: /asset/image/regif/field-auto-allocate.gif
 
-conflict detection
+競合検出
 
 .. code:: scala
 
@@ -68,8 +68,8 @@ conflict detection
 
 28 Access Types
 ===============
-  
-Most of these come from UVM specification
+
+これらのほとんどは UVM 仕様から来ています。
 
 ==========  =============================================================================   ====
 AccessType  Description                                                                     From
@@ -108,10 +108,10 @@ ROV         w: ReadOnly Value, used for hardware version                        
 CSTM        w: user custom Type, used for document                                          New
 ==========  =============================================================================   ====
 
-Automatic documentation generation
+自動ドキュメント生成
 ==================================
 
-Document Type
+ドキュメントタイプ
 
 ==========  =========================================================================================   ======
 Document    Usage                                                                                       Status
@@ -125,23 +125,23 @@ Latex(pdf)                                                                      
 docx                                                                                                      N
 ==========  =========================================================================================   ======
 
-HTML auto-doc is now complete, Example source Code:
+HTML 自動ドキュメントが完成しました。例として、次のソースコードが提供されています：
 
 .. RegIfExample link: https://github.com/jijingg/SpinalHDL/tree/dev/tester/src/main/scala/spinal/tester/code/RegIfExample.scala
 .. Axi4liteRegIfExample link: https://github.com/jijingg/SpinalHDL/tree/dev/tester/src/main/scala/spinal/tester/code/Axi4liteRegIfExample.scala
-   
-generated HTML document:
+
+生成されたHTMLドキュメント:
 
 .. image:: /asset/image/regif/regif-html.png
 
 
-Special Access Usage
-====================
+特殊アクセスの使用法
+=======================
 
-**CASE1:** ``RO`` usage
+**CASE1:** ``RO`` の使用法
 
-``RO`` is different from other types. It does not create registers and requires an external signal to drive it,
-Attention, please don't forget to drive it.
+``RO`` は他のタイプと異なります。レジスタを作成せず、外部信号が駆動される必要があります。
+注意してください、それを駆動するのを忘れないでください。
 
 .. code:: scala
 
@@ -172,18 +172,19 @@ Attention, please don't forget to drive it.
    couter := cnt
 
       
-**CASE2:** ``ROV`` usage
+**CASE2:** ``ROV`` の使用法
 
-ASIC design often requires some solidified version information. Unlike RO, it is not expected to generate wire signals
+ASIC 設計では、しばしば固定されたバージョン情報が必要です。
+RO とは異なり、ワイヤ信号を生成することは期待されていません。
 
-old way:
+従来の方法:
 
 .. code:: scala
    
    val version = M_REG0.field(Bits(32 bit), RO, 0, "xx-device version")
    version := BigInt("F000A801", 16)
    
-new way: 
+新しい方法:
 
 .. code:: scala
    
@@ -191,8 +192,9 @@ new way:
 
    
 
-**CASE3:** ``HSRW/RWHS`` hardware set type
-In some cases, such registers are not only configured by software, but also set by hardware signals
+**CASE3:** ``HSRW/RWHS`` ハードウェア設定タイプ
+
+場合によっては、これらのレジスタはソフトウェアだけでなくハードウェア信号によっても設定されます。
 
 .. code:: scala
 
@@ -214,24 +216,24 @@ In some cases, such registers are not only configured by software, but also set 
         if(hit_0x0000) begin
            reg0 <= wdata ;
         end
-        if(io.xxx_set) begin      //HW have High priority than SW
+        if(io.xxx_set) begin      // HWがSWよりも優先度が高い
            reg0 <= io.xxx_set_val ;
         end
 
         if(io.xxx_set) begin
            reg1 <= io.xxx_set_val ;
         end 
-        if(hit_0x0004) begin      //SW have High priority than HW
+        if(hit_0x0004) begin      // SWがHWよりも優先度が高い
            reg1 <= wdata ;
         end
      end
 
    
 
-**CASE4:** ``CSTM`` Although SpinalHDL includes 25 register types and 6 extension types, 
-there are still various demands for private register types in practical application.
-Therefore, we reserve CSTM types for scalability. 
-CSTM is only used to generate software interfaces, and does not generate actual circuits
+**CASE4:** ``CSTM`` SpinalHDL には25種類のレジスタタイプと 6種類の拡張タイプが含まれていますが、
+実際のアプリケーションでは、プライベートなレジスタタイプに対するさまざまな要求がまだあります。
+そのため、私たちはスケーラビリティのために CSTM タイプを確保しています。
+CSTM はソフトウェアインターフェースを生成するためにのみ使用され、実際の回路は生成しません。
 
 .. code:: scala
 
@@ -245,9 +247,9 @@ CSTM is only used to generate software interfaces, and does not generate actual 
 
 **CASE5:** ``parasiteField``
 
-This is used for software to share the same register on multiple address instead of generating multiple register entities
+これは、複数のアドレスで同じレジスタを共有するためにソフトウェアが使用され、複数のレジスタエンティティを生成する代わりに使用されます。
 
-example1: clock gate software enable 
+例 1： clock gate software enable 
 
 .. code:: scala
 
@@ -259,7 +261,7 @@ example1: clock gate software enable
                       M_CG_ENS_CLR.parasiteField(xx_sys_cg_en, W1C, 0, "clock gate enalbes, write 1 clear" ) 
                       M_CG_ENS_RO.parasiteField(xx_sys_cg_en, RO, 0, "clock gate enables, read only"
 
-example2: interrupt raw reg with foce interface for software
+例 2: ソフトウェア用の強制インターフェース付きの割り込み生レジスタ
 
 .. code:: scala
 
@@ -275,10 +277,10 @@ Byte Mask
 withStrb
 
 
-Typical Example 
+典型的な例
 ===============
 
-Batch create REG-Address and fields register
+REG-Address およびフィールドレジスタのバッチ作成
 
 .. code:: scala   
 
@@ -293,7 +295,7 @@ Batch create REG-Address and fields register
     val busif = Apb3BusInterface(io.apb, (0x000, 100 Byte), regPre = "AP")
 
     (0 to 9).map { i =>
-      //here use setName give REG uniq name for Docs usage
+      // ここで、ドキュメントの使用のためにREGに固有の名前を付けます
       val REG = busif.newReg(doc = s"Register${i}").setName(s"REG${i}")
       val real = REG.field(SInt(8 bit), AccessType.RW, 0, "Complex real")
       val imag = REG.field(SInt(8 bit), AccessType.RW, 0, "Complex imag")
@@ -317,10 +319,10 @@ Batch create REG-Address and fields register
   SpinalVerilog(new RegBank())
 
 
-Interrupt Factory 
-=================
+割り込みファクトリー 
+==========================
 
-Manual writing interruption
+手動で割り込みを書く
 
 .. code:: scala   
 
@@ -363,11 +365,11 @@ Manual writing interruption
 
    }
 
-this is a very tedious and repetitive work, a better way is to use the "factory" paradigm to auto-generate the documentation for each signal.
+これは非常に手間のかかる反復的な作業です。各信号のドキュメントを自動生成するために「factory」パラダイムを使用するのがより良い方法です。
 
-now the InterruptFactory can do that.
-    
-Easy Way create interruption:
+今、InterruptFactory がそれを行うことができます。
+
+簡単な方法で割り込みを作成します:
 
 .. code:: scala   
     
@@ -390,8 +392,8 @@ Easy Way create interruption:
 
 .. image:: /asset/image/regif/easy-intr.png
 
-IP level interrupt Factory
---------------------------
+IP レベルの割り込みファクトリー
+-------------------------------------
 
 ========== ==========  ======================================================================
 Register   AccessType  Description                                                           
@@ -411,8 +413,8 @@ SpinalUsage:
 
     busif.interruptFactory("T", io.a, io.b, io.c, io.d, io.e)
 
-SYS level interrupt merge
--------------------------
+SYS レベルの割り込みマージ
+------------------------------
 
 ========== ==========  ======================================================================
 Register   AccessType  Description                                                           
@@ -443,7 +445,7 @@ BusInterface method                                                             
 ``InterruptFactoryAt(addrOffset: Int, regNamePre: String, triggers: Bool*)``         create MASK/STATUS for level_int merge at addrOffset      
 =================================================================================== ============================================================
                                
-Example
+例
 -------
 
 .. code:: scala 
@@ -478,8 +480,8 @@ Example
 DefaultReadValue
 ================
 
-When the software reads a reserved address, the current policy is to return normally, readerror=0.
-In order to facilitate software debugging, the read back value can be configured, which is 0 by default
+ソフトウェアが予約済みアドレスを読み取ると、現在の方針では通常、正常に戻り、readerror=0 が返されます。
+ソフトウェアのデバッグを容易にするために、既定では 0 に設定されている読み戻し値を構成できます
 
 .. code:: scala 
 
@@ -495,14 +497,14 @@ In order to facilitate software debugging, the read back value can be configured
 
  
 
-Developers Area
+開発者エリア
 ===============
 
-You can add your document Type by extending the `BusIfVistor` Trait 
+`BusIfVistor` トレイトを拡張して、独自のドキュメントタイプを追加できます
 
 ``case class Latex(fileName : String) extends BusIfVisitor{ ... }``
 
-BusIfVistor give access BusIf.RegInsts to do what you want 
+BusIfVistor は、BusIf.RegInsts にアクセスして、希望する操作を行う機能を提供します 
 
 .. code:: scala
 

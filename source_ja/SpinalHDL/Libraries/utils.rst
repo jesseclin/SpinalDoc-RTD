@@ -4,220 +4,222 @@
 Utils
 =====
 
-Some utils are also present in :ref:`spinal.core <utils>`
+いくつかのユーティリティは、:ref:`spinal.core <utils>` にも存在します。
 
-State less utilities
---------------------
+無状態のユーティリティ
+----------------------------
 
 .. list-table::
    :header-rows: 1
    :widths: 2 1 5
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値
+     - 説明
    * - toGray(x : UInt)
      - Bits
-     - Return the gray value converted from ``x`` (UInt)
+     - ``x`` (UInt) からグレイ値に変換された値を返します
    * - fromGray(x : Bits)
      - UInt
-     - Return the UInt value converted value from ``x`` (gray)
+     - ``x`` (gray) から UInt 値に変換された値を返します
    * - Reverse(x : T)
      - T
-     - Flip all bits (lsb + n -> msb - n)
+     - すべてのビットを反転します (lsb + n -> msb - n)
    * - | OHToUInt(x : Seq[Bool])
        | OHToUInt(x : BitVector)
      - UInt
-     - Return the index of the single bit set (one hot) in ``x``
+     - ``x`` の単一ビットがセットされたインデックス（ワンホット）を返します
    * - | CountOne(x : Seq[Bool])
        | CountOne(x : BitVector)
      - UInt
-     - Return the number of bit set in ``x``
+     - ``x`` でセットされたビット数を返します
    * - | MajorityVote(x : Seq[Bool])
        | MajorityVote(x : BitVector)
      - Bool
-     - Return True if the number of bit set is > x.size / 2
+     - セットされたビット数が x.size / 2 よりも大きい場合、True を返します
    * - EndiannessSwap(that: T[, base:BitCount])
      - T
-     - Big-Endian <-> Little-Endian
+     - ビッグエンディアン <-> リトルエンディアン
    * - OHMasking.first(x : Bits)
      - Bits
-     - Apply a mask on x to only keep the first bit set
+     - x にマスクを適用して最初のセットビットのみを保持します
    * - OHMasking.last(x : Bits)
      - Bits
-     - Apply a mask on x to only keep the last bit set
+     - x にマスクを適用して最後のセットビットのみを保持します
    * - | OHMasking.roundRobin(
        |  requests : Bits,
        |  ohPriority : Bits
        | )
      - Bits
-     - | Apply a mask on x to only keep the bit set from ``requests``.
-       | it start looking in ``requests`` from the ``ohPriority`` position.
-       | For example if ``requests`` is "1001" and ``ohPriority`` is "0010", the ``roundRobin`` function will start looking in `requests` from its second bit and will return "1000".
+     - | x にマスクを適用して、 ``requests`` からビットがセットされているものだけを保持します。
+       | ``ohPriority`` 位置から ``requests`` を検索し始めます。
+       | たとえば、 ``requests`` が "1001" で ``ohPriority`` が "0010" の場合、 ``roundRobin`` 関数は `requests` の2番目のビットから検索を開始し、"1000" を返します。
    * - | MuxOH (
        |   oneHot : IndexedSeq[Bool],
        |   inputs : Iterable[T]
        | )
      - T
-     - Returns the muxed ``T`` from the ``inputs`` based on the ``oneHot`` vector.
+     - ``oneHot`` ベクトルに基づいて ``inputs`` から Mux された ``T`` を返します
    * - | PriorityMux (
        |    sel: Seq[Bool],
        |    in:  Seq[T]
        | )
      - T
-     - Return the first ``in`` element whose ``sel`` is ``True``.
+     - ``sel`` が ``True`` である最初の ``in`` 要素を返します。
    * - | PriorityMux (
        |    in:  Seq[(Bool, T)]
        | )
      - T
-     - Return the first ``in`` element whose ``sel`` is ``True``.
+     - ``sel`` が ``True`` である最初の ``in`` 要素を返します。
 
 
-State full utilities
---------------------
+状態を持つユーティリティ
+---------------------------
 
 .. list-table::
    :header-rows: 1
    :widths: 3 1 5
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値
+     - 説明
    * - Delay(that: T, cycleCount: Int)
      - T
-     - Return ``that`` delayed by ``cycleCount`` cycles
+     - ``that`` を ``cycleCount`` サイクル遅延させたものを返します
    * - History(that: T, length: Int[,when : Bool])
      - List[T]
-     - | Return a Vec of ``length`` elements
-       | The first element is ``that``\ , the last one is ``that`` delayed by ``length``\ -1\
-       | The internal shift register sample when ``when`` is asserted
+     - | ``length`` 要素の Vec を返します 
+       | 最初の要素は ``that``\ であり、最後の要素は ``that`` を ``length``\ -1\ サイクル遅延させたものです
+       | ``when`` がアサートされているときに内部シフトレジスタのサンプルが取得されます
    * - BufferCC(input : T)
      - T
-     - Return the input signal synchronized with the current clock domain by using 2 flip flop
-
+     - 2つのフリップフロップを使用して、入力信号を現在のクロックドメインに同期させたものを返します
 
 Counter
 ^^^^^^^
 
-The Counter tool can be used to easily instantiate a hardware counter.
+Counter ツールは、ハードウェアカウンターを簡単にインスタンス化するために使用できます。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1
 
-   * - Instantiation syntax
-     - Notes
+   * - インスタンス化構文
+     - ノート
    * - ``Counter(start: BigInt, end: BigInt[, inc : Bool])``
      - 
    * - ``Counter(range : Range[, inc : Bool])``
-     - Compatible with the  ``x to y`` ``x until y`` syntaxes
+     - ``x to y`` や ``x until y`` の構文と互換性があります
    * - ``Counter(stateCount: BigInt[, inc : Bool])``
-     - Starts at zero and ends at ``stateCount - 1``
+     - ゼロから開始し、 ``stateCount - 1`` で終了します
    * - ``Counter(bitCount: BitCount[, inc : Bool])``
-     - Starts at zero and ends at ``(1 << bitCount) - 1``
+     - ゼロから開始し、 ``(1 << bitCount) - 1`` で終了します
 
-A counter can be controlled by methods, and wires can be read:
+カウンターは、メソッドによって制御され、ワイヤで読み取ることができます:
 
 .. code-block:: scala
 
    val counter = Counter(2 to 9) // Creates a counter of 8 states (2 to 9)
-   // Methods
-   counter.clear()               // Resets the counter
-   counter.increment()           // Increments the counter
-   // Wires
-   counter.value                 // Current value
-   counter.valueNext             // Next value
-   counter.willOverflow          // True if the counter overflows this cycle
-   counter.willOverflowIfInc     // True if the counter would overflow this cycle if an increment was done
+   // メソッド
+   counter.clear()               // カウンターをリセットします
+   counter.increment()           // カウンターをインクリメントします
+   // ワイヤ
+   counter.value                 // 現在の値
+   counter.valueNext             // 次の値
+   counter.willOverflow          // カウンターが今サイクルでオーバーフローする場合は True
+   counter.willOverflowIfInc     // インクリメントを行うと、カウンターが今サイクルでオーバーフローする場合は True
    // Cast
-   when(counter === 5){ ... }    // counter is implicitly casted to its current value
+   when(counter === 5){ ... }    // カウンターは、暗黙的に現在の値にキャストされます
 
-When a ``Counter`` overflows (reached end value), it restarts the next cycle to its start value.
+``Counter`` がオーバーフロー（終了値に達した）した場合、次のサイクルで開始値に戻ります。
 
 .. note::
-   Currently, only up counter are supported.
+   現在、上向きのカウンターのみがサポートされています。
 
-``CounterFreeRun`` builds an always running counter: ``CounterFreeRun(stateCount: BigInt)``.
+``CounterFreeRun`` は常に実行されるカウンターを構築します: ``CounterFreeRun(stateCount: BigInt)``。
+
 
 Timeout
 ^^^^^^^
 
-The Timeout tool can be used to easily instantiate an hardware timeout.
+Timeout ツールは、ハードウェアのタイムアウトを簡単にインスタンス化するために使用できます。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1
 
-   * - Instanciation syntax
-     - Notes
+   * - インスタンス化構文
+     - ノート
    * - Timeout(cycles : BigInt)
-     - Tick after ``cycles`` clocks
+     - ``cycles`` クロック後にチックします
    * - Timeout(time : TimeNumber)
-     - Tick after a ``time`` duration
+     - ``time`` の期間後にチックします
    * - Timeout(frequency : HertzNumber)
-     - Tick at an ``frequency`` rate
+     - ``frequency`` のレートでチックします
 
-
-There is an example of different syntaxes which could be used with the Counter tool
+Counter ツールと一緒に使用できる異なる構文の例があります
 
 .. code-block:: scala
 
-   val timeout = Timeout(10 ms)  //Timeout who tick after 10 ms
-   when(timeout) {               //Check if the timeout has tick
-       timeout.clear()           //Ask the timeout to clear its flag
+   val timeout = Timeout(10 ms)  // 10 ms後にチックするタイムアウト
+   when(timeout) {               // タイムアウトがチックしたかどうかをチェック
+       timeout.clear()           // タイムアウトにクリアフラグを要求します
    }
 
 .. note::
-   If you instantiate an ``Timeout`` with an time or frequency setup, the implicit ``ClockDomain`` should have an frequency setting.
+   時間または周波数の設定で ``Timeout`` をインスタンス化する場合、暗黙の ``ClockDomain`` には周波数設定が必要です。
+
 
 ResetCtrl
 ^^^^^^^^^
 
-The ResetCtrl provide some utilities to manage resets.
+ResetCtrl はリセットを管理するためのいくつかのユーティリティを提供します。
 
 asyncAssertSyncDeassert
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-You can filter an asynchronous reset by using an asynchronously asserted synchronously deaserted logic. To do it you can use the ``ResetCtrl.asyncAssertSyncDeassert`` function which will return you the filtered value.
+非同期リセットをフィルタリングするには、非同期にアサートされた同期的に非アサートされるロジックを使用します。
+これを行うには、 ``ResetCtrl.asyncAssertSyncDeassert`` 関数を使用します。この関数はフィルタリングされた値を返します。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 4
 
-   * - Argument name
-     - Type
-     - Description
+   * - 引数名
+     - タイプ
+     - 説明
    * - input
      - Bool
-     - Signal that should be filtered
+     - フィルタリングする必要があるシグナル
    * - clockDomain
      - ClockDomain
-     - ClockDomain which will use the filtered value
+     - フィルタリングされた値を使用する ClockDomain 
    * - inputPolarity
      - Polarity
-     - HIGH/LOW (default=HIGH)
+     - HIGH/LOW（デフォルト=HIGH）
    * - outputPolarity
      - Polarity
-     - HIGH/LOW (default=clockDomain.config.resetActiveLevel)
+     - HIGH/LOW（デフォルト=clockDomain.config.resetActiveLevel）
    * - bufferDepth
      - Int
-     - Number of register stages used to avoid metastability (default=2)
+     - メタスタビリティを回避するために使用されるレジスタ段の数（デフォルト=2）
 
+ツールの ``ResetCtrl.asyncAssertSyncDeassertDrive`` バージョンもあり、
+これは直接 ``clockDomain`` リセットにフィルタリングされた値を割り当てます。
 
-There is also an ``ResetCtrl.asyncAssertSyncDeassertDrive`` version of tool which directly assign the ``clockDomain`` reset with the filtered value.
-
-Special utilities
------------------
+特別なユーティリティ
+-----------------------
 
 .. list-table::
    :header-rows: 1
    :widths: 3 1 5
 
-   * - Syntax
-     - Return
-     - Description
+   * - 構文
+     - 戻り値
+     - 説明
    * - LatencyAnalysis(paths : Node*)
      - Int
-     - | Return the shortest path, in terms of cycles, that travel through all nodes,
-       | from the first one to the last one
+     - | 最初のノードから最後のノードまでのすべてのパスを通る最短の経路を、
+       | サイクル単位で返します。
+
 

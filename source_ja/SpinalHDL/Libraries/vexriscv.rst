@@ -2,20 +2,19 @@
 VexRiscv (RV32IM CPU)
 =====================
 
-VexRiscv is an fpga friendly RISC-V ISA CPU implementation with following features :
+VexRiscv は、以下の機能を備えた FPGA フレンドリーな RISC-V ISA CPU 実装です：
 
+* RV32IM 命令セット
+* 5段階のパイプライン（フェッチ、デコード、実行、メモリ、ライトバック）
+* すべての機能が有効な場合、1.44 DMIPS/MHz
+* FPGA 向けに最適化されています
+* オプションの MUL/DIV 拡張
+* オプションの命令キャッシュとデータキャッシュ
+* オプションの MMU
+* Eclipse デバッグを介したオプションのデバッグ拡張（GDB >> openOCD >> JTAG 接続）
+* riscv-privileged-v1.9.1 仕様のマシンモードとユーザーモードによるオプションの割り込みと例外処理
+* シフト命令の2つの実装、シングルサイクル／ shiftNumber サイクル
+* 各ステージにバイパスまたはインターロックハザードロジックを持つことができます
+* FreeRTOSポート: https://github.com/Dolu1990/FreeRTOS-RISCV
 
-* RV32IM instruction set
-* Pipelined on 5 stages (Fetch, Decode, Execute, Memory, WriteBack)
-* 1.44 DMIPS/Mhz when all features are enabled
-* Optimized for FPGA
-* Optional MUL/DIV extension
-* Optional instruction and data caches
-* Optional MMU
-* Optional debug extension allowing eclipse debugging via an GDB >> openOCD >> JTAG connection
-* Optional interrupts and exception handling with the Machine and the User mode from the riscv-privileged-v1.9.1 spec.
-* Two implementation of shift instructions, Single cycle / shiftNumber cycles
-* Each stage could have bypass or interlock hazard logic
-* FreeRTOS port https://github.com/Dolu1990/FreeRTOS-RISCV
-
-Much more information there : `https://github.com/SpinalHDL/VexRiscv <https://github.com/SpinalHDL/VexRiscv>`_
+詳細はこちらで入手できます： `https://github.com/SpinalHDL/VexRiscv <https://github.com/SpinalHDL/VexRiscv>`_

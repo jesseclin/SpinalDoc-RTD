@@ -6,36 +6,36 @@
 Stream
 ======
 
-Specification
+仕様
 -------------
 
-| The Stream interface is a simple handshake protocol to carry payload.
-| It could be used for example to push and pop elements into a FIFO, send requests to a UART controller, etc.
+| ストリームインターフェースは、ペイロードを運ぶためのシンプルなハンドシェイクプロトコルです。
+| これは、例えば FIFO に要素をプッシュしたりポップしたり、UART コントローラーにリクエストを送信するために使用できます。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 1 10 1
 
-   * - Signal
-     - Type
-     - Driver
-     - Description
-     - Don't care when
+   * - シグナル
+     - タイプ
+     - ドライバー
+     - 説明
+     - いつも無視
    * - valid
      - Bool
-     - Master
-     - When high => payload present on the interface
+     - マスター
+     - ハイの場合 => インターフェースにペイロードが存在します
      - 
    * - ready
      - Bool
-     - Slave
-     - When low => transaction are not consumed by the slave
-     - valid is low
+     - スレーブ
+     - ローの場合 => トランザクションはスレーブによって消費されていません
+     - valid がローの場合
    * - payload
      - T
-     - Master
-     - Content of the transaction
-     - valid is low
+     - マスター
+     - トランザクションの内容
+     - valid がローの場合
 
 .. wavedrom::
 
@@ -46,7 +46,7 @@ Specification
      {"name": "payload", "wave": "x=x=..x==x","data":["D0","D1","D2","D3"]}
    ]}
 
-There is some examples of usage in SpinalHDL :
+SpinalHDL での使用例がいくつかあります：
 
 .. code-block:: scala
 
@@ -67,109 +67,109 @@ There is some examples of usage in SpinalHDL :
    }
 
 .. note::
-   Each slave can or can't allow the payload to change when valid is high and ready is low. For examples:
+   各スレーブは、valid がハイで ready がローの場合にペイロードを変更することができます。例：
 
+* ロックロジックなしの優先度アービターは、1つの入力から他の入力に切り替えることができます（これによりペイロードが変更されます）。
+* UART コントローラーは、直接書き込みポートを使用して UART ピンを駆動し、トランスミッションの終了時にトランザクションをのみ消費できます。それには注意してください。
 
-* An priority arbiter without lock logic can switch from one input to the other (which will change the payload).
-* An UART controller could directly use the write port to drive UART pins and only consume the transaction at the end of the transmission.
-  Be careful with that.
 
 Semantics
 ---------
 
-When manually reading/driving the signals of a Stream keep in mind that:
+ストリームの信号を手動で読み取ったり駆動したりする場合は、次のことを考慮してください：
 
-* After being asserted, ``valid`` may only be deasserted once the current payload was acknowleged. This means ``valid`` can only toggle to 0 the cycle after a the slave did a read by asserting ``ready``.
-* In contrast to that ``ready`` may change at any time. 
-* A transfer is only done on cycles where both ``valid`` and ``ready`` are asserted.
-* ``valid`` of a Stream must not depend on ``ready`` in a combinatorial way and any path between the two must be registered.
-* It is recommended that ``valid`` does not depend on ``ready`` at all.
+* アサートされた後、 ``valid`` は、現在のペイロードが認識された後にのみ非アサートされる場合があります。
+  つまり、 ``valid``は、スレーブが ``ready`` をアサートして読み取りを行った後のサイクルにのみ 0 にトグルできます。
+* これに対して、 ``ready`` はいつでも変更できます。
+* 転送は、 ``valid`` と ``ready`` がアサートされているサイクルでのみ行われます。
+* ストリームの ``valid`` は、組み合わせ的な方法で ``ready`` に依存してはならず、
+  両者の間の任意のパスはレジスタで登録されている必要があります。
+* ``valid`` が ``ready`` にまったく依存しないようにすることが推奨されます。
 
-Functions
+機能
 ---------
 
 .. list-table::
    :header-rows: 1
    :widths: 5 5 1 1
 
-   * - Syntax
-     - Description
-     - Return
-     - Latency
+   * - 構文
+     - 説明
+     - 戻り値
+     - レイテンシー
    * - Stream(type : Data)
-     - Create a Stream of a given type
+     - 指定された型のストリームを作成します
      - Stream[T]
      - 
    * - master/slave Stream(type : Data)
-     - | Create a Stream of a given type
-       | Initialized with corresponding in/out setup
+     - | 指定された型のストリームを作成します
+       | 対応する in/out のセットアップで初期化されます 
      - Stream[T]
      - 
    * - x.fire
-     - Return True when a transaction is consumed on the bus (valid && ready)
+     - バスでトランザクションが消費されると True を返します（valid && ready）
      - Bool
      - 
    * - x.isStall
-     - Return True when a transaction is stall on the bus (valid && ! ready)
+     - バスでトランザクションが停止すると True を返します（valid && ! ready）
      - Bool
      - 
    * - x.queue(size:Int)
-     - Return a Stream connected to x through a FIFO
+     - FIFO を介して x に接続されたストリームを返します
      - Stream[T]
      - 2
    * - | x.m2sPipe()
        | x.stage()
-     - | Return a Stream drived by x
-       | through a register stage that cut valid/payload paths
-       | Cost = (payload width + 1) flop flop
+     - | x によって駆動されるストリームを返します
+       | valid/payload パスを切断するレジスタステージを介して
+       | コスト = (ペイロード幅 + 1) flop flop  
      - Stream[T]
      - 1
    * - x.s2mPipe()
-     - | Return a Stream drived by x
-       | ready paths is cut by a register stage
-       | Cost = payload width * (mux2 + 1 flip flop)
+     - | x によって駆動されるストリームを返します
+       | ready パスはレジスタステージで切断されます
+       | コスト = ペイロード幅 * (mux2 + 1 flip flop)
      - Stream[T]
      - 0
    * - x.halfPipe()
-     - | Return a Stream drived by x
-       | valid/ready/payload paths are cut by some register
-       | Cost = (payload width + 2) flip flop, bandwidth divided by two
+     - | x によって駆動されるストリームを返します
+       | valid/ready/payload パスはいくつかのレジスタで切断されます
+       | コスト = （ペイロード幅 + 2）flip flop、帯域幅は半分になります
      - Stream[T]
      - 1
    * - | x << y
        | y >> x
-     - Connect y to x
+     - y を x に接続します
      - 
      - 0
    * - | x <-< y
        | y >-> x
-     - Connect y to x through a m2sPipe
+     - y を x に m2sPipe を介して接続します
      - 
      - 1
    * - | x </< y
        | y >/> x
-     - Connect y to x through a s2mPipe
+     - y を x に s2mPipe を介して接続します
      - 
      - 0
    * - | x <-/< y
        | y >/-> x
-     - | Connect y to x through s2mPipe().m2sPipe()
-       | Which imply no combinatorial path between x and y
+     - | y を x に s2mPipe().m2sPipe() を介して接続します
+       | これにより、x と y の間に組み合わせパスがないことが前提とされます
      - 
      - 1
    * - x.haltWhen(cond : Bool)
-     - | Return a Stream connected to x
-       | Halted when cond is true
+     - | x に接続されたストリームを返します
+       | cond が true の場合、ストリームは停止します
      - Stream[T]
      - 0
    * - x.throwWhen(cond : Bool)
-     - | Return a Stream connected to x
-       | When cond is true, transaction are dropped
+     - | x に接続されたストリームを返します
+       | cond が true の場合、トランザクションは破棄されます
      - Stream[T]
      - 0
 
-
-The following code will create this logic :
+次のコードはこのロジックを作成します：
 
 .. image:: /asset/picture/stream_throw_m2spipe.svg
    :align: center
@@ -188,15 +188,16 @@ The following code will create this logic :
    val sink   = Stream(RGB(8))
    sink <-< source.throwWhen(source.payload.isBlack)
 
-Utils
------
+ユーティリティ
+-------------------
 
-There is many utils that you can use in your design in conjunction with the Stream bus, this chapter will document them.
+ストリームバスと組み合わせて設計できる多くのユーティリティがあります。この章ではそれらを文書化します。
 
 StreamFifo
 ^^^^^^^^^^
 
-On each stream you can call the .queue(size) to get a buffered stream. But you can also instantiate the FIFO component itself :
+各ストリームには、.queue(size) を呼び出してバッファリングされたストリームを取得できます。
+ただし、FIFO コンポーネント自体をインスタンス化することもできます：
 
 .. code-block:: scala
 
@@ -213,42 +214,41 @@ On each stream you can call the .queue(size) to get a buffered stream. But you c
    :header-rows: 1
    :widths: 1 1 2
 
-   * - parameter name
-     - Type
-     - Description
+   * - パラメータ名
+     - タイプ
+     - 説明
    * - dataType
      - T
-     - Payload data type
+     - ペイロードデータ型
    * - depth
      - Int
-     - Size of the memory used to store elements
-
+     - 要素を格納するために使用されるメモリのサイズ
 
 .. list-table::
    :header-rows: 1
    :widths: 1 4 5
 
-   * - io name
-     - Type
-     - Description
+   * - io 名
+     - タイプ
+     - 説明
    * - push
      - Stream[T]
-     - Used to push elements
+     - 要素をプッシュするために使用
    * - pop
      - Stream[T]
-     - Used to pop elements
+     - 要素をポップするために使用
    * - flush
      - Bool
-     - Used to remove all elements inside the FIFO
+     - FIFO 内のすべての要素を削除するために使用
    * - occupancy
      - UInt of log2Up(depth + 1) bits
-     - Indicate the internal memory occupancy
+     - 内部メモリの占有率を示す
 
 
 StreamFifoCC
 ^^^^^^^^^^^^
 
-You can instantiate the dual clock domain version of the fifo the following way :
+次の方法で、FIFO のデュアルクロックドメインバージョンをインスタンス化できます：
 
 .. code-block:: scala
 
@@ -269,49 +269,49 @@ You can instantiate the dual clock domain version of the fifo the following way 
    :header-rows: 1
    :widths: 1 1 2
 
-   * - parameter name
-     - Type
-     - Description
+   * - パラメータ名
+     - タイプ
+     - 説明
    * - dataType
      - T
-     - Payload data type
+     - ペイロードデータ型
    * - depth
      - Int
-     - Size of the memory used to store elements
+     - 要素を格納するために使用されるメモリのサイズ
    * - pushClock
      - ClockDomain
-     - Clock domain used by the push side
+     - プッシュ側で使用されるクロックドメイン
    * - popClock
      - ClockDomain
-     - Clock domain used by the pop side
+     - ポップ側で使用されるクロックドメイン
 
 
 .. list-table::
    :header-rows: 1
    :widths: 1 4 5
 
-   * - io name
-     - Type
-     - Description
+   * - io 名
+     - タイプ
+     - 説明
    * - push
      - Stream[T]
-     - Used to push elements
+     - 要素をプッシュするために使用
    * - pop
      - Stream[T]
-     - Used to pop elements
+     - 要素をポップするために使用
    * - pushOccupancy
      - UInt of log2Up(depth + 1) bits
-     - Indicate the internal memory occupancy (from the push side perspective)
+     - 内部メモリの占有率を示す（プッシュ側の視点から）
    * - popOccupancy
      - UInt of log2Up(depth + 1) bits
-     - Indicate the internal memory occupancy  (from the pop side perspective)
+     - 内部メモリの占有率を示す（ポップ側の視点から）
 
 
 StreamCCByToggle
 ^^^^^^^^^^^^^^^^
 
-| Component that connects Streams across clock domains based on toggling signals.
-| This way of implementing a cross clock domain bridge is characterized by a small area usage but also a low bandwidth.
+| トグル信号に基づいてクロックドメイン間を接続するコンポーネントです。
+| このクロックドメイン間ブリッジの実装方法は、エリア使用量が少なく、帯域幅も低いという特徴があります。
 
 .. code-block:: scala
 
@@ -331,36 +331,35 @@ StreamCCByToggle
    :header-rows: 1
    :widths: 1 1 2
 
-   * - parameter name
-     - Type
-     - Description
+   * - パラメータ名
+     - タイプ
+     - 説明
    * - dataType
      - T
-     - Payload data type
+     - ペイロードデータ型
    * - inputClock
      - ClockDomain
-     - Clock domain used by the push side
+     - プッシュ側で使用されるクロックドメイン
    * - outputClock
      - ClockDomain
-     - Clock domain used by the pop side
+     - ポップ側で使用されるクロックドメイン
 
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 2
 
-   * - io name
-     - Type
-     - Description
+   * - io 名
+     - タイプ
+     - 説明
    * - input
      - Stream[T]
-     - Used to push elements
+     - 要素をプッシュするために使用
    * - output
      - Stream[T]
-     - Used to pop elements
+     - 要素をポップするために使用
 
-
-Alternatively you can also use a this shorter syntax which directly return you the cross clocked stream:
+代替として、直接クロック間ストリームを返すこのより短い構文も使用できます：
 
 .. code-block:: scala
 
@@ -376,10 +375,12 @@ Alternatively you can also use a this shorter syntax which directly return you t
 StreamWidthAdapter
 ^^^^^^^^^^^^^^^^^^
 
-This component adapts the width of the input stream to the output stream.
-When the width of the ``outStream`` payload is greater than the ``inStream``, by combining the payloads of several input transactions into one; conversely, if the payload width of the ``outStream`` is less than the ``inStream``, one input transaction will be split into several output transactions.
+このコンポーネントは、入力ストリームの幅を出力ストリームに適応させます。
 
-In the best case, the width of the payload of the ``inStream`` should be an integer multiple of the ``outStream`` as shown below.
+``outStream`` ペイロードの幅が ``inStream`` よりも大きい場合、複数の入力トランザクションのペイロードを1つに組み合わせます。
+逆に、 ``outStream`` のペイロード幅が  ``inStream`` よりも小さい場合、1つの入力トランザクションが複数の出力トランザクションに分割されます。
+
+最良の場合、 ``inStream`` のペイロードの幅は、次に示すように ``outStream`` の整数倍である必要があります。
 
 .. code-block:: scala
 
@@ -387,9 +388,10 @@ In the best case, the width of the payload of the ``inStream`` should be an inte
    val outStream = Stream(Bits(16 bits))
    val adapter = StreamWidthAdapter(inStream, outStream)
 
-As in the example above, the two ``inStream`` transactions will be merged into one ``outStream`` transaction, and the payload of the first input transaction will be placed on the lower bits of the output payload by default.
+上記の例のように、2つの ``inStream`` トランザクションは 1つの ``outStream`` トランザクションにマージされ、
+最初の入力トランザクションのペイロードはデフォルト設定で出力ペイロードの下位ビットに配置されます。
 
-If the expected order of input transaction payload placement is different from the default setting, here is an example.
+入力トランザクションのペイロード配置の予想される順序がデフォルトの設定と異なる場合は、次の例を参照してください。
 
 .. code-block:: scala
 
@@ -397,15 +399,15 @@ If the expected order of input transaction payload placement is different from t
    val outStream = Stream(Bits(16 bits))
    val adapter = StreamWidthAdapter(inStream, outStream, order = SlicesOrder.HIGHER_FIRST)
 
-There is also a traditional parameter called ``endianness``, which has the same effect as ``ORDER``. 
-The value of ``endianness`` is the same as ``LOWER_FIRST`` of ``order`` when it is ``LITTLE``, and the same as ``HIGHER_FIRST`` when it is ``BIG``.
-The ``padding`` parameter is an optional boolean value to determine whether the adapter accepts non-integer multiples of the input and output payload width.
+また、 ``ORDER`` と同じ効果を持つ ``endianness`` という従来のパラメータもあります。
+``endianness`` の値は、 ``LITTLE`` の場合は  ``order`` の ``LOWER_FIRST`` と同じであり、 ``BIG`` の場合は ``HIGHER_FIRST`` と同じです。
+``padding`` パラメータは、アダプターが入力と出力のペイロード幅の整数倍でない場合を受け入れるかどうかを決定するオプションのブール値です。
 
 
 StreamArbiter
 ^^^^^^^^^^^^^
 
-When you have multiple Streams and you want to arbitrate them to drive a single one, you can use the StreamArbiterFactory.
+複数のストリームがあり、それらを 1つのストリームに駆動させるためにアービトレーションを行いたい場合は、StreamArbiterFactory を使用できます。
 
 .. code-block:: scala
 
@@ -419,38 +421,37 @@ When you have multiple Streams and you want to arbitrate them to drive a single 
    :header-rows: 1
    :widths: 1 5
 
-   * - Arbitration functions
-     - Description
+   * - アービトレーション関数	
+     - 説明
    * - lowerFirst
-     - Lower port have priority over higher port
+     - 下位ポートが上位ポートより優先されます
    * - roundRobin
-     - Fair round robin arbitration
+     - フェアなラウンドロビンアービトレーション
    * - sequentialOrder
-     - | Could be used to retrieve transaction in a sequancial order
-       | First transaction should come from port zero, then from port one, ...
-
+     - | トランザクションを連続した順序で取得するために使用できます
+       | 最初のトランザクションはポート0から取得され、次にポート1から取得されます...
 
 .. list-table::
    :header-rows: 1
    :widths: 1 5
 
-   * - Lock functions
-     - Description
+   * - ロック関数	
+     - 説明
    * - noLock
-     - The port selection could change every cycle, even if the transaction on the selected port is not consumed.
+     - 選択されたポートは、選択されたポート上のトランザクションが消費されなくても、毎サイクル変更される可能性があります
    * - transactionLock
-     - The port selection is locked until the transaction on the selected port is consumed.
+     - 選択されたポートは、選択されたポート上のトランザクションが消費されるまでロックされます
    * - fragmentLock
-     - | Could be used to arbitrate Stream[Flow[T]].
-       | In this mode, the port selection is locked until the selected port finish is burst (last=True).
+     - | Stream[Flow[T]] を仲介するために使用できます。
+       | このモードでは、ポートの選択は選択されたポートのバーストが終了するまでロックされます（last=True）。
 
 
 .. list-table::
    :header-rows: 1
    :widths: 2 1
 
-   * - Generation functions
-     - Return
+   * - 生成関数	
+     - 戻り値
    * - on(inputs : Seq[Stream[T]])
      - Stream[T]
    * - onArgs(inputs : Stream[T]*)
@@ -459,7 +460,8 @@ When you have multiple Streams and you want to arbitrate them to drive a single 
 StreamJoin
 ^^^^^^^^^^
 
-This utility takes multiple input streams and waits until all of them fire `valid` before letting all of them through by providing `ready`.
+このユーティリティは、複数の入力ストリームを取り、すべてのストリームが `valid`` を発火するまで待機し、 
+`ready`` を提供してすべてのストリームを通過させます。
 
 .. code-block:: scala
 
@@ -470,11 +472,12 @@ This utility takes multiple input streams and waits until all of them fire `vali
 StreamFork
 ^^^^^^^^^^
 
-A StreamFork will clone each incoming data to all its output streams. If synchronous is true,
-all output streams will always fire together, which means that the stream will halt until all output streams are ready. 
-If synchronous is false, output streams may be ready one at a time,
-at the cost of an additional flip flop (1 bit per output). The input stream will block until
-all output streams have processed each item regardlessly.
+StreamFork は、各入力データをすべての出力ストリームに複製します。 synchronous が true の場合、
+すべての出力ストリームは常に一緒に発火します。
+これは、すべての出力ストリームが準備できるまで、ストリームが停止することを意味します。 
+synchronous が false の場合、出力ストリームは一度に1つずつ準備されることがありますが、
+それには追加のフリップフロップ（ 1ビットあたりの出力）がかかります。
+入力ストリームは、すべての出力ストリームが各アイテムを処理するまでブロックされます。
 
 
 .. code-block:: scala
@@ -482,7 +485,7 @@ all output streams have processed each item regardlessly.
    val inputStream = Stream(Bits(8 bits))
    val (outputstream1, outputstream2) = StreamFork2(inputStream, synchronous=false)
 
-or
+または
 
 .. code-block:: scala
 
@@ -492,9 +495,9 @@ or
 StreamMux
 ^^^^^^^^^
 
-A mux implementation for ``Stream``. 
-It takes a ``select`` signal and streams in ``inputs``, and returns a ``Stream`` which is connected to one of the input streams specified by ``select``.
-``StreamArbiter`` is a facility works similar to this but is more powerful.
+``Stream`` 向けの mux 実装です。
+``select`` シグナルと ``inputs`` のストリームを取り、 ``select`` で指定された入力ストリームに接続された ``Stream`` を返します。
+``StreamArbiter`` はこれと類似した機能を持っていますが、より強力です。
 
 .. code-block:: scala
 
@@ -503,17 +506,15 @@ It takes a ``select`` signal and streams in ``inputs``, and returns a ``Stream``
    val outputStream = StreamMux(select, inputStreams)
 
 .. note::
-
-   The ``UInt`` type of ``select`` signal could not be changed while output stream is stalled, or it might break the transaction on the fly.
-   Use ``Stream`` typed ``select`` can generate a stream interface which only fire and change the routing when it is safe.
-
+   ``select`` シグナルの ``UInt`` 型は、出力ストリームが停止している間に変更されると、トランザクションが途中で中断される可能性があります。
+   安全な操作を行うためには、 ``Stream`` 型の ``select`` を使用して、安全な場合にのみ発火してルーティングを変更するストリームインターフェースを生成できます。
 
 StreamDemux
 ^^^^^^^^^^^
 
-A demux implementation for ``Stream``. 
-It takes a ``input``, a ``select`` and a ``portCount`` and returns a ``Vec(Stream)`` where the output stream specified by ``select`` is connected to ``input``, the other output streams are inactive. 
-For safe transaction, refer the notes above.
+``Stream`` 向けの demux 実装です。
+``input``、 ``select``、 ``portCount`` を取り、``select`` で指定された出力ストリームが ``input`` に接続され、他の出力ストリームは非アクティブになります。
+安全なトランザクションについては、上記の注意事項を参照してください。
 
 .. code-block:: scala
 
@@ -524,7 +525,7 @@ For safe transaction, refer the notes above.
 StreamDispatcherSequencial
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This util take its input stream and routes it to ``outputCount`` stream in a sequential order.
+このユーティリティは、入力ストリームを取り、それを ``outputCount`` のストリームに順次ルーティングします。
 
 .. code-block:: scala
 
@@ -537,8 +538,8 @@ This util take its input stream and routes it to ``outputCount`` stream in a seq
 StreamTransactionExtender
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This utility will take one input transfer and generate several output transfers, it provides the facility to repeat the payload value ``count+1`` times into output transfers.
-The ``count`` is captured and registered each time inputStream fires for an individual payload.
+このユーティリティは、1つの入力転送を取り、複数の出力転送を生成します。これは、出力転送にペイロードの値を count+1 回繰り返す機能を提供します。
+``count`` は、個々のペイロードのたびに inputStream がファイアされるたびにキャプチャされ、登録されます。
 
 .. code-block:: scala
 
@@ -546,13 +547,16 @@ The ``count`` is captured and registered each time inputStream fires for an indi
    val outputStream = Stream(Bits(8 bits))
    val count = UInt(3 bits)
    val extender = StreamTransactionExtender(inputStream, outputStream, count) {
-      // id, is the 0-based index of total output transfers so far in the current input transaction.
-      // last, is the last transfer indication, same as the last signal for extender.
-      // the returned payload is allowed to be modified only based on id and last signals, other translation should be done outside of this.
-       (id, payload, last) => payload
+      // id は、現在の入力トランザクション内でこれまでの全出力トランザクションの 0ベースのインデックスです。
+      // last は、最後の転送インジケーションで、extender の last シグナルと同じです。
+      // 返されたペイロードは、id と last シグナルに基づいてのみ変更が許可され、その他の変換はこの外部で行う必要があります。
+      (id, payload, last) => payload
    }
 
-This ``extender`` provides several status signals, such as ``working``, ``last``, ``done`` where ``working`` means there is one input transfer accepted and in-progress, ``last`` indicates the last output transfer is prepared and waiting to complete, ``done`` become valid represents the last output transfer is fireing and making the current input transaction process complete and ready to start another transaction.
+この ``extender`` は、 ``working``、 ``last``、 ``done`` などのいくつかのステータスシグナルを提供します。
+``working`` は、1つの入力転送が受け入れられて進行中であることを意味し、
+``last`` は、最後の出力転送が準備されて完了を待っていることを示し、 ``done`` が有効になると、
+最後の出力転送がファイアされ、現在の入力トランザクション処理が完了し、別のトランザクションを開始できる状態になります。
 
 .. wavedrom::
 
@@ -569,27 +573,27 @@ This ``extender`` provides several status signals, such as ``working``, ``last``
 
 .. note::
 
-   If only count for output stream is required then use ``StreamTransactionCounter`` instead. 
+   出力ストリームのカウントのみが必要な場合は、代わりに ``StreamTransactionCounter`` を使用してください。
 
 Simulation support
 ------------------
 
-For simulation master and slave implementations are available:
+シミュレーションのマスターとスレーブの実装には、以下のものがあります：
 
 .. list-table::
   :header-rows: 1
   :widths: 1 5
   
-  * - Class
-    - Usage
+  * - クラス
+    - 用途
   * - StreamMonitor
-    - Used for both master and slave sides, calls function with payload if Stream fires.
+    - マスターとスレーブの両方に使用され、ストリームが発火した場合にペイロードとともに関数を呼び出します。
   * - StreamDriver
-    - Testbench master side, drives values by calling function to apply value (if available). Function must return if value was available. Supports random delays.
+    - テストベンチのマスターサイドで使用され、関数を呼び出して値を適用します（利用可能な場合）。関数は値が利用可能かどうかを返さなければなりません。ランダムな遅延をサポートしています。
   * - StreamReadyRandmizer
-    - Randomizes ``ready`` for reception of data, testbench is the slave side.
+    - データの受信のための ``ready`` をランダム化し、テストベンチはスレーブサイドです。
   * - ScoreboardInOrder
-    - Often used to compare reference/dut data
+    - リファレンス/dut データを比較するためによく使用されます。
 
 .. code-block:: scala
 
@@ -608,7 +612,7 @@ For simulation master and slave implementations are available:
       
       dut.io.flush #= false
       
-      // drive random data and add pushed data to scoreboard
+      // ランダムなデータをドライブし、プッシュされたデータをスコアボードに追加する
       StreamDriver(dut.io.push, dut.clockDomain) { payload =>
         payload.randomize()
         true
@@ -617,7 +621,7 @@ For simulation master and slave implementations are available:
         scoreboard.pushRef(payload.toInt)
       }
 
-      // randmize ready on the output and add popped data to scoreboard
+      // 出力の ready をランダム化し、ポップされたデータをスコアボードに追加する
       StreamReadyRandomizer(dut.io.pop, dut.clockDomain)
       StreamMonitor(dut.io.pop, dut.clockDomain) { payload =>
         scoreboard.pushDut(payload.toInt)

@@ -9,15 +9,16 @@ State machine
 Introduction
 ------------
 
-In SpinalHDL you can define your state machine like in VHDL/Verilog, by using enumerations and switch/case statements. But in SpinalHDL you can also use a dedicated syntax.
+SpinalHDL では、VHDL/Verilog と同様に、列挙型と switch/case 文を使ってステートマシンを定義することができます。
+しかし、SpinalHDL では専用の構文も使用できます。
 
-The state machine below is implemented in the following examples:
+以下のステートマシンは、次の例で実装されています:
 
 .. image:: /asset/picture/fsm_simple.svg
    :align: center
    :width: 300
 
-Style A:
+スタイル A:
 
 .. code-block:: scala
 
@@ -51,7 +52,7 @@ Style A:
      }
    }
 
-Style B:
+スタイル B:
 
 .. code-block:: scala
 
@@ -91,61 +92,66 @@ Style B:
 StateMachine
 ------------
 
-``StateMachine`` is the base class. It manages the logic of the FSM.
+``StateMachine`` クラスは、ステートマシンの基本クラスであり、ステートマシンのロジックを管理します。
 
 .. code-block:: scala
 
    val myFsm = new StateMachine {
-     // Definition of states
+     // ステートの定義
    }
 
-``StateMachine`` also provides some accessors:
+``StateMachine`` クラスはいくつかのアクセサ関数も提供しています。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 1 5
 
-   * - Name
-     - Return
-     - Description
+   * - 名前
+     - 返り値	
+     - 説明
    * - ``isActive(state)``
      - ``Bool``
-     - Returns ``True`` when the state machine is in the given state
+     - 指定されたステートがアクティブかどうかを ``True`` で返します。
    * - ``isEntering(state)``
      - ``Bool``
-     - Returns ``True`` when the state machine is entering the given state
+     - 指定されたステートに遷移しているかどうかを ``True`` で返します。
 
 Entry point
 ^^^^^^^^^^^
 
-A state can be defined as the entry point of the state machine by extending the EntryPoint trait:
+ステートは、EntryPoint トレイトを継承することで、ステートマシンのエントリーポイントとして定義できます。
 
 .. code-block:: scala
 
    val stateA = new State with EntryPoint
 
-Or by using ``setEntry(state)``:
+または ``setEntry(state)`` メソッドを使用する:
 
 .. code-block:: scala
 
    val stateA = new State
    setEntry(stateA)
 
+
 Transitions
 ^^^^^^^^^^^
 
-* Transitions are represented by ``goto(nextState)``, which schedules the state machine to be in ``nextState`` the next cycle.
-* ``exit()`` schedules the state machine to be in the boot state the next cycle (or, in ``StateFsm``, to exit the current nested state machine).
+* 遷移は ``goto(nextState)`` 関数で表現され、次のサイクルでステートマシンを ``nextState`` に遷移させるようにスケジュールします
+* ``exit()`` 関数は、次のサイクルでステートマシンをブートステートに遷移させるようにスケジュールします 
+  (または ``StateFsm`` では、現在のネストされたステートマシンを終了させます)。
 
-These two functions can be used inside state definitions (see below) or using ``always { yourStatements }``,
-which always applies ``yourStatements``, with a priority over states.
+これらの関数は、ステートの定義内 (後述) または ``always { yourStatements }`` ブロック内で使用できます。
+always ブロックは常に ``yourStatements`` を適用し、ステートよりも優先順位が高くなります。
+
 
 State encoding
 ^^^^^^^^^^^^^^
 
-By default the FSM state vector will be encoded using the native encoding of the language/tools the RTL is generated for (Verilog or VHDL).
-This default can be overriden by using the ``setEncoding(...)`` method which either takes a ``SpinalEnumEncoding`` or
-varargs of type ``(State, BigInt)`` for a custom encoding. 
+デフォルトでは、FSM ステートベクトルは、
+RTL が生成される言語/ツールのネイティブエンコーディング (Verilog または VHDL) を使用してエンコードされます。
+このデフォルトは、 ``setEncoding(...)`` メソッドを使用して、 ``SpinalEnumEncoding`` またはカスタムエンコーディング 
+``(State, BigInt)`` の可変長引数を設定することでオーバーライドできます。
+
 
 .. code-block:: scala
    :caption: Using a ``SpinalEnumEncoding``
@@ -166,54 +172,53 @@ varargs of type ``(State, BigInt)`` for a custom encoding.
      setEncoding((stateA -> 0x23), (stateB -> 0x22))
    }
 
-.. warning:: When using the ``graySequential`` enum encoding, no check is done to verify that the FSM transitions only produce
-             single-bit changes in the state vector. The encoding is done according to the order of state definitions and the
-             designer must ensure that only valid transitions are done if needed.
+.. warning:: ``graySequential`` 列挙エンコーディングを使用する場合、
+             FSM の遷移がステートベクトルで 1 ビットのみ変化するようにするためのチェックは行われません。
+             エンコーディングはステート定義順序に従って行われるため、必要に応じて有効な遷移のみが行われるように設計者が確認する必要があります。
 
 States
 ------
 
-Multiple kinds of states can be used:
+SpinalHDL では、以下の種類のステートを使用できます。
 
-* ``State`` (the base one)
+* ``State``: 基本的なステートクラスです。
 * ``StateDelay``
 * ``StateFsm``
 * ``StateParallelFsm``
-
-Each of them provides the following functions to define the logic associated to them:
+ 
+これらの各ステートは、以下の関数を提供し、ステートに関連するロジックを定義できます。
 
 .. list-table::
    :header-rows: 1
    :widths: 1 10
 
-   * - Name
-     - Description
+   * - 名前
+     - 説明
    * - .. code-block:: scala
      
           state.onEntry {
             yourStatements
           }
-     - ``yourStatements`` is applied when the state machine is not in ``state`` and will be in ``state`` the next cycle
+     - ステートマシンが現在の ``state`` にならず、次のサイクルで現在の ``state`` になる場合に ``yourStatements`` が実行されます。
    * - .. code-block:: scala
          
           state.onExit {
             yourStatements
           }
-     - ``yourStatements`` is applied when the state machine is in ``state`` and will be in another state the next cycle
-   * - .. code-block:: scala
+     - ステートマシンが現在の ``state`` にあり、次のサイクルで別の ``state`` になる場合に ``yourStatements`` が実行されます。
      
           state.whenIsActive {
             yourStatements
           }
-     - ``yourStatements`` is applied when the state machine is in ``state``
+     - ステートマシンが現在の ``state`` にある場合に ``yourStatements`` が実行されます。
    * - .. code-block:: scala
      
           state.whenIsNext {
             yourStatements
           }
-     - ``yourStatements`` is executed when the state machine will be in ``state`` the next cycle (even if it is already in it)
+     - ステートマシンが次のサイクルで現在の ``state`` になる場合に (すでに現在の ``state`` にいても) ``yourStatements`` が実行されます。
 
-``state.`` is implicit in a ``new State`` block:
+``new State`` ブロックの中では、 ``state.`` を記述する必要はありません。
 
 .. image:: /asset/picture/fsm_stateb.svg
    :align: center
@@ -235,7 +240,8 @@ Each of them provides the following functions to define the logic associated to 
 StateDelay
 ^^^^^^^^^^
 
-``StateDelay`` allows you to create a state which waits for a fixed number of cycles before executing statements in ``whenCompleted {...}``. The preferred way to use it is:
+``StateDelay`` は、一定時間ステートを維持し、その後に ``whenCompleted {...}`` ブロック内のステートメントを実行するステートです。
+一般的には次のように使用します。
 
 .. code-block:: scala
 
@@ -245,7 +251,7 @@ StateDelay
      }
    }
 
-It can also be written in one line:
+1行で書くこともできます:
 
 .. code-block:: scala
 
@@ -254,13 +260,14 @@ It can also be written in one line:
 StateFsm
 ^^^^^^^^
 
-``StateFsm`` allows you to describe a state containing a nested state machine. When the nested state machine is done (exited), statements in ``whenCompleted { ... }`` are executed.
+``StateFsm`` は、ネストされたステートマシンを含むステートを定義します。
+ネストされたステートマシンが終了すると、 ``whenCompleted { ... }`` ブロック内のステートメントが実行されます。
 
-There is an example of StateFsm definition :
+以下は StateFsm の定義例です。
 
 .. code-block:: scala
 
-   // internalFsm is a function defined below
+   // internalFsm は以下で定義されている関数です 
    val stateC = new StateFsm(fsm=internalFsm()) {
      whenCompleted {
        goto(stateD)
@@ -287,14 +294,16 @@ There is an example of StateFsm definition :
      }
    }
 
-In the example above, ``exit()`` makes the state machine jump to the boot state (a internal hidden state). This notifies ``StateFsm`` about the completion of the inner state machine.
+この例では、 ``exit()`` 関数はステートマシンをブートステート (内部的に隠れているステート) に遷移させます。
+これにより、``StateFsm`` はネストされたステートマシンの終了を認識します。
 
 StateParallelFsm
 ^^^^^^^^^^^^^^^^
 
-``StateParallelFsm`` allows you to handle multiple nested state machines. When all nested state machine are done, statements in ``whenCompleted { ... }`` are executed.
+``StateParallelFsm`` を使用すると、複数のネストされた状態マシンを処理できます。
+すべてのネストされた状態マシンが完了すると、 ``whenCompleted { ... }`` 内の文が実行されます。
 
-Example:
+例:
 
 .. code-block:: scala
 
@@ -304,28 +313,31 @@ Example:
      }
    }
 
-Notes about the entry state
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+エントリ状態に関する注意
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The way the entry state has been defined above makes it so that between the reset and the first clock sampling, the state machine is in a boot state. It is only after the first clock sampling that the defined entry state becomes active. This allows to properly enter the entry state (applying statements in ``onEntry``), and allows nested state machines.
+上記で定義されたエントリ状態の方法により、リセットと最初のクロックサンプリングの間に、状態マシンはブート状態になります。
+最初のクロックサンプリング後に、定義されたエントリ状態がアクティブになります。
+これにより、エントリ状態に正しく入ることができます（ ``onEntry`` 内の文を適用）、およびネストされた状態マシンを使用できます。
 
-While it is usefull, it is also possible to bypass that feature and directly having a state machine booting into a user state.
+これは便利ですが、この機能をバイパスしてユーザー状態に直接ブートすることも可能です。
 
-To do so, use `makeInstantEntry()` instead of defining a ``new State``. This function returns the boot state, active directly after reset.
+これを行うには、 ``new State`` を定義する代わりに `makeInstantEntry()` を使用します。
+この関数は、リセット直後に直接アクティブになるブート状態を返します。
 
 .. note::
-   The ``onEntry`` of that state will only be called when it transitions from another state to this state and not during boot.
+   この状態の ``onEntry`` は、他の状態からこの状態に遷移するときにのみ呼び出され、ブート時には呼び出されません。
 
 .. note::
-   During simulation, the boot state is always named ``BOOT``.
+   シミュレーション中、ブート状態は常に ``BOOT`` という名前です。
 
-Example:
+例:
 
 .. code-block:: scala
 
-    // State sequance: IDLE, STATE_A, STATE_B, ...
+    // 状態シーケンス：IDLE、STATE_A、STATE_B、...
     val fsm = new StateMachine {
-      // IDLE is named BOOT in simulation
+      // IDLE はシミュレーションでは BOOT と名前が付けられます
       val IDLE = makeInstantEntry()
       val STATE_A, STATE_B, STATE_C = new State
       
@@ -337,7 +349,7 @@ Example:
 
 .. code-block:: scala
 
-    //  State sequance : BOOT, IDLE, STATE_A, STATE_B, ...
+    // 状態シーケンス：BOOT、IDLE、STATE_A、STATE_B、...
     val fsm = new StateMachine {
       val IDLE, STATE_A, STATE_B, STATE_C = new State
       setEntry(IDLE)
